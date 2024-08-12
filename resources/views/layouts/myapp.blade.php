@@ -63,7 +63,6 @@
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="/sneat-1.0.0/assets/js/config.js"></script>
 
-    <script src="/assets/app.js"></script>
   </head>
 
   <body>
@@ -182,8 +181,8 @@
                 
               </ul>
             </li>
-            <li class="menu-item {{Route::is('material') ? "active" : ""}}">
-              <a href="/material" class="menu-link">
+            <li class="menu-item {{Route::is('rubber.index') ? "active" : ""}}">
+              <a href="{{route('rubber.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-book"></i>
                 <div data-i18n="Basic">Nguyên liệu</div>
               </a>
@@ -363,31 +362,11 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     
-    <script>
-        new DataTable('#example', {
-            language: {
-            "sProcessing": "Đang xử lý...",
-            "sLengthMenu": "Hiển thị _MENU_ mục trên mỗi trang",
-            "sZeroRecords": "Không tìm thấy kết quả",
-            "sEmptyTable": "Không có dữ liệu trong bảng",
-            "sInfo": "Hiển thị từ _START_ đến _END_ của _TOTAL_ mục",
-            "sInfoEmpty": "Hiển thị từ 0 đến 0 của 0 mục",
-            "sInfoFiltered": "(lọc từ _MAX_ mục)",
-            "sSearch": "Tìm kiếm:",
-            "sUrl": "",
-            "oPaginate": {
-                "sFirst": "Đầu tiên",
-                "sPrevious": "Trước",
-                "sNext": "Tiếp theo",
-                "sLast": "Cuối cùng"
-            }
-        }
-        });
-        
 
-        $(document).ready(function() {
-            $('.farms-select').select2();
-        });
-    </script>
+  <script>
+    
+  </script>
+    <script src="/assets/app.js"></script>
+
   </body>
 </html>

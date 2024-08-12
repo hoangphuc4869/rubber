@@ -15,7 +15,7 @@
                     @csrf
                     @method('PUT')
                     <div class="mb-3">
-                        <label class="form-label" for="basic-default-fullname">Mã nông trường</label>
+                        <label class="form-label">Mã nông trường</label>
                         <input type="text" id="code" value="{{$farm->code}}" class="form-control @error('code') is-invalid @enderror" name="code" value="{{ old('code') }}" placeholder="NTx">
                         @error('code')
                             <div class="invalid-feedback">
@@ -24,7 +24,7 @@
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="basic-default-company">Tên nông trường</label>
+                        <label class="form-label" >Tên nông trường</label>
                         <input type="text" id="name" value="{{$farm->name}}" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="Nông trường 1">
                         @error('name')
                             <div class="invalid-feedback">

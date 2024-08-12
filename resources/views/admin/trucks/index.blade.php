@@ -25,7 +25,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="basic-default-company">Nông trường</label>
                         <br>
-                        <select name="farm_id" id="" class="form-select farms-select">
+                        <select name="farm_id" id="" class="form-select custom-select">
                             @foreach ($farms as $item)
                                 <option value="{{$item->id}}">{{$item->name}}</option>
                             @endforeach

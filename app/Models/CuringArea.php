@@ -10,4 +10,8 @@ class CuringArea extends Model
     use HasFactory;
 
     protected $fillable = ['name', 'code'];
+
+    public function rubbers() {
+        return $this->hasMany(Rubber::class, 'receiving_place_id');
+    }
 }

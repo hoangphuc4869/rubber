@@ -15,4 +15,8 @@ class Farm extends Model
     {
         return $this->hasMany(Truck::class);
     }
+
+    public function rubbers() {
+        return $this->hasMany(Rubber::class, 'farm_id');
+    }
 }
