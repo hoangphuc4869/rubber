@@ -178,10 +178,9 @@
                     <div data-i18n="Fluid">Nhà ủ</div>
                   </a>
                 </li>
-                
               </ul>
             </li>
-            <li class="menu-item {{Route::is('rubber.index') ? "active" : ""}}">
+            <li class="menu-item {{Route::is('rubber.*') ? "active" : ""}}">
               <a href="{{route('rubber.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-book"></i>
                 <div data-i18n="Basic">Nguyên liệu</div>
@@ -339,6 +338,7 @@
     <script src="/sneat-1.0.0/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
 
     {{-- datatable --}}
+ 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.3/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.3/js/dataTables.semanticui.js"></script>

@@ -9,3 +9,9 @@
         {{ session('success') }}
     </div>
 @endif
+
+@if (session('delete_success'))
+    <div class="alert alert-success">
+        {{ session('delete_success') }}
+    </div>
+@endif

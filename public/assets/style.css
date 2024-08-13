@@ -131,6 +131,17 @@
     height: 38px;
 }
 
+#material th:not(:first-child),
+#material td:not(:first-child) {
+    min-width: 110px;
+    max-width: unset;
+    text-align: center;
+}
+
+.rub-row.editing {
+    background-color: #c0f9c0 !important;
+}
+
 @keyframes throw {
     from {
         transform: translate(-400%, -700%);

@@ -19,7 +19,7 @@ class RubberController extends Controller
         $trucks = Truck::all();
         $farms = Farm::all();
         $curing_areas = CuringArea::all();
-        $rubbers = Rubber::all();
+        $rubbers = Rubber::orderBy('created_at', 'desc')->get();
         return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas', 'rubbers'));
     }
 
@@ -59,7 +59,12 @@ class RubberController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $trucks = Truck::all();
+        $farms = Farm::all();
+        $curing_areas = CuringArea::all();
+        $rubbers = Rubber::orderBy('created_at', 'desc')->get();
+        $rubber = Rubber::findOrFail($id);
+        return view('admin.rubber.edit', compact('trucks', 'farms', 'curing_areas', 'rubbers', 'rubber'));
     }
 
     /**
@@ -67,7 +72,12 @@ class RubberController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $data = $request->all();
+        $rubber = Rubber::findOrFail($id);
+        $rubber->fill($data);
+        $rubber->save();
+        
+        return redirect()->back()->with('success', 'Thành công');
     }
 
     /**
@@ -75,6 +85,12 @@ class RubberController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $item = Rubber::findOrFail($id);
+
+        if($item) {
+            $item->delete();
+        }
+
+        return redirect()->route('rubber.index')->with('delete_success', 'Xóa thành công' );
     }
 }
