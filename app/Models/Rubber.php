@@ -23,7 +23,9 @@ class Rubber extends Model
         'dry_weight',
         'material_condition',
         'impurity_type',
-        'grade'
+        'grade',
+        'date',
+        'time',
     ];
 
     public function truck()
@@ -39,5 +41,10 @@ class Rubber extends Model
     public function curing_area()
     {
         return $this->belongsTo(CuringArea::class, 'receiving_place_id');
+    }
+
+    public function rubberWarehouse()
+    {
+        return $this->belongsTo(Rolling::class);
     }
 }

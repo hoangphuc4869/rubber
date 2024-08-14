@@ -186,8 +186,8 @@
                 <div data-i18n="Basic">Nguyên liệu</div>
               </a>
             </li>
-            <li class="menu-item {{Route::is('rolling') ? "active" : ""}}">
-              <a href="/can-vat" class="menu-link">
+            <li class="menu-item {{Route::is('rolling.*') ? "active" : ""}}">
+              <a href="{{route('rolling.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i>
                 <div data-i18n="Basic">Cán vắt</div>
               </a>

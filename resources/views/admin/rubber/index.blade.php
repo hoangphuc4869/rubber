@@ -93,28 +93,21 @@
                             
                         </select>
                     </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Ngày</label>
+                        <input type="date" name="date" id="dateInput" class="form-control">
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Giờ</label>
+                        <input type="time" name="time" id="timeInput" class="form-control">
+                    </div>
                     
                     <button type="submit" class="btn btn-primary mt-2">Tạo</button>
                 </div>
             </form>
         </div>
-    </div>
-
-    <div class="calendaring my-5">
-        <h4 class="fw-bold py-3 mb-0">Cán vắt</h4>
-        <form action="">
-            <div class="mb-3 col-lg-3">
-                <label class="form-label" >Chọn bãi ủ</label>
-              <div class="d-flex gap-2">
-                  <select name="calendaring" class="form-select custom-select">
-                    @foreach ($curing_areas as $item)
-                        <option  value="{{$item->id}}">{{$item->code}}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-primary text-nowrap">CÁN VẮT</button>
-              </div>
-            </div>
-        </form>
     </div>
 
     <table id="material" class="ui celled table" style="width:100%">
@@ -142,8 +135,8 @@
             @foreach ($rubbers as $index => $rubber)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $rubber->created_at->format('d/m/Y') }}</td>
-                <td>{{ $rubber->created_at->format('H:i') }}</td>
+                <td>{{ \Carbon\Carbon::parse($rubber->date)->format('d/m/Y')}}</td>
+                <td>{{ \Carbon\Carbon::parse($rubber->time)->format('H:i')}}</td>
                 <td>{!! $rubber->status == 0 ? "<span class='text-danger'>Chưa xử lý</span>" : "<span class='text-success'>Đã xử lý</span>" !!}</td>
                 <td>{{ $rubber->truck->code }}</td>
                 <td>{{ $rubber->farm->code }}</td>

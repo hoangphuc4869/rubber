@@ -59,3 +59,30 @@ $("#truck_id").on("change", function () {
     $("#name_ui").val(farmCode);
     $("#farm_id").val(farmId);
 });
+
+const today = new Date();
+
+const dd = String(today.getDate()).padStart(2, "0");
+const mm = String(today.getMonth() + 1).padStart(2, "0");
+const yyyy = today.getFullYear();
+const todayFormatted = yyyy + "-" + mm + "-" + dd;
+
+const dateInput = document.getElementById("dateInput");
+if (dateInput) {
+    dateInput.value = todayFormatted;
+}
+
+const timeInput = document.getElementById("timeInput");
+
+const now = new Date();
+let hours = now.getHours();
+let minutes = now.getMinutes();
+
+hours = String(hours).padStart(2, "0");
+minutes = String(minutes).padStart(2, "0");
+
+const currentTime = `${hours}:${minutes}`;
+
+if (timeInput) {
+    timeInput.value = currentTime;
+}

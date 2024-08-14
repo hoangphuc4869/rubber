@@ -103,6 +103,16 @@
                             <option value="0" {{$rubber->status == 0 ? 'selected' : ''}}>Chưa xử lý</option>
                         </select>
                     </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Ngày</label>
+                        <input type="date" name="date"  class="form-control" value="{{$rubber->date}}">
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Giờ</label>
+                        <input type="time" name="time"  class="form-control" value="{{$rubber->time}}">
+                    </div>
                     
                     <button type="submit" class="btn btn-primary mt-2">Cập nhật</button>
                 </div>
@@ -135,8 +145,8 @@
                 @foreach ($rubbers as $index => $rub)
                 <tr class="rub-row {{$rub->id == $rubber->id ? "editing" : ''}}">
                     <td>{{ $index + 1 }}</td>
-                    <td>{{ $rub->created_at->format('d/m/Y') }}</td>
-                    <td>{{ $rub->created_at->format('H:i') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($rub->date)->format('d/m/Y') }}</td>
+                    <td>{{ \Carbon\Carbon::parse($rub->time)->format('H:i') }}</td>
                     <td>{!! $rub->status == 0 ? "<span class='text-danger'>Chưa xử lý</span>" : "<span class='text-success'>Đã xử lý</span>" !!}</td>
                     <td>{{ $rub->truck->code }}</td>
                     <td>{{ $rub->farm->code }}</td>
