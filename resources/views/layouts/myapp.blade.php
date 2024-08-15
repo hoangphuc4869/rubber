@@ -193,7 +193,7 @@
               </a>
             </li>
             <li class="menu-item {{Route::is('machining') ? "active" : ""}}">
-              <a href="/gia-cong-co" class="menu-link">
+              <a href="{{route('machining.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-hammer"></i>
                 {{-- <i class="menu-icon tf-icons fa-solid fa-hammer"></i> --}}
                 <div data-i18n="Basic">Gia công cơ</div>

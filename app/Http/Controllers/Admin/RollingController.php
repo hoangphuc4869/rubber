@@ -18,7 +18,7 @@ class RollingController extends Controller
      */
     public function index()
     {
-        $areas = Rubber::select('receiving_place_id')->distinct()->get();
+        $areas = Rubber::select('receiving_place_id')->where('status', 0)->distinct()->get();
         $dates = Rubber::select('date')->distinct()->get();
         $curing_houses = CuringHouse::all();
 
@@ -46,20 +46,21 @@ class RollingController extends Controller
         $house = CuringHouse::findOrFail($data['curing_house']);
         // dd($house->code);
         
-        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('date', $data['date_curing'])->get();
         // dd($rubbers[0]);
-        foreach ($rubbers as $rubber) {
-            $rubber->status = 1;
-            $rubber->save();
-        }
 
         $command = new Rolling;
         $command->fill($data);
         $command->curing_house = $house->code;
         $command->curing_area = $area->code;
-        $command->code =  $house->code . $area->code;
+        $command->code =  $house->code . $area->code . '_' . date('YmdHis');
         $command->save();
-        return redirect()->back()->with('success ','thành công');
+
+        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('date', $data['date_curing'])->get();
+        foreach ($rubbers as $rubber) {
+            $rubber->status = $command->id;
+            $rubber->save();
+        }
+        return redirect()->back()->with('success', 'Thành công');
     }
 
     /**
@@ -91,6 +92,16 @@ class RollingController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $item = Rolling::findOrFail($id);
+        $rubbers = Rubber::where('status', $item->id)->get();
+
+        if($item) {
+            foreach ($rubbers as $rubber) {
+                $rubber->status = 0;
+                $rubber->save();
+            }
+            $item->delete();
+        }
+        return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công' );
     }
 }

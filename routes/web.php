@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CuringAreaController;
 use App\Http\Controllers\Admin\CuringHouseController;
 use App\Http\Controllers\Admin\FarmController;
+use App\Http\Controllers\Admin\MachineController;
 use App\Http\Controllers\Admin\RubberController;
 use App\Http\Controllers\Admin\TruckController;
 use App\Http\Controllers\Admin\RollingController;
@@ -25,6 +26,7 @@ Route::resources([
     'curing_houses' => CuringHouseController::class,
     'rubber' => RubberController::class,
     'rolling' => RollingController::class,
+    'machining' => MachineController::class,
 ]);
 
 Auth::routes();

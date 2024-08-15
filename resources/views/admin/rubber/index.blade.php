@@ -137,7 +137,7 @@
                 <td>{{ $index + 1 }}</td>
                 <td>{{ \Carbon\Carbon::parse($rubber->date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($rubber->time)->format('H:i')}}</td>
-                <td>{!! $rubber->status == 0 ? "<span class='text-danger'>Chưa xử lý</span>" : "<span class='text-success'>Đã xử lý</span>" !!}</td>
+                <td>{!! $rubber->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chưa xử lý</span>"  !!}</td>
                 <td>{{ $rubber->truck->code }}</td>
                 <td>{{ $rubber->farm->code }}</td>
                 <td>{{ $rubber->latex_type }}</td>

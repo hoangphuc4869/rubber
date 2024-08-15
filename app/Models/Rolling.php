@@ -24,4 +24,9 @@ class Rolling extends Model
     {
         return $this->hasMany(Rubber::class);
     }
+
+    public function drums()
+    {
+        return $this->hasMany(Drum::class);
+    }
 }
