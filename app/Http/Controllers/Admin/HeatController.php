@@ -3,13 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rolling;
 use Illuminate\Http\Request;
+use App\Models\Rolling;
 use App\Models\Drum;
-use App\Models\DrumPerDay;
-use Illuminate\Support\Facades\DB;
 
-class MachineController extends Controller
+class HeatController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -17,11 +15,11 @@ class MachineController extends Controller
     public function index()
     {
         $rollings = Rolling::all();
-        $drums = Drum::where('status' , 0)->orderBy('date', 'desc')->get();
+        $drums = Drum::where('status' , 1)->orderBy('date', 'desc')->get();
         
         
-        $drums_per_day = Drum::select('date')
-        ->selectRaw('COUNT(*) as total_number') 
+        $drums_per_day = Drum::where('status', 0)->select('date')
+        ->selectRaw('COUNT(*) as total_number')
         ->groupBy('date') 
         ->orderBy('date', 'desc')
         ->get()
@@ -32,7 +30,7 @@ class MachineController extends Controller
             ];
         });
 
-        return view('admin.machine.index' , compact('rollings', 'drums', 'drums_per_day'));
+        return view('admin.heat.index' , compact('rollings', 'drums', 'drums_per_day'));
     }
 
     /**
@@ -45,34 +43,24 @@ class MachineController extends Controller
 
     /**
      * Store a newly created resource in storage.
-         */
+     */
     public function store(Request $request)
     {
         $data = $request->all();
 
-        $lastDrum = Drum::where('date', $data['date'])
-                        ->orderBy('last_index', 'desc')
-                        ->first();
+        $drums = Drum::where('date', $data['date'])->get();
 
-        $startIndex = $lastDrum ? $lastDrum->last_index : 0;
-
-        $numbers = range($startIndex + 1, $startIndex + $data['drums']);
-        foreach ($numbers as $index => $item) {
-            $rolling = Rolling::findOrFail($data['rolling_code']);
-
-            $drum = new Drum;
-            $drum->rolling_code = $data['rolling_code'];
-            $drum->name = 'Thùng số ' . $item;
-            $drum->last_index = $item;
-            $drum->date = $data['date'];
-            $drum->time = $data['time'];
-            $drum->code = $rolling->curing_house . $rolling->curing_area . '_' . date('YmdHis') . '_' . sprintf('%03d', $item);
+        foreach ($drums as $drum) {
+           if($drum->status == 0){
+            $drum->status = 1;
+            $drum->heated_date = $data['date'];
+            $drum->heated_time = $data['time'];
             $drum->save();
+           }
         }
 
         return redirect()->back()->with('success', 'Thành công');
     }
-
 
     /**
      * Display the specified resource.
@@ -106,9 +94,12 @@ class MachineController extends Controller
         $item = Drum::findOrFail($id);
 
         if($item) {
-            $item->delete();
+            $item->heated_time = null;
+            $item->heated_date = null;
+            $item->status = 0;
+            $item->save();
         }
 
-        return redirect()->route('machining.index')->with('delete_success', 'Xóa thành công' );
+        return redirect()->route('heat.index')->with('delete_success', 'Xóa thành công' );
     }
 }

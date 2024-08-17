@@ -1,40 +1,9 @@
 @extends('layouts.myapp')
 
 @section('content')
-    <h4 class="fw-bold py-3 mb-4">Gia công cơ</h4>
-    <div class="row">
-        <div class="">
-            <div class="d-flex align-items-end gap-3">
-                <div class="col-lg-3">
+    <h4 class="fw-bold py-3 mb-4">Gia công nhiệt</h4>
 
-                    
-                    <label class="form-label">Ngày</label>
-                    <script>
-                        function changeNum(item){
-                            document.querySelector('.drums-count span').innerHTML = item.value;
-                        }
-                    </script>
-                    <select name="rolling_code" class="form-select custom-select w-100 drumdate-select" onchange="changeNum(this)">
-                        @foreach ($drums_per_day as $item)
-                            <option value="{{$item['total_number']}}">{{\Carbon\Carbon::parse($item['date'])->format('d/m/Y')}}</option>
-                        @endforeach
-                    </select>   
-                </div>
     
-                <div class="drums-count">
-                    Số thùng: <span class="fw-bold fs-3"></span>
-                </div>    
-            </div>
-        </div>
-    </div>
-
-    <script>
-        countText = document.querySelector('.drums-count span');
-        drumvalue = document.querySelector('.drumdate-select option:first-child');
-        if(countText){
-            countText.innerHTML = drumvalue ? drumvalue.value : 0 ;
-        }
-    </script>
 
     <div class="card my-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -43,22 +12,17 @@
         <div class="card-body">
             @include('partials.errors')
             
-            <form action="{{ route('machining.store') }}" method="POST">
+            <form action="{{ route('heat.store') }}" method="POST">
                 @csrf
                 <div class="row">
-                    <div class="mb-3 col-lg-6">
-                        <label class="form-label">Mã cán vắt</label>
-                        <select name="rolling_code" class="form-select custom-select w-100 drumdate">
-                            @foreach ($rollings as $item)
-                                <option  value="{{$item->id}}">{{$item->code}}</option>
+                    <div class="mb-3 col-12">
+                        <label class="form-label">Chọn ngày</label>
+                        
+                        <select name="drum_date" class="form-select custom-select w-100 drumdate-select" >
+                            @foreach ($drums_per_day as $item)
+                                <option value="{{$item['date']}}" data-number="{{$item['total_number']}}">{{\Carbon\Carbon::parse($item['date'])->format('d/m/Y')}} (Số thùng chưa xủ lý: {{$item['total_number']}})</option>
                             @endforeach
-                        </select>    
-                    </div>
-
-
-                    <div class="mb-3 col-lg-6">
-                        <label class="form-label">Số thùng</label>
-                        <input type="number" required name="drums" id="" min="1" class="form-control">           
+                        </select>     
                     </div>
 
                      <div class="mb-3 col-lg-6">
@@ -78,6 +42,14 @@
         </div>
     </div>
 
+    <script>
+        countText = document.querySelector('.drums-count span');
+        drumvalue = document.querySelector('.drumdate-select option:first-child');
+        if(countText){
+            countText.innerHTML = drumvalue ? drumvalue.value : 0 ;
+        }
+    </script>
+
     <table id="material" class="ui celled table" style="width:100%">
         <thead>
             <tr>
@@ -88,8 +60,10 @@
                 <th>Tên thùng</th>
                 <th>Bãi ủ</th>
                 <th>Nhà ủ</th>
-                <th>Ngày </th>
+                <th>Ngày</th>
                 <th>Giờ</th>
+                <th>Ngày xử lý</th>
+                <th>Giờ xử lý</th>
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
@@ -105,10 +79,12 @@
                 <td>{{ $drum->rolling->curing_house }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->time)->format('H:i')}}</td>
+                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
+                <td>{{ \Carbon\Carbon::parse($drum->heated_time)->format('H:i')}}</td>
                 <td>
                     <div class="custom d-flex gap-1">
 
-                        <form action="{{route('machining.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('heat.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                                 <button class="bin-button">
@@ -160,11 +136,6 @@
                             </svg>
                             </button>
                         </form>
-
-                        
-                            
-
-                
                     </div>
                 </td>
             </tr>

@@ -8,7 +8,7 @@ use App\Models\CuringHouse;
 use App\Models\Rolling;
 use Illuminate\Http\Request;
 use App\Models\Rubber;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; 
 use App\Models\Farm;
 
 class RollingController extends Controller

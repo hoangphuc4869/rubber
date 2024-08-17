@@ -192,15 +192,15 @@
                 <div data-i18n="Basic">Cán vắt</div>
               </a>
             </li>
-            <li class="menu-item {{Route::is('machining') ? "active" : ""}}">
+            <li class="menu-item {{Route::is('machining.*') ? "active" : ""}}">
               <a href="{{route('machining.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-hammer"></i>
                 {{-- <i class="menu-icon tf-icons fa-solid fa-hammer"></i> --}}
                 <div data-i18n="Basic">Gia công cơ</div>
               </a>
             </li>
-            <li class="menu-item {{Route::is('thermal') ? "active" : ""}}">
-              <a href="/gia-cong-nhiet" class="menu-link">
+            <li class="menu-item {{Route::is('heat.*') ? "active" : ""}}">
+              <a href="{{route('heat.index')}}" class="menu-link">
                 {{-- <i class="menu-icon tf-icons bx bxs-thermometer"></i> --}}
                 <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i>
                 <div data-i18n="Basic">Gia công nhiệt</div>
