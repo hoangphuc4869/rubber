@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BaleController;
 use App\Http\Controllers\Admin\CuringAreaController;
 use App\Http\Controllers\Admin\CuringHouseController;
 use App\Http\Controllers\Admin\FarmController;
@@ -29,7 +30,12 @@ Route::resources([
     'rolling' => RollingController::class,
     'machining' => MachineController::class,
     'heat' => HeatController::class,
+    'producing' => BaleController::class,
 ]);
+
+Route::post('/producing/batch', [BaleController::class, 'store_batch'])->name('store_batch');
+Route::delete('/producing/batch/{id}/delete', [BaleController::class, 'destroy_batch'])->name('destroy_batch');
+
 
 Auth::routes();
 

@@ -62,7 +62,8 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Mã</th>
+                    <th>Mã lệnh</th>
+                    <th>Trạng thái</th>
                     <th>Ngày</th>
                     <th>Thời gian</th>
                     <th>Bãi ủ</th>
@@ -76,6 +77,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $rolling->code }}</td>
+                    <td>{!! $rolling->status !== 0 ? "<span class='text-success'>Đã gia công</span>" : "<span class='text-danger'>Chưa gia công</span>"  !!}</td>
                     <td>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
                     <td>{{ \Carbon\Carbon::parse($rolling->time)->format('H:i')}}</td>
                     <td>{{ $rolling->curing_area }}</td>
@@ -83,7 +85,7 @@
                     <td>{{ \Carbon\Carbon::parse($rolling->date_curing)->format('d/m/Y')}}</td>
                     <td>
                         <div class="custom d-flex gap-1">
-                                <a href="{{route('rolling.edit', [$rolling->id])}}">
+                                {{-- <a href="{{route('rolling.edit', [$rolling->id])}}">
                                     <button class="editBtn">
                                         <svg height="1em" viewBox="0 0 512 512">
                                             <path
@@ -91,7 +93,7 @@
                                             ></path>
                                         </svg>
                                     </button>
-                                </a>
+                                </a> --}}
 
                             <form action="{{route('rolling.destroy', [$rolling->id])}}" method="POST" onsubmit="return confirmDelete();">
                                 @csrf

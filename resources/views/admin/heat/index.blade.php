@@ -54,7 +54,7 @@
         <thead>
             <tr>
                 <th>#</th>
-                <th>Mã cán vắt</th>
+                {{-- <th>Mã cán vắt</th> --}}
                 <th>Mã thùng</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
@@ -69,11 +69,11 @@
         </thead>
         <tbody>
             @foreach ($drums as $index => $drum)
-            <tr>
+            <tr id={{$drum->id}}>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ $drum->rolling->code }}</td>
+                {{-- <td>{{ $drum->rolling->code }}</td> --}}
                 <td>{{ $drum->code }}</td>
-                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
+                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>

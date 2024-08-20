@@ -52,7 +52,7 @@ class RollingController extends Controller
         $command->fill($data);
         $command->curing_house = $house->code;
         $command->curing_area = $area->code;
-        $command->code =  $house->code . $area->code . '_' . date('YmdHis');
+        $command->code =  $house->code . $area->code . '_' . now()->timestamp;
         $command->save();
 
         $rubbers = Rubber::where('receiving_place_id', $area->id)->where('date', $data['date_curing'])->get();

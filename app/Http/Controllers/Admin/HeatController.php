@@ -47,8 +47,12 @@ class HeatController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
+        // dd($data);
 
-        $drums = Drum::where('date', $data['date'])->get();
+        $drums = Drum::where('date', $data['drum_date'])->get();
+
+        // dd($drums);
+
 
         foreach ($drums as $drum) {
            if($drum->status == 0){
@@ -99,7 +103,6 @@ class HeatController extends Controller
             $item->status = 0;
             $item->save();
         }
-
         return redirect()->route('heat.index')->with('delete_success', 'Xóa thành công' );
     }
 }

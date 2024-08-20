@@ -33,6 +33,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.css">
    
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.semanticui.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.5/css/select.dataTables.css">
 
     {{-- select2 --}}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -147,8 +149,6 @@
                 <div data-i18n="Analytics">Dashboard</div>
               </a>
             </li>
-
-
             <!-- Components -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Quản lý cao su</span></li>
             <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') ? "active open" : ""}}" style="">
@@ -195,21 +195,33 @@
             <li class="menu-item {{Route::is('machining.*') ? "active" : ""}}">
               <a href="{{route('machining.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-hammer"></i>
-                {{-- <i class="menu-icon tf-icons fa-solid fa-hammer"></i> --}}
                 <div data-i18n="Basic">Gia công cơ</div>
               </a>
             </li>
             <li class="menu-item {{Route::is('heat.*') ? "active" : ""}}">
               <a href="{{route('heat.index')}}" class="menu-link">
-                {{-- <i class="menu-icon tf-icons bx bxs-thermometer"></i> --}}
                 <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i>
                 <div data-i18n="Basic">Gia công nhiệt</div>
               </a>
             </li>
-            <li class="menu-item {{Route::is('manufacturing') ? "active" : ""}}">
-              <a href="/san-xuat" class="menu-link">
+            <li class="menu-item {{Route::is('producing.index') ? "active" : ""}}">
+              <a href="{{route('producing.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-screwdriver-wrench"></i>
-                <div data-i18n="Basic">Sản xuất</div>
+                <div data-i18n="Basic">Ra lò, ép kiện</div>
+              </a>
+            </li>
+
+            <li class="menu-item {{Route::is('producing.create') ? "active" : ""}}">
+              <a href="{{route('producing.create')}}" class="menu-link">
+                <i class="menu-icon tf-icons fa-regular fa-cube"></i>
+                <div data-i18n="Basic">Đóng gói sản phẩm</div>
+              </a>
+            </li>
+
+            <li class="menu-item {{Route::is('warehouses.*') ? "active" : ""}}">
+              <a href="" class="menu-link">
+                <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
+                <div data-i18n="Basic">Nhập kho</div>
               </a>
             </li>
           </ul>
@@ -343,6 +355,9 @@
     <script src="https://cdn.datatables.net/2.1.3/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.3/js/dataTables.semanticui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js"></script>
+
+    <script src="https://cdn.datatables.net/select/2.0.5/js/dataTables.select.js"></script>
+    <script src="https://cdn.datatables.net/select/2.0.5/js/select.dataTables.js"></script>
 
     {{-- select2 --}}
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

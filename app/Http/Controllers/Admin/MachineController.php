@@ -17,7 +17,7 @@ class MachineController extends Controller
     public function index()
     {
         $rollings = Rolling::all();
-        $drums = Drum::where('status' , 0)->orderBy('date', 'desc')->get();
+        $drums = Drum::orderBy('date', 'desc')->get();
         
         
         $drums_per_day = Drum::select('date')
@@ -59,14 +59,15 @@ class MachineController extends Controller
         $numbers = range($startIndex + 1, $startIndex + $data['drums']);
         foreach ($numbers as $index => $item) {
             $rolling = Rolling::findOrFail($data['rolling_code']);
-
+            $rolling->status = 1;
+            $rolling->save();
             $drum = new Drum;
             $drum->rolling_code = $data['rolling_code'];
-            $drum->name = 'Thùng số ' . $item;
+            $drum->name = $item;
             $drum->last_index = $item;
             $drum->date = $data['date'];
             $drum->time = $data['time'];
-            $drum->code = $rolling->curing_house . $rolling->curing_area . '_' . date('YmdHis') . '_' . sprintf('%03d', $item);
+            $drum->code = $rolling->curing_house . $rolling->curing_area . '_' . now()->timestamp . '_' . sprintf('%03d', $item);
             $drum->save();
         }
 

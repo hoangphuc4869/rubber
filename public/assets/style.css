@@ -114,6 +114,20 @@
     height: 38px;
 }
 
+.ui.pagination.menu .active.item {
+    padding: 0.5em 1em;
+}
+
+.ui.celled.table > tbody > tr.selected > td,
+.ui.celled.table > tbody > tr.selected > th,
+.ui.celled.table > tfoot > tr.selected > td,
+.ui.celled.table > tfoot > tr.selected > th,
+.ui.celled.table > thead > tr.selected > th,
+.ui.celled.table > tr.selected > td,
+.ui.celled.table > tr.selected > th {
+    border-left: none;
+}
+
 .select2-container--default
     .select2-selection--single
     .select2-selection__rendered {
@@ -121,8 +135,13 @@
     color: #697a8d;
 }
 
-.select2-container--default .select2-selection--single {
+.select2-container--default .select2-selection--single,
+.select2-container .select2-selection--multiple {
     border: 1px solid #d9dee3;
+}
+
+.select2-container .select2-selection--multiple {
+    min-height: 38px;
 }
 
 .select2-container--default
@@ -133,6 +152,19 @@
 
 #material th:not(:first-child),
 #material td:not(:first-child) {
+    min-width: 110px;
+    max-width: unset;
+    text-align: center;
+}
+#material-heating th:not(:first-child),
+#material-heating td:not(:first-child) {
+    min-width: 110px;
+    max-width: unset;
+    text-align: center;
+}
+
+#material-heating2 th:not(:first-child),
+#material-heating2 td:not(:first-child) {
     min-width: 110px;
     max-width: unset;
     text-align: center;

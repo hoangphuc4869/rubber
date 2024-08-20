@@ -4,6 +4,12 @@
     </div>
 @endif
 
+@if ($errors->has('fail'))
+    <div class="alert alert-danger">
+        {{ $errors->first('fail') }}
+    </div>
+@endif
+
 @if (session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
