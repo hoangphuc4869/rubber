@@ -23,7 +23,11 @@ class Drum extends Model
         return $this->belongsTo(Rolling::class, 'rolling_code');
     }
 
-    public function bales(){
-        return $this->hasMany(Bale::class);
+    public function bale(){
+        return $this->hasOne(Bale::class);
+    }
+
+    public function batch(){
+        return $this->belongsTo(Batch::class);
     }
 }

@@ -175,6 +175,7 @@
                 <th>#</th>
                 <th>Ngày thực hiện</th>
                 <th>Thời gian ra lò</th>
+                <th>Trạng thái</th>
                 <th>Thùng số</th>
                 <th>Mã thùng</th>
                 <th>Nhiệt độ ép bành (độ C)</th>
@@ -191,6 +192,7 @@
                 <td>{{ $index + 1 }}</td>
                 <td>{{ \Carbon\Carbon::parse($bale->date)->format('d/m/Y') }}</td>
                 <td>{{ \Carbon\Carbon::parse($bale->time)->format('H:i') }}</td>
+                <td>{!! $bale->drum->batch_id !== null ? '<span class="text-success">Đã đóng kiện</span>' : '<span class="text-danger">Chưa đóng kiện</span>'  !!}</td>
                 <td>{{ $bale->drum->name }}</td>
                 <td>{{ $bale->drum->code }}</td>
                 <td>{{ $bale->press_temperature }}</td>

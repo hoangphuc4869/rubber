@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <h4 class="fw-bold py-3 mb-4 text-warning">Đóng gói sản phẩm</h4>
+    <h4 class="fw-bold py-3 mb-4 text-warning">Tạo lô</h4>
 
     
     <div class="card mb-4">
@@ -13,7 +13,7 @@
         <div class="card-body">
             @include('partials.errors')
             
-            <form action="{{ route('store_batch') }}" method="POST">
+            <form action="{{ route('batch.store') }}" method="POST">
                 @csrf
                 <div class="row">
                     
@@ -25,9 +25,9 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label">Chọn thùng</label>
                         <select name="drums_to_pack[]" required class="form-select custom-select2" multiple='multiple'>
-                            @foreach ($bales_to_pack as $item)
+                            @foreach ($drums_to_pack as $item)
                                 <option value="{{ $item->id }}">
-                                    Thùng {{ $item->drum->name }} ({{$item->number_of_bales}} bành, {{\Carbon\Carbon::parse($item->date)->format('d/m/Y')}})
+                                    Thùng {{ $item->name }} ({{$item->bale->number_of_bales}} bành, {{\Carbon\Carbon::parse($item->date)->format('d/m/Y')}})
                                 </option>
                             @endforeach
                         </select>
@@ -49,17 +49,12 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Nơi lưu trữ</label>  
                         {{-- <input type="text" required class="form-control" name="storage_location" value="Kho A1-11-2" > --}}
-                        <select name="storage_location" required class="form-select custom-select">
-                            <optgroup label="A1">
-                                <option value="A1-11-1">A1-11-1</option>
-                                <option value="A1-11-2">A1-11-2</option>
-                                <option value="A1-11-3">A1-11-3</option>
-                                <option value="A1-11-4">A1-11-4</option>
-                                <option value="A1-11-1">A1-12-1</option>
-                                <option value="A1-11-2">A1-13-2</option>
-                                <option value="A1-11-3">A1-14-3</option>
-                                <option value="A1-11-4">A1-15-4</option>
-                            </optgroup>
+                        <select name="warehouse_id" required class="form-select custom-select">
+                            
+                            @foreach ($warehouses as $item)
+                                <option value="{{$item->id}}" {{$item->status == 1 ? 'disabled' : ''}}>{{$item->code.'-'.$item->stack}} {!!$item->status == 1 ? '(đã chứa lô)' : ''!!}</option>`
+                            @endforeach
+                            
                             
                         </select>
                     </div>
@@ -76,7 +71,7 @@
 
                     <input type="hidden" name="drums[]" id="selected-drums">
                     
-                    <button type="submit" class="btn btn-primary mt-2">Tạo lô</button>
+                    <button type="submit" class="btn btn-primary mt-2">Tạo</button>
                 </div>
             </form>
         </div>
@@ -93,45 +88,31 @@
                 <th>Hạng dự kiến (CSR10/20)</th>
                 <th>Lô số</th>
                 <th>Mã lô</th>
+                <th>Ngày tạo</th>
                 <th>Số mẫu cắt</th>
                 <th>Dạng đóng gói</th>
                 <th>Nơi lưu trữ</th>
-                <th>Ngày thực hiện</th>
-                <th>Thời gian ra lò</th>
-                <th>Thùng số</th>
-                <th>Mã thùng</th>
-                <th>Nhiệt độ ép bành (độ C)</th>
-                <th>Khối lượng bành (kg)</th>
-                <th>Số bành/thùng</th>
-                <th>Kiểm tra cắt bành</th>
-                <th>Đánh giá</th>
+               
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
-            @foreach ($bales as $index => $bale)
-            <tr id={{$bale->id}}>
+            @foreach ($batches as $index => $batch)
+            <tr id={{$batch->id}}>
+
                 <td>{{ $index + 1 }}</td>
-                
-                <td>{{ $bale->expected_grade }}</td>
-                <td>{{ $bale->batch_number }}</td>
-                <td>{{ $bale->batch_code }}</td>
-                <td>{{ $bale->sample_cut_number }}</td>
-                <td>{{ $bale->packaging_type }}</td>
-                <td>{{ $bale->storage_location }}</td>
-                <td>{{ \Carbon\Carbon::parse($bale->date)->format('d/m/Y') }}</td>
-                <td>{{ \Carbon\Carbon::parse($bale->time)->format('H:i') }}</td>
-                <td>{{ $bale->drum->name }}</td>
-                <td>{{ $bale->drum->code }}</td>
-                <td>{{ $bale->press_temperature }}</td>
-                <td>{{ $bale->weight }}</td>
-                <td>{{ $bale->number_of_bales }}</td>
-                <td>{{ $bale->cut_check }}</td>
-                <td>{{ $bale->evaluation }}</td>
+                <td>{{ $batch->expected_grade }}</td>
+                <td>{{ $batch->batch_number }}</td>
+                <td>{{ $batch->batch_code }}</td>
+                <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
+                <td>{{ $batch->sample_cut_number }}</td>
+                <td>{{ $batch->packaging_type }}</td>
+                <td>{{ $batch->warehouse->code . '-'. $batch->warehouse->stack}}</td>
+             
                 <td>
                     <div class="custom d-flex gap-1">
 
-                        <form action="{{route('destroy_batch', [$bale->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('batch.destroy', [$batch->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                                 <button class="bin-button">

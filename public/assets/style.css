@@ -178,6 +178,30 @@
     background-color: #c0f9c0 !important;
 }
 
+.warehouses {
+    display: grid;
+    width: fit-content;
+    grid-template-columns: repeat(6, 1fr);
+    grid-auto-rows: 100px;
+    grid-auto-flow: column-reverse;
+    gap: 5px;
+    direction: rtl;
+}
+
+.grid-item {
+    background-color: rgb(209, 236, 245);
+    border: 1px solid #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+}
+
+.grid-item.occupied {
+    background-color: rgb(197 137 6);
+    color: #fff;
+}
+
 @keyframes throw {
     from {
         transform: translate(-400%, -700%);

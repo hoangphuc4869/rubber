@@ -6,18 +6,25 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Drum;
 use App\Models\Bale;
+use App\Models\Batch;
+use App\Models\Warehouse;
 
-
-class BaleController extends Controller
+class BatchController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    
     public function index()
     {
         $drums = Drum::where('status' , 1)->where('baled', null)->orderBy('date', 'desc')->get();
-        $bales = Bale::all();
-        return view('admin.bales.index', compact('drums', 'bales'));
+        $batches = Batch::all();
+        $drums_to_pack = Drum::where('batch_id', null)->get();
+        $warehouses = Warehouse::all();
+
+        // dd($bales_to_pack);
+
+        $lastBatch = Bale::orderBy('batch_number', 'desc')->first();
+
+        $startIndex = $lastBatch ? $lastBatch->batch_number : 0;
+        return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses'));
     }
 
     /**
@@ -25,7 +32,7 @@ class BaleController extends Controller
      */
     public function create()
     {
-        
+        //
     }
 
     /**
@@ -34,38 +41,31 @@ class BaleController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        $request->validate([
-            'drums.*' => 'nullable', 
-            'drums' => ['required', function ($attribute, $value, $fail) {
-                
-                $filtered = array_filter($value, function ($item) {
-                    return !empty($item);
-                });
-                if (empty($filtered)) {
-                    $fail('fail' ,'Vui lòng chọn thùng từ bảng phía trên');
-                }
-            }],
-        ]);
 
+        // dd($data);
+   
+        $drums = $data['drums_to_pack'];
+        
 
-        $drums = explode(',', $data['drums'][0]);
+        $batch = new Batch;
+        $batch->fill($data);
+        $batch->batch_code = now()->timestamp . '_' .  sprintf('%03d', $data['batch_number']);
+        $batch->save();
+
+        $warehouse = Warehouse::findOrFail($data['warehouse_id']);
+        $warehouse->status = 1;
+        $warehouse->batch_code = $batch->batch_code;
+        $warehouse->save();
+
 
         foreach ($drums as $drum) {
-            
             $item = Drum::findOrFail($drum);
-            $item->baled = 1;
+            $item->batch_id = $batch->id;
             $item->save();
-            $bale = new Bale;
-            $bale->fill($data);
-            $bale->drum_id = $item->id;
-            $bale->save();
-            
         }
 
         return redirect()->back()->with('success', 'Thành công');
     }
-
-    
 
     /**
      * Display the specified resource.
@@ -96,12 +96,16 @@ class BaleController extends Controller
      */
     public function destroy(string $id)
     {
-        $bale = Bale::findOrFail($id);
-        $item = Drum::findOrFail($bale->drum->id);
-        if($item) {
-            $item->baled = null;
-            $item->save();
-            $bale->delete();
+        $batch = Batch::findOrFail($id);
+        $warehouse = Warehouse::findOrFail($batch->warehouse->id);
+        $warehouse->status = 0;
+        $warehouse->batch_code = null;
+        $warehouse->save();
+        $batch->save();
+
+
+        if($batch) {
+            $batch->delete();
         }
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
     }

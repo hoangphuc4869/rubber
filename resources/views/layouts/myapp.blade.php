@@ -178,6 +178,11 @@
                     <div data-i18n="Fluid">Nhà ủ</div>
                   </a>
                 </li>
+                <li class="menu-item {{Route::is('warehouse.create') ? "active" : ""}}">
+                  <a href="{{route('warehouse.create')}}" class="menu-link">
+                    <div data-i18n="Fluid">Kho hàng</div>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="menu-item {{Route::is('rubber.*') ? "active" : ""}}">
@@ -211,15 +216,15 @@
               </a>
             </li>
 
-            <li class="menu-item {{Route::is('producing.create') ? "active" : ""}}">
-              <a href="{{route('producing.create')}}" class="menu-link">
+            <li class="menu-item {{Route::is('batch.index') ? "active" : ""}}">
+              <a href="{{route('batch.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-regular fa-cube"></i>
                 <div data-i18n="Basic">Đóng gói sản phẩm</div>
               </a>
             </li>
 
-            <li class="menu-item {{Route::is('warehouses.*') ? "active" : ""}}">
-              <a href="" class="menu-link">
+            <li class="menu-item {{Route::is('warehouse.*') ? "active" : ""}}">
+              <a href="{{route('warehouse.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
                 <div data-i18n="Basic">Nhập kho</div>
               </a>
