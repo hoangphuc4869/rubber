@@ -16,15 +16,20 @@ class BatchController extends Controller
     {
         $drums = Drum::where('status' , 1)->where('baled', null)->orderBy('date', 'desc')->get();
         $batches = Batch::all();
-        $drums_to_pack = Drum::where('batch_id', null)->get();
+        $drums_to_pack = Drum::where('batch_id', null)->where('baled' , 1)->get();
         $warehouses = Warehouse::all();
+
+        $wares1 = Warehouse::where('stack', 1)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
 
         // dd($bales_to_pack);
 
         $lastBatch = Bale::orderBy('batch_number', 'desc')->first();
 
         $startIndex = $lastBatch ? $lastBatch->batch_number : 0;
-        return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses'));
+        return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses', 'wares1', 'wares2', 'wares3', 'wares4'));
     }
 
     /**
@@ -42,19 +47,20 @@ class BatchController extends Controller
     {
         $data = $request->all();
 
-        // dd($data);
+        $request->validate([
+            'warehouse_id' => 'required'
+        ]);
    
         $drums = $data['drums_to_pack'];
-        
-
+    
         $batch = new Batch;
         $batch->fill($data);
         $batch->batch_code = now()->timestamp . '_' .  sprintf('%03d', $data['batch_number']);
+        // $batch->warehouse->batch_code = ;
         $batch->save();
 
         $warehouse = Warehouse::findOrFail($data['warehouse_id']);
-        $warehouse->status = 1;
-        $warehouse->batch_code = $batch->batch_code;
+        $warehouse->batch_id = $batch->id;
         $warehouse->save();
 
 
@@ -80,7 +86,7 @@ class BatchController extends Controller
      */
     public function edit(string $id)
     {
-        //
+
     }
 
     /**
@@ -97,14 +103,9 @@ class BatchController extends Controller
     public function destroy(string $id)
     {
         $batch = Batch::findOrFail($id);
-        $warehouse = Warehouse::findOrFail($batch->warehouse->id);
-        $warehouse->status = 0;
-        $warehouse->batch_code = null;
-        $warehouse->save();
-        $batch->save();
-
 
         if($batch) {
+            // $warehouse->warehouse->status = 0;
             $batch->delete();
         }
         return redirect()->back()->with('delete_success', 'Xóa thành công' );

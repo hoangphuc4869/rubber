@@ -48,15 +48,16 @@
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Nơi lưu trữ</label>  
-                        {{-- <input type="text" required class="form-control" name="storage_location" value="Kho A1-11-2" > --}}
-                        <select name="warehouse_id" required class="form-select custom-select">
+                        <input type="hidden" name="warehouse_id" id="id_to_send">
+                        <input type="text" required class="form-control" id="warehouse_id" readonly value="" >
+                        {{-- <select name="warehouse_id" required class="form-select custom-select">
                             
                             @foreach ($warehouses as $item)
-                                <option value="{{$item->id}}" {{$item->status == 1 ? 'disabled' : ''}}>{{$item->code.'-'.$item->stack}} {!!$item->status == 1 ? '(đã chứa lô)' : ''!!}</option>`
+                                <option value="{{$item->id}}" {{$item->batch_id !== null ? 'disabled' : ''}}>{{$item->code.'-'.$item->stack}} {!!$item->batch_id !== null ? '(đã chứa lô)' : ''!!}</option>`
                             @endforeach
                             
                             
-                        </select>
+                        </select> --}}
                     </div>
 
                     <div class="mb-3 col-lg-3">
@@ -92,7 +93,6 @@
                 <th>Số mẫu cắt</th>
                 <th>Dạng đóng gói</th>
                 <th>Nơi lưu trữ</th>
-               
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
@@ -107,11 +107,10 @@
                 <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
                 <td>{{ $batch->sample_cut_number }}</td>
                 <td>{{ $batch->packaging_type }}</td>
-                <td>{{ $batch->warehouse->code . '-'. $batch->warehouse->stack}}</td>
+                <td>{{ $batch->warehouse !== null ? $batch->warehouse->code . '-'. $batch->warehouse->stack : "trống"}}</td>
              
                 <td>
                     <div class="custom d-flex gap-1">
-
                         <form action="{{route('batch.destroy', [$batch->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
@@ -170,4 +169,105 @@
             @endforeach
         </tbody>
     </table>
+
+
+    <div class="stock-wrap shadow-sm">
+        <div class="close">
+            &times;
+        </div>
+        <div class="wares-stock nav-align-top" >
+            <ul class="nav nav-pills mb-3" role="tablist">
+                <li class="nav-item">
+                <button type="button" class="nav-link active text-white" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-class1" aria-controls="navs-pills-top-class1" aria-selected="true">
+                    Lớp 1
+                </button>
+                </li>
+                <li class="nav-item">
+                <button type="button" class="nav-link text-white" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-class2" aria-controls="navs-pills-top-class2" aria-selected="false">
+                    Lớp 2
+                </button>
+                </li>
+                <li class="nav-item">
+                <button type="button" class="nav-link text-white" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-class3" aria-controls="navs-pills-top-class3" aria-selected="false">
+                    Lớp 3
+                </button>
+                </li>
+                <li class="nav-item">
+                <button type="button" class="nav-link text-white" role="tab" data-bs-toggle="tab" data-bs-target="#navs-pills-top-class4" aria-controls="navs-pills-top-class4" aria-selected="false">
+                    Lớp 4
+                </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="navs-pills-top-class1" role="tabpanel">
+                    <div class="warehouse-container">
+                        @foreach ($wares1 as $name => $items)
+                            <h3>{{$name}}</h3>
+                            <div class="warehouses mb-3">
+                            @foreach ($items as $item)
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                    <div class="">
+                                        {{$item->code}}
+                                    </div>
+                                    {{$item->batch_id !== null ? $item->batch->batch_code : '' }}
+                                </div>
+                            @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="navs-pills-top-class2" role="tabpanel">
+                    <div class="warehouse-container">
+                        @foreach ($wares2 as $name => $items)
+                            <h3>{{$name}}</h3>
+                            <div class="warehouses mb-3">
+                            @foreach ($items as $item)
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                    <div class="">
+                                        {{$item->code}}
+                                    </div>
+                                    {{$item->batch_id !== null ? $item->batch->batch_code : '' }}
+                                </div>
+                            @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="navs-pills-top-class3" role="tabpanel">
+                    <div class="warehouse-container">
+                        @foreach ($wares3 as $name => $items)
+                            <h3>{{$name}}</h3>
+                            <div class="warehouses mb-3">
+                            @foreach ($items as $item)
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                    <div class="">
+                                        {{$item->code}}
+                                    </div>
+                                    {{$item->batch_id !== null ? $item->batch->batch_code : '' }}
+                                </div>
+                            @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="navs-pills-top-class4" role="tabpanel">
+                    <div class="warehouse-container">
+                        @foreach ($wares4 as $name => $items)
+                            <h3>{{$name}}</h3>
+                            <div class="warehouses mb-3">
+                            @foreach ($items as $item)
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                    <div class="">
+                                        {{$item->code}}
+                                    </div>
+                                    {{$item->batch_id !== null ? $item->batch->batch_code : '' }}
+                                </div>
+                            @endforeach
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
 @endsection

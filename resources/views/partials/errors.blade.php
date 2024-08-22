@@ -10,6 +10,12 @@
     </div>
 @endif
 
+@if ($errors->has('name'))
+    <div class="alert alert-danger">
+        {{ $errors->first('name') }}
+    </div>
+@endif
+
 @if (session('success'))
     <div class="alert alert-success">
         {{ session('success') }}

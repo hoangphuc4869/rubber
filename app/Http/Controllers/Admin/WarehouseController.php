@@ -21,10 +21,13 @@ class WarehouseController extends Controller
      */
     public function create()
     {
-        $wares = Warehouse::where('stack' , 1)->orderBy('id', 'desc')->get();
-        return view('admin.warehouses.create', compact('wares'));
-        
+        $wares1 = Warehouse::where('stack', 1)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
+        return view('admin.warehouses.create', compact('wares1','wares2','wares3','wares4'));
     }
+
 
     /**
      * Store a newly created resource in storage.
@@ -32,6 +35,12 @@ class WarehouseController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
+
+        $request->validate([
+           'name' => 'required|unique:warehouses,name'
+        ],[
+            'name.unique' => 'Kho đã tồn tại'
+        ]);
 
         for($i = 1; $i <= 4; $i++){
             
@@ -84,6 +93,11 @@ class WarehouseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $items = Warehouse::where('name', $id)->get();
+        foreach ($items as $item) {
+            $item->delete();
+        }
+
+        return redirect()->back()->with('delete_success', 'Xóa thành công');
     }
 }

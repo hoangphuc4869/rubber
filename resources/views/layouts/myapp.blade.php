@@ -178,11 +178,7 @@
                     <div data-i18n="Fluid">Nhà ủ</div>
                   </a>
                 </li>
-                <li class="menu-item {{Route::is('warehouse.create') ? "active" : ""}}">
-                  <a href="{{route('warehouse.create')}}" class="menu-link">
-                    <div data-i18n="Fluid">Kho hàng</div>
-                  </a>
-                </li>
+        
               </ul>
             </li>
             <li class="menu-item {{Route::is('rubber.*') ? "active" : ""}}">
@@ -223,8 +219,8 @@
               </a>
             </li>
 
-            <li class="menu-item {{Route::is('warehouse.*') ? "active" : ""}}">
-              <a href="{{route('warehouse.index')}}" class="menu-link">
+            <li class="menu-item {{Route::is('warehouse.create') ? "active" : ""}}">
+              <a href="{{route('warehouse.create')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
                 <div data-i18n="Basic">Nhập kho</div>
               </a>
@@ -331,7 +327,7 @@
 
           <!-- Content wrapper -->
           <div class="content-wrapper">
-            <div class="container my-4">
+            <div class="container my-4 position-relative">
                 @yield('content')
             </div>
             <div class="content-backdrop fade"></div>

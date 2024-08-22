@@ -11,7 +11,7 @@ class Warehouse extends Model
 
     protected $fillable = ['name', 'code', 'stack', 'batch_code', 'status'];
 
-    public function warehouse(){
+    public function batch(){
         return $this->hasOne(Batch::class);
     }
 }
