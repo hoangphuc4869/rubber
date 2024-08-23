@@ -38,4 +38,6 @@ Route::resources([
 
 Auth::routes();
 
+Route::post('/change-location', [WarehouseController::class, 'change_location']);
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

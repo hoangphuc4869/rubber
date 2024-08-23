@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
+use App\Models\Batch;
 
 class WarehouseController extends Controller
 {
@@ -21,11 +22,13 @@ class WarehouseController extends Controller
      */
     public function create()
     {
-        $wares1 = Warehouse::where('stack', 1)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
-        $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
-        $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
-        $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
-        return view('admin.warehouses.create', compact('wares1','wares2','wares3','wares4'));
+        $wares1 = Warehouse::where('stack', 1)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
+        $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
+        $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
+        $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
+        $batches = Batch::all();
+        $warehouses = Warehouse::all();
+        return view('admin.warehouses.create', compact('wares1','wares2','wares3','wares4', 'batches', 'warehouses'));
     }
 
 
@@ -100,4 +103,58 @@ class WarehouseController extends Controller
 
         return redirect()->back()->with('delete_success', 'Xóa thành công');
     }
+
+
+    public function change_location(Request $request) {  
+        $validatedData = $request->validate([  
+            'draggedItemId' => 'required|integer',  
+            'targetItemId' => 'required|integer',  
+        ]);  
+
+        $draggedItemId = $validatedData['draggedItemId'];  
+        $targetItemId = $validatedData['targetItemId'];  
+
+        $draggedItem = Warehouse::find($draggedItemId);  
+        $targetItem = Warehouse::find($targetItemId);  
+
+        if ($draggedItem && $targetItem) {
+            $batch = Batch::find($draggedItem->batch_id);
+
+            if ($batch) {  
+                if ($draggedItem->batch_id) {
+                    $originalBatchId = $draggedItem->batch_id;
+                    $draggedItem->batch_id = $targetItem->batch_id;
+                    $targetItem->batch_id = $originalBatchId;
+
+                    $batch->warehouse_id = $targetItem->id;
+
+                    $targetItem->save();  
+                    $batch->save();  
+                    $draggedItem->save();  
+
+                    return response()->json([
+                        'success' => true,
+                        'drag' => $draggedItem->batch_id,
+                        'target' => $targetItem->batch_id
+                    ]);  
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không có batch_id hợp lệ'
+                    ], 400);
+                }
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy batch!'
+                ], 404);
+            }
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy phần tử!'
+            ], 404);  
+        }  
+    }
+
 }

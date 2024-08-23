@@ -26,7 +26,7 @@ class BatchController extends Controller
 
         // dd($bales_to_pack);
 
-        $lastBatch = Bale::orderBy('batch_number', 'desc')->first();
+        $lastBatch = Batch::orderBy('batch_number', 'desc')->first();
 
         $startIndex = $lastBatch ? $lastBatch->batch_number : 0;
         return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses', 'wares1', 'wares2', 'wares3', 'wares4'));

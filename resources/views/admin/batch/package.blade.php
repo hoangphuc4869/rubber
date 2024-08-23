@@ -89,6 +89,7 @@
                 <th>Hạng dự kiến (CSR10/20)</th>
                 <th>Lô số</th>
                 <th>Mã lô</th>
+                <th>Trạng thái</th>
                 <th>Ngày tạo</th>
                 <th>Số mẫu cắt</th>
                 <th>Dạng đóng gói</th>
@@ -104,6 +105,7 @@
                 <td>{{ $batch->expected_grade }}</td>
                 <td>{{ $batch->batch_number }}</td>
                 <td>{{ $batch->batch_code }}</td>
+                <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-success'>Đã xuất kho</span>"!!}</td>
                 <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
                 <td>{{ $batch->sample_cut_number }}</td>
                 <td>{{ $batch->packaging_type }}</td>
@@ -205,7 +207,7 @@
                             <h3>{{$name}}</h3>
                             <div class="warehouses mb-3">
                             @foreach ($items as $item)
-                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" data-message="{{$item->batch_id !== null ? 'Không thể chọn kho đã chứa nguyên liệu' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
                                     <div class="">
                                         {{$item->code}}
                                     </div>
@@ -222,7 +224,7 @@
                             <h3>{{$name}}</h3>
                             <div class="warehouses mb-3">
                             @foreach ($items as $item)
-                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" data-message="{{$item->batch_id !== null ? 'Không thể chọn kho đã chứa nguyên liệu' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
                                     <div class="">
                                         {{$item->code}}
                                     </div>
@@ -239,7 +241,7 @@
                             <h3>{{$name}}</h3>
                             <div class="warehouses mb-3">
                             @foreach ($items as $item)
-                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" data-message="{{$item->batch_id !== null ? 'Không thể chọn kho đã chứa nguyên liệu' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
                                     <div class="">
                                         {{$item->code}}
                                     </div>
@@ -256,7 +258,7 @@
                             <h3>{{$name}}</h3>
                             <div class="warehouses mb-3">
                             @foreach ($items as $item)
-                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
+                                <div class="grid-item {{$item->batch_id !== null ? 'occupied' : ''}}" data-message="{{$item->batch_id !== null ? 'Không thể chọn kho đã chứa nguyên liệu' : ''}}" id="{{$item->id}}" data-code="{{$item->code . '-' . $item->stack}}">
                                     <div class="">
                                         {{$item->code}}
                                     </div>

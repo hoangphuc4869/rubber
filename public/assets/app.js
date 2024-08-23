@@ -48,6 +48,46 @@ let table = new DataTable("#material", {
 });
 
 let table2 = new DataTable("#material-heating", {
+    layout: {
+        topStart: {
+            buttons: [
+                {
+                    text: "Tất cả",
+                    className: "btn btn-primary",
+                    action: function () {
+                        table2.rows().select();
+                    },
+                },
+                {
+                    text: "Bỏ chọn",
+                    className: "btn btn-danger",
+                    action: function () {
+                        table2.rows().deselect();
+                    },
+                },
+                {
+                    text: "Xuất kho",
+                    className: "ml-3 btn btn-info",
+                    action: function () {
+                        alert("Custom button clicked!");
+                    },
+                },
+                {
+                    text: "Xóa tất cả",
+                    className: "btn btn-warning",
+                    action: function (e, dt, node, config) {
+                        if (
+                            confirm(
+                                "Bạn có chắc chắn muốn xóa tất cả các hàng?"
+                            )
+                        ) {
+                            dt.clear().draw();
+                        }
+                    },
+                },
+            ],
+        },
+    },
     language: {
         sProcessing: "Đang xử lý...",
         sLengthMenu: "Hiển thị _MENU_ mục trên mỗi trang",
@@ -111,6 +151,12 @@ $(document).ready(function () {
 });
 
 $(document).ready(function () {
+    $(".custom-select-ware").select2({
+        dropdownParent: $("#wareModal"),
+    });
+});
+
+$(document).ready(function () {
     $(".custom-select2").select2();
 });
 
@@ -170,10 +216,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (stocks) {
         stocks.forEach((stock) => {
-            stock.addEventListener("click", () => {
-                close.click();
-                warehouseItems.value = stock.dataset.code;
-                idToSend.value = stock.id;
+            stock.addEventListener("click", (event) => {
+                if (stock.classList.contains("occupied")) {
+                    event.preventDefault();
+                    alert(this.getAttribute("data-message"));
+                } else {
+                    close.click();
+                    warehouseItems.value = stock.dataset.code;
+                    idToSend.value = stock.id;
+                }
             });
         });
     }
@@ -190,56 +241,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function handleDragStart(event) {
-        // Lưu ID của ô đang kéo
         event.dataTransfer.setData("text/plain", event.target.id);
         event.target.classList.add("dragging");
     }
 
     function handleDragOver(event) {
         event.preventDefault();
-        const targetItem = event.target.closest(".grid-item");
+        const targetItem = event.target.closest(".wares-stock .grid-item");
 
         if (targetItem && targetItem.classList.contains("occupied")) {
-            // Ngăn chặn việc kéo và thay đổi giao diện nếu ô đích đã bị chiếm
             event.dataTransfer.dropEffect = "none";
             event.target.classList.add("drag-over");
-            event.target.style.cursor = "not-allowed"; // Thay đổi con trỏ chuột
-        } else {
-            // Cho phép kéo nếu ô đích không bị chiếm
+            event.target.style.cursor = "not-allowed";
+
             event.dataTransfer.dropEffect = "move";
             event.target.classList.remove("drag-over");
-            event.target.style.cursor = "copy"; // Thay đổi con trỏ chuột
+            event.target.style.cursor = "copy";
         }
     }
 
     function handleDrop(event) {
-        event.preventDefault();
         const id = event.dataTransfer.getData("text/plain");
         const draggedItem = document.getElementById(id);
         const targetItem = event.target.closest(".grid-item");
 
+        // console.log("targetItem: ", targetItem);
         if (targetItem && draggedItem !== targetItem) {
             if (targetItem.classList.contains("occupied")) {
-                // Hiển thị cảnh báo nếu ô đích đã bị chiếm
-                console.log("Không thể di chuyển vào ô đã bị chiếm!");
-                return; // Ngừng xử lý nếu ô đích đã bị chiếm
+                alert("Kho đã có dữ liệu!");
+                return;
             }
 
-            // Di chuyển lớp `occupied`
-            if (draggedItem && draggedItem.classList.contains("occupied")) {
-                targetItem.classList.add("occupied");
+            const draggedItemId = draggedItem.id;
+            const targetItemId = targetItem.id;
+
+            const draggedItemName = draggedItem.dataset.code;
+            const targetName = targetItem.dataset.code;
+
+            result = sendData(
+                draggedItemId,
+                targetItemId,
+                draggedItemName,
+                targetName
+            );
+
+            if (result !== false) {
+                if (draggedItem && draggedItem.classList.contains("occupied")) {
+                    targetItem.classList.add("occupied");
+                }
+
+                const draggedDataContent =
+                    draggedItem.querySelector(".data-content").innerHTML;
+                const targetDataContent =
+                    targetItem.querySelector(".data-content");
+
+                targetDataContent.innerHTML = draggedDataContent;
+                draggedItem.querySelector(".data-content").innerHTML = "";
+
+                draggedItem.classList.remove("occupied");
             }
-
-            // Sao chép nội dung dữ liệu của ô bị kéo
-            const draggedDataContent =
-                draggedItem.querySelector(".data-content").innerHTML;
-            const targetDataContent = targetItem.querySelector(".data-content");
-
-            targetDataContent.innerHTML = draggedDataContent;
-            draggedItem.querySelector(".data-content").innerHTML = "";
-
-            // Di chuyển lớp `occupied` từ ô bị kéo nếu cần
-            draggedItem.classList.remove("occupied");
         }
 
         event.target.classList.remove("drag-over");
@@ -249,7 +309,125 @@ document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".grid-item").forEach((item) => {
             item.classList.remove("dragging");
             item.classList.remove("drag-over");
-            item.style.cursor = ""; // Đặt lại con trỏ chuột về mặc định
+            item.style.cursor = "";
+        });
+    }
+
+    function sendData(draggedItemId, targetItemId, dragName, targetName) {
+        const data = {
+            draggedItemId: +draggedItemId,
+            targetItemId: +targetItemId,
+        };
+
+        if (
+            confirm(
+                `Xác nhận duy chuyển từ kho ${dragName} tới ${targetName}`
+            ) == true
+        ) {
+            fetch("/change-location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        } else {
+            return false;
+        }
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    var occupiedItems = document.querySelectorAll(
+        ".stock-wrap .grid-item.occupied"
+    );
+
+    if (occupiedItems) {
+        occupiedItems.forEach(function (item) {
+            item.addEventListener("click", function (event) {
+                event.preventDefault();
+                alert(this.getAttribute("data-message"));
+            });
         });
     }
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    var edits = document.querySelectorAll(".editWare");
+    var batch = document.querySelector("#batch_id");
+    var update = document.querySelector(".updateWare");
+    var slot = document.querySelector("#slot");
+    var btnclose = document.querySelector(".modalWare .btn-close");
+
+    if (edits) {
+        edits.forEach(function (item) {
+            item.addEventListener("click", () => {
+                batch.value = item.dataset.warehouseid;
+            });
+        });
+    }
+
+    if (update) {
+        update.addEventListener("click", () => {
+            const slotValue = slot ? slot.value : null;
+            const data = {
+                draggedItemId: batch.value,
+                targetItemId: slotValue,
+            };
+            fetch("/change-location", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                body: JSON.stringify(data),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    btnclose.click();
+                    window.location.reload();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        });
+    }
+});
+
+// $(document).ready(function () {
+//     // Checkbox chọn tất cả
+//     $(".select-all-checkbox").on("click", function () {
+//         let isChecked = $(this).is(":checked");
+//         if (isChecked) {
+//             table2.rows().select(); // Chọn tất cả các hàng
+//         } else {
+//             table2.rows().deselect(); // Bỏ chọn tất cả các hàng
+//         }
+//     });
+
+//     // Checkbox trong các hàng
+//     $("#material-heating tbody").on(
+//         "click",
+//         'input[type="checkbox"]',
+//         function () {
+//             let row = $(this).closest("tr");
+//             if (this.checked) {
+//                 table.row(row).select(); // Chọn hàng tương ứng
+//             } else {
+//                 table.row(row).deselect(); // Bỏ chọn hàng tương ứng
+//             }
+//         }
+//     );
+// });
