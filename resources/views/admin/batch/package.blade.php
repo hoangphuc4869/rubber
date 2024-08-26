@@ -78,19 +78,44 @@
         </div>
     </div>
 
-   
-
     <h4 class="fw-bold py-3 mb-4">Thành phẩm</h4>
+
+    <div class="toast-group">
+        <div class="toaster-success bs-toast toast toast-placement-ex m-2 fade bg-success bottom-0 end-0 hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+            <div class="toast-header">
+                <i class="bx bx-bell me-2"></i>
+                <div class="me-auto fw-semibold">Thông báo</div>
+                <small>1s trước</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">Yêu cầu thành công</div>
+        </div>
+
+        <div class="toaster-fail bs-toast toast toast-placement-ex m-2 fade bg-danger bottom-0 end-0 hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+            <div class="toast-header">
+                <i class="bx bx-bell me-2"></i>
+                <div class="me-auto fw-semibold">Thông báo</div>
+                <small>1s trước</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">Có lỗi xảy ra. Vui lòng kiểm tra lại</div>
+        </div>
+   </div>
+
+    <div class="filter-date d-flex align-items-center gap-2">
+        <label for="min" class="form-label mb-0">Lọc ngày</label>
+       <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+    </div>     
     
-    <table id="material-heating2" class="ui celled table" style="width:100%">
+    <table id="material-heating" class="ui celled table" style="width:100%">
         <thead>
             <tr>
                 <th>#</th>
+                <th>Ngày tạo</th>
                 <th>Hạng dự kiến (CSR10/20)</th>
                 <th>Lô số</th>
                 <th>Mã lô</th>
                 <th>Trạng thái</th>
-                <th>Ngày tạo</th>
                 <th>Số mẫu cắt</th>
                 <th>Dạng đóng gói</th>
                 <th>Nơi lưu trữ</th>
@@ -102,11 +127,11 @@
             <tr id={{$batch->id}}>
 
                 <td>{{ $index + 1 }}</td>
+                <td>{{ \Carbon\Carbon::parse($batch->date)->format('d/m/Y') }}</td>
                 <td>{{ $batch->expected_grade }}</td>
                 <td>{{ $batch->batch_number }}</td>
                 <td>{{ $batch->batch_code }}</td>
                 <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-success'>Đã xuất kho</span>"!!}</td>
-                <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
                 <td>{{ $batch->sample_cut_number }}</td>
                 <td>{{ $batch->packaging_type }}</td>
                 <td>{{ $batch->warehouse !== null ? $batch->warehouse->code . '-'. $batch->warehouse->stack : "trống"}}</td>

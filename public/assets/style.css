@@ -152,20 +152,20 @@
 
 #material th:not(:first-child),
 #material td:not(:first-child) {
-    min-width: 110px;
+    min-width: 150px;
     max-width: unset;
     text-align: center;
 }
 #material-heating th:not(:first-child),
 #material-heating td:not(:first-child) {
-    min-width: 110px;
+    min-width: 150px;
     max-width: unset;
     text-align: center;
 }
 
 #material-heating2 th:not(:first-child),
 #material-heating2 td:not(:first-child) {
-    min-width: 110px;
+    min-width: 50px;
     max-width: unset;
     text-align: center;
 }
@@ -186,6 +186,11 @@
     grid-auto-flow: column-reverse;
     gap: 3px;
     direction: ltr;
+}
+
+.ui.table td,
+.ui.table th {
+    transition: unset;
 }
 
 .grid-item {

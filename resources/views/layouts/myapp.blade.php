@@ -30,12 +30,16 @@
       rel="stylesheet"
     />
 
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+
+
     {{-- datatable css --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.css">
    
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.3/css/dataTables.semanticui.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.5/css/select.dataTables.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css">
 
     {{-- select2 --}}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -223,8 +227,15 @@
             <li class="menu-item {{Route::is('warehouse.create') ? "active" : ""}}">
               <a href="{{route('warehouse.create')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
-                <div data-i18n="Basic">Nhập kho</div>
+                <div data-i18n="Basic">Kho hàng</div>
               </a>
+            </li>
+
+            <li class="menu-item {{ Route::is('exported-list') ? 'active' : '' }}">
+                <a href="{{ route('exported-list') }}" class="menu-link">
+                    <i class="menu-icon tf-icons fa-solid fa-list"></i>
+                    <div data-i18n="Basic">Danh sách lô đã xuất</div>
+                </a>
             </li>
           </ul>
         </aside>
@@ -350,9 +361,11 @@
     <script src="/sneat-1.0.0/assets/vendor/libs/popper/popper.js"></script>
     <script src="/sneat-1.0.0/assets/vendor/js/bootstrap.js"></script>
     <script src="/sneat-1.0.0/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     {{-- datatable --}}
- 
+  
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js"></script>
     <script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/2.1.3/js/dataTables.semanticui.js"></script>
@@ -362,6 +375,10 @@
     <script src="https://cdn.datatables.net/select/2.0.5/js/select.dataTables.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/dataTables.buttons.js"></script>
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+
+
 
     {{-- select2 --}}
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>

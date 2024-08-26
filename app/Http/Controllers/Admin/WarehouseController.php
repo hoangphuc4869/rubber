@@ -26,7 +26,7 @@ class WarehouseController extends Controller
         $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
         $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
         $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
-        $batches = Batch::all();
+        $batches = Batch::where('exported', 0)->get();
         $warehouses = Warehouse::all();
         return view('admin.warehouses.create', compact('wares1','wares2','wares3','wares4', 'batches', 'warehouses'));
     }
@@ -155,6 +155,44 @@ class WarehouseController extends Controller
                 'message' => 'Không tìm thấy phần tử!'
             ], 404);  
         }  
+    }
+
+
+    public function export(Request $request) {  
+        $data= $request->input('values'); 
+        $location= $request->input('location');
+        
+        
+        if($location) {
+            if($data && is_array($data) ){
+
+                foreach ($data as $item) {
+                    $batch = Batch::findOrFail($item);
+                    $batch->export_location = $location;
+                    $batch->exported = 1;
+                    $batch->warehouse->batch_id = null;
+                    $batch->warehouse->save();
+                    $batch->save();
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $data
+                ]);
+            }
+            else {
+                return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng chọn lô để xuất',
+            ]);
+            }
+            
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vui lòng nhập nơi tiếp nhận',
+            ]);
+        }
     }
 
 }

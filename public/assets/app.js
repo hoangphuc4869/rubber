@@ -47,6 +47,33 @@ let table = new DataTable("#material", {
     autoWidth: false,
 });
 
+$("#min").datepicker({
+    dateFormat: "dd/mm/yy",
+    onSelect: function () {
+        table2.draw();
+        table3.draw();
+    },
+});
+
+$.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    let filterDateStr = $("#min").val();
+    let filterDate = filterDateStr
+        ? new Date(convertDate(filterDateStr))
+        : null;
+    let rowDateStr = data[1];
+    let rowDate = rowDateStr ? new Date(convertDate(rowDateStr)) : null;
+
+    function convertDate(dateStr) {
+        let parts = dateStr.split("/");
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+
+    if (!filterDate || rowDate.toDateString() === filterDate.toDateString()) {
+        return true;
+    }
+    return false;
+});
+
 let table2 = new DataTable("#material-heating", {
     layout: {
         topStart: {
@@ -56,35 +83,197 @@ let table2 = new DataTable("#material-heating", {
                     className: "btn btn-primary",
                     action: function () {
                         table2.rows().select();
+
+                        let selectedRows = table2.rows(".selected").nodes();
+
+                        let values = Array.from(selectedRows).map((row) => {
+                            return row.id;
+                        });
+
+                        document.getElementById("selected-drums").value =
+                            values.join(",");
+
+                        updateButtons();
                     },
                 },
+
                 {
                     text: "Bỏ chọn",
-                    className: "btn btn-danger",
+                    className: "btn btn-danger d-none",
                     action: function () {
                         table2.rows().deselect();
+                        document.getElementById("selected-drums").value = "";
+                        updateButtons();
                     },
                 },
                 {
-                    text: "Xuất kho",
-                    className: "ml-3 btn btn-info",
-                    action: function () {
-                        alert("Custom button clicked!");
-                    },
-                },
-                {
-                    text: "Xóa tất cả",
-                    className: "btn btn-warning",
+                    text: "Xóa",
+                    className: "btn btn-warning d-none",
                     action: function (e, dt, node, config) {
                         if (
                             confirm(
                                 "Bạn có chắc chắn muốn xóa tất cả các hàng?"
                             )
                         ) {
-                            dt.clear().draw();
+                            let selectedRows = table2.rows(".selected").nodes();
+
+                            let values = Array.from(selectedRows).map((row) => {
+                                return row.id;
+                            });
+
+                            fetch("/delete-all", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": document
+                                        .querySelector(
+                                            'meta[name="csrf-token"]'
+                                        )
+                                        .getAttribute("content"),
+                                },
+                                body: JSON.stringify({
+                                    values: values,
+                                }),
+                            })
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    if (data.success) {
+                                        table2
+                                            .rows(".selected")
+                                            .remove()
+                                            .draw();
+                                        $(".toaster-success")
+                                            .removeClass("hide")
+                                            .addClass("show");
+                                        setTimeout(() => {
+                                            $(".toaster-success")
+                                                .removeClass("show")
+                                                .addClass("hide");
+                                        }, 2000);
+                                    } else {
+                                        $(".toaster-fail")
+                                            .removeClass("hide")
+                                            .addClass("show");
+                                        setTimeout(() => {
+                                            $(".toaster-fail")
+                                                .removeClass("show")
+                                                .addClass("hide");
+                                        }, 2000);
+                                    }
+                                })
+                                .catch((error) => {
+                                    console.error("Error:", error);
+                                    $(".toaster-fail")
+                                        .removeClass("hide")
+                                        .addClass("show");
+                                });
                         }
                     },
                 },
+                window.location.href.includes("warehouse")
+                    ? [
+                          {
+                              text: "Xuất kho",
+                              className: "ml-3 btn btn-info",
+                              action: function () {
+                                  $("#modalExport").modal("show");
+
+                                  $("#submitExport")
+                                      .off("click")
+                                      .on("click", function () {
+                                          if (
+                                              confirm(
+                                                  "Xác nhận xuất tất cả các lô đã chọn?"
+                                              )
+                                          ) {
+                                              let selectedRows = table2
+                                                  .rows(".selected")
+                                                  .nodes();
+
+                                              let values = Array.from(
+                                                  selectedRows
+                                              ).map((row) => {
+                                                  return row.id;
+                                              });
+
+                                              let location =
+                                                  $("#exportLocation").val();
+                                              console.log(location);
+
+                                              fetch("/export", {
+                                                  method: "POST",
+                                                  headers: {
+                                                      "Content-Type":
+                                                          "application/json",
+                                                      "X-CSRF-TOKEN": document
+                                                          .querySelector(
+                                                              'meta[name="csrf-token"]'
+                                                          )
+                                                          .getAttribute(
+                                                              "content"
+                                                          ),
+                                                  },
+                                                  body: JSON.stringify({
+                                                      values: values,
+                                                      location: location,
+                                                  }),
+                                              })
+                                                  .then((response) =>
+                                                      response.json()
+                                                  )
+                                                  .then((data) => {
+                                                      if (data.success) {
+                                                          $(".toaster-success")
+                                                              .removeClass(
+                                                                  "hide"
+                                                              )
+                                                              .addClass("show");
+                                                          setTimeout(() => {
+                                                              $(
+                                                                  ".toaster-success"
+                                                              )
+                                                                  .removeClass(
+                                                                      "show"
+                                                                  )
+                                                                  .addClass(
+                                                                      "hide"
+                                                                  );
+                                                          }, 2000);
+                                                      } else {
+                                                          $(
+                                                              ".toaster-fail .toast-body"
+                                                          ).text(data.message);
+                                                          $(".toaster-fail")
+                                                              .removeClass(
+                                                                  "hide"
+                                                              )
+                                                              .addClass("show");
+                                                          setTimeout(() => {
+                                                              $(".toaster-fail")
+                                                                  .removeClass(
+                                                                      "show"
+                                                                  )
+                                                                  .addClass(
+                                                                      "hide"
+                                                                  );
+                                                          }, 2000);
+                                                      }
+                                                  })
+                                                  .catch((error) => {
+                                                      console.error(
+                                                          "Error:",
+                                                          error
+                                                      );
+                                                      $(".toaster-fail")
+                                                          .removeClass("hide")
+                                                          .addClass("show");
+                                                  });
+                                          }
+                                      });
+                              },
+                          },
+                      ]
+                    : [],
             ],
         },
     },
@@ -111,6 +300,23 @@ let table2 = new DataTable("#material-heating", {
     scrollX: true,
     autoWidth: false,
 });
+
+function updateButtons() {
+    let selectedRows = table2.rows(".selected").nodes();
+    let deleteButton = table2.button(2).node();
+    let deselectButton = table2.button(1).node();
+
+    if (selectedRows.length > 0) {
+        $(deleteButton).removeClass("d-none");
+        $(deselectButton).removeClass("d-none");
+    } else {
+        $(deleteButton).addClass("d-none");
+        $(deselectButton).addClass("d-none");
+    }
+}
+
+table2.on("select", updateButtons);
+table2.on("deselect", updateButtons);
 
 let table3 = new DataTable("#material-heating2", {
     language: {
@@ -142,8 +348,12 @@ table2.on("click", "tbody tr", function (e) {
     let values = Array.from(selectedRows).map((row) => {
         return row.id;
     });
-
     document.getElementById("selected-drums").value = values.join(",");
+});
+
+$("#min").on("change", function () {
+    table2.draw();
+    table.draw();
 });
 
 $(document).ready(function () {
@@ -336,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
             })
                 .then((response) => response.json())
                 .then((data) => {
-                    window.location.reload();
+                    // window.location.reload();
                 })
                 .catch((error) => {
                     console.error("Error:", error);
@@ -405,29 +615,3 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
-
-// $(document).ready(function () {
-//     // Checkbox chọn tất cả
-//     $(".select-all-checkbox").on("click", function () {
-//         let isChecked = $(this).is(":checked");
-//         if (isChecked) {
-//             table2.rows().select(); // Chọn tất cả các hàng
-//         } else {
-//             table2.rows().deselect(); // Bỏ chọn tất cả các hàng
-//         }
-//     });
-
-//     // Checkbox trong các hàng
-//     $("#material-heating tbody").on(
-//         "click",
-//         'input[type="checkbox"]',
-//         function () {
-//             let row = $(this).closest("tr");
-//             if (this.checked) {
-//                 table.row(row).select(); // Chọn hàng tương ứng
-//             } else {
-//                 table.row(row).deselect(); // Bỏ chọn hàng tương ứng
-//             }
-//         }
-//     );
-// });

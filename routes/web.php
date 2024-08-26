@@ -36,8 +36,14 @@ Route::resources([
     'warehouse' => WarehouseController::class,
 ]);
 
+Route::get('/exported-list', [BatchController::class, 'list'])->name('exported-list');
+
+
 Auth::routes();
 
 Route::post('/change-location', [WarehouseController::class, 'change_location']);
+Route::post('/delete-all', [BatchController::class, 'delete_all']);
+Route::post('/export', [WarehouseController::class, 'export']);
+
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

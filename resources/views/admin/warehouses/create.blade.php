@@ -15,11 +15,34 @@
         <button type="submit" class="btn btn-dark">Tạo kho</button>
     </form>
 
-    <h4 class="fw-bold py-3 mb-4">Thành phẩm</h4>
+   <div class="toast-group">
+        <div class="toaster-success bs-toast toast toast-placement-ex m-2 fade bg-success bottom-0 end-0 hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+            <div class="toast-header">
+                <i class="bx bx-bell me-2"></i>
+                <div class="me-auto fw-semibold">Thông báo</div>
+                <small>1s trước</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">Yêu cầu thành công</div>
+        </div>
+
+        <div class="toaster-fail bs-toast toast toast-placement-ex m-2 fade bg-danger bottom-0 end-0 hide" role="alert" aria-live="assertive" aria-atomic="true" data-delay="2000">
+            <div class="toast-header">
+                <i class="bx bx-bell me-2"></i>
+                <div class="me-auto fw-semibold">Thông báo</div>
+                <small>1s trước</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">Có lỗi xảy ra. Vui lòng kiểm tra lại</div>
+        </div>
+   </div>
+
+    <h4 class="fw-bold mb-2 mt-4">Danh sách lô hàng</h4>
 
     <input type="hidden" name="drums[]" id="selected-drums">
                 
     <!-- Modal -->
+
     <div class="modal fade  modalWare" id="modalCenter" tabindex="-1" style="display: none;" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -49,17 +72,52 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalExport" tabindex="-1" aria-labelledby="modalExportLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalExportLabel">Xuất kho</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="exportForm">
+                    <div class="mb-3">
+                        <label for="exportLocation" class="form-label">Nơi xuất</label>
+                        <input type="text" class="form-control" id="exportLocation" placeholder="Nhập nơi xuất">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exportDate" class="form-label">Ngày xuất</label>
+                        <input type="date" class="form-control" id="dateInput" name="dateExport" placeholder="Chọn ngày xuất">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="submitExport">Xác nhận</button>
+            </div>
+            </div>
+        </div>
+    </div>
 
+    
+
+    <div class="filter-date d-flex align-items-center gap-2">
+        <label for="min" class="form-label mb-0">Lọc ngày</label>
+       <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+    </div>     
+              
+            
     
     <table id="material-heating" class="ui celled table" style="width:100%">
         <thead>
             <tr>
                 <th>#</th>
+                <th>Ngày</th>
                 <th>Hạng dự kiến (CSR10/20)</th>
                 <th>Lô số</th>
                 <th>Mã lô</th>
+                <th>Kiểm duyệt</th>
                 <th>Trạng thái</th>
-                <th>Ngày tạo</th>
                 <th>Số mẫu cắt</th>
                 <th>Dạng đóng gói</th>
                 <th>Nơi lưu trữ</th>
@@ -69,14 +127,15 @@
         <tbody>
             
             @foreach ($batches as $index => $batch)
+            
             <tr id={{$batch->id}}>
-               
                 <td>{{ $index + 1 }}</td>
+                <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
                 <td>{{ $batch->expected_grade }}</td>
                 <td>{{ $batch->batch_number }}</td>
                 <td>{{ $batch->batch_code }}</td>
+                <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa</span>" : "<span class='text-success'>Đã kiểm</span>"!!}</td>
                 <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-success'>Đã xuất kho</span>"!!}</td>
-                <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
                 <td>{{ $batch->sample_cut_number }}</td>
                 <td>{{ $batch->packaging_type }}</td>
                 <td>{{ $batch->warehouse !== null ? $batch->warehouse->code . '-'. $batch->warehouse->stack : "trống"}}</td>

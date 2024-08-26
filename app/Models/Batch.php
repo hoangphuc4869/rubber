@@ -15,7 +15,9 @@ class Batch extends Model
         'packaging_type',
         'warehouse_id',
         'batch_code',
-        'batch_number'
+        'batch_number',
+        'date',
+        'time'
     ];
 
     public function drums(){

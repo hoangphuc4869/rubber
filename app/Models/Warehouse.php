@@ -9,7 +9,7 @@ class Warehouse extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'stack', 'batch_code', 'status'];
+    protected $fillable = ['name', 'code', 'stack', 'batch_code', 'status', 'batch_id'];
 
     public function batch(){
         return $this->hasOne(Batch::class);
