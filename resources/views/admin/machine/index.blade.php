@@ -48,9 +48,10 @@
                 <div class="row">
                     <div class="mb-3 col-lg-6">
                         <label class="form-label">Mã cán vắt</label>
-                        <select name="rolling_code" class="form-select custom-select w-100 drumdate">
+                        <select name="rolling_code" class="form-select custom-select w-100 rolling-code-select">
+                            <option value="" selected disabled>Chọn mã cán vắt</option>
                             @foreach ($rollings as $item)
-                                <option  value="{{$item->id}}">{{$item->code}}</option>
+                                <option  value="{{$item->id}}" data-curing="{{$item->curing_area}}" data-house="{{$item->curing_house}}">{{$item->code}}</option>
                             @endforeach
                         </select>    
                     </div>
@@ -59,6 +60,18 @@
                     <div class="mb-3 col-lg-6">
                         <label class="form-label">Số thùng</label>
                         <input type="number" required name="drums" id="" min="1" class="form-control">           
+                    </div>
+
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label">Nhà ủ</label>
+                        <input type="text" id="rolling-house" disabled class="form-control" >           
+
+                    </div>
+
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label">Bãi ủ</label>
+                        <input type="text" id="rolling-area" disabled class="form-control">           
+                       
                     </div>
 
                      <div class="mb-3 col-lg-6">
@@ -78,32 +91,47 @@
         </div>
     </div>
 
-    <table id="material" class="ui celled table" style="width:100%">
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        <form action="{{ route('machining-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form>
+       
+    </div>
+
+    <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th>#</th>
+                <th></th>
+                <th>Ngày </th>
                 <th>Mã cán vắt</th>
                 <th>Mã thùng</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
                 <th>Bãi ủ</th>
                 <th>Nhà ủ</th>
-                <th>Ngày </th>
                 <th>Giờ</th>
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($drums as $index => $drum)
-            <tr>
-                <td>{{ $index + 1 }}</td>
+            <tr id="{{$drum->id}}">
+                <td></td>
+                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{{ $drum->rolling->code }}</td>
                 <td>{{ $drum->code }}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->time)->format('H:i')}}</td>
                 <td>
                     <div class="custom d-flex gap-1">

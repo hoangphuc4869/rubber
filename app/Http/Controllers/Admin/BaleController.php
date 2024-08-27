@@ -38,7 +38,7 @@ class BaleController extends Controller
             'drums.*' => 'nullable', 
             'drums' => ['required', function ($attribute, $value, $fail) {
                 
-                $filtered = array_filter($value, function ($item) {
+                $filtered = array_filter(explode(',', $value), function ($item) {
                     return !empty($item);
                 });
                 if (empty($filtered)) {
@@ -48,7 +48,7 @@ class BaleController extends Controller
         ]);
 
 
-        $drums = explode(',', $data['drums'][0]);
+        $drums = explode(',', $data['drums']);
 
         foreach ($drums as $drum) {
             

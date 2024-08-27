@@ -105,4 +105,28 @@ class HeatController extends Controller
         }
         return redirect()->route('heat.index')->with('delete_success', 'Xóa thành công' );
     }
+
+    public function delete_items(Request $request)
+    {
+        
+        $items = explode( ',', $request->drums);
+
+        // dd($items);
+
+        foreach ($items as $item) {
+           
+            $i = Drum::findOrFail($item);
+
+            if($i) {
+                $i->heated_time = null;
+                $i->heated_date = null;
+                $i->status = 0;
+                $i->save();
+            }
+
+
+        }
+        return redirect()->back()->with('delete_success', 'Xóa thành công' );
+
+    }
 }

@@ -104,4 +104,23 @@ class RollingController extends Controller
         }
         return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công' );
     }
+
+    public function delete_items(Request $request)
+    {
+        
+        $items = explode( ',', $request->drums);
+
+        foreach ($items as $item) {
+            $rubbers = Rubber::where('status', $item)->get();
+            foreach ($rubbers as $rubber) {
+                $rubber->status = 0;
+                $rubber->save();
+            }
+            Rolling::findOrFail($item)->delete();
+
+
+        }
+        return redirect()->back()->with('delete_success', 'Xóa thành công' );
+
+    }
 }

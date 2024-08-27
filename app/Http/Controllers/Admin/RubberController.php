@@ -93,4 +93,16 @@ class RubberController extends Controller
 
         return redirect()->route('rubber.index')->with('delete_success', 'Xóa thành công' );
     }
+
+    public function delete_items(Request $request)
+    {
+        
+        $items = explode( ',', $request->drums);
+
+        foreach ($items as $item) {
+            Rubber::findOrFail($item)->delete();
+        }
+        return redirect()->route('rubber.index')->with('delete_success', 'Xóa thành công' );
+
+    }
 }

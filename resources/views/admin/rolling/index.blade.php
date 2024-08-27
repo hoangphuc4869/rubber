@@ -58,13 +58,29 @@
         </div>
     </div>
 
-     <table id="material" class="ui celled table" style="width:100%">
+
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        <form action="{{ route('rolling-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form>
+       
+    </div>
+
+     <table id="datatable" class="ui celled table" style="width:100%">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th class="text-center"></th>
+                    <th>Ngày</th>
                     <th>Mã lệnh</th>
                     <th>Trạng thái</th>
-                    <th>Ngày</th>
                     <th>Thời gian</th>
                     <th>Bãi ủ</th>
                     <th>Nhà ủ</th>
@@ -74,11 +90,11 @@
             </thead>
             <tbody>
                 @foreach ($rollings as $index => $rolling)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
+                <tr id="{{$rolling->id}}">
+                    <td></td>
+                    <td>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
                     <td>{{ $rolling->code }}</td>
                     <td>{!! $rolling->status !== 0 ? "<span class='text-success'>Đã gia công</span>" : "<span class='text-danger'>Chưa gia công</span>"  !!}</td>
-                    <td>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
                     <td>{{ \Carbon\Carbon::parse($rolling->time)->format('H:i')}}</td>
                     <td>{{ $rolling->curing_area }}</td>
                     <td>{{ $rolling->curing_house }}</td>

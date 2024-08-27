@@ -3,19 +3,32 @@
 @section('content')
 
      <h4 class="fw-bold py-3 mb-4">Ép kiện</h4>
+
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        {{-- <form action="{{ route('bale-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form> --}}
+       
+    </div>
     
-    <table id="material-heating" class="ui celled table" style="width:100%">
+    <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th>#</th>
+                <th></th>
+                <th>Ngày xử lý</th>
                 <th>Mã thùng</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
                 <th>Bãi ủ</th>
                 <th>Nhà ủ</th>
-                <th>Ngày</th>
-                <th>Giờ</th>
-                <th>Ngày xử lý</th>
                 <th>Giờ xử lý</th>
                 <th>Tùy chỉnh</th>
             </tr>
@@ -23,15 +36,13 @@
         <tbody>
             @foreach ($drums as $index => $drum)
             <tr id={{$drum->id}}>
-                <td>{{ $index + 1 }}</td>
+                <td></td>
+                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
                 <td>{{ $drum->code }}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->time)->format('H:i')}}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_time)->format('H:i')}}</td>
                 <td>
                     <div class="custom d-flex gap-1">
@@ -129,23 +140,6 @@
                         <input type="text" required  class="form-control" name="evaluation" value="Chín đều" >
                         
                     </div>
-                    {{-- <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Hạng dự kiến (CSR10/20)</label>
-                        <input type="text" required class="form-control" name="expected_grade" value="CSR10" >
-                    </div>
-                    <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Số mẫu cắt</label>
-                        <input type="number" min="0" required class="form-control" name="sample_cut_number" value="7" >
-                        
-                    </div>
-                    <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Dạng đóng gói</label>
-                        <input type="text" required class="form-control" name="packaging_type" value="P.sắt" >
-                    </div>
-                    <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Nơi lưu trữ</label>
-                        <input type="text" required class="form-control" name="storage_location" value="Kho ABC" >
-                    </div> --}}
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Ngày thực hiện</label>
@@ -157,7 +151,7 @@
                         <input type="time" name="time" id="timeInput" class="form-control">
                     </div>
 
-                    <input type="hidden" name="drums[]" id="selected-drums">
+                    <input type="hidden" name="drums" id="selected-drums">
                     
                     <button type="submit" class="btn btn-primary mt-2">Tạo</button>
                 </div>

@@ -50,36 +50,45 @@
         }
     </script>
 
-    <table id="material" class="ui celled table" style="width:100%">
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        <form action="{{ route('heat-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form>
+       
+    </div>
+
+    <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th>#</th>
-                {{-- <th>Mã cán vắt</th> --}}
+                <th></th>
+                <th>Ngày</th>
                 <th>Mã thùng</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
                 <th>Bãi ủ</th>
                 <th>Nhà ủ</th>
-                <th>Ngày</th>
                 <th>Giờ</th>
-                <th>Ngày xử lý</th>
-                <th>Giờ xử lý</th>
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($drums as $index => $drum)
             <tr id={{$drum->id}}>
-                <td>{{ $index + 1 }}</td>
-                {{-- <td>{{ $drum->rolling->code }}</td> --}}
+                <td></td>
+                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
                 <td>{{ $drum->code }}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->time)->format('H:i')}}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_time)->format('H:i')}}</td>
                 <td>
                     <div class="custom d-flex gap-1">

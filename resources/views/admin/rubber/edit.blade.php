@@ -120,10 +120,25 @@
         </div>
     </div>
 
-    <table id="material" class="ui celled table" style="width:100%">
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        <form action="{{ route('rubber-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form>
+       
+    </div>
+
+    <table id="datatable" class="ui celled table" style="width:100%">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th></th>
                     <th>Ngày</th>
                     <th >Thời gian</th>
                     <th >Trạng thái</th>
@@ -143,8 +158,8 @@
             </thead>
             <tbody>
                 @foreach ($rubbers as $index => $rub)
-                <tr class="rub-row {{$rub->id == $rubber->id ? "editing" : ''}}">
-                    <td>{{ $index + 1 }}</td>
+                <tr class="rub-row {{$rub->id == $rubber->id ? "editing" : ''}}" id="{{$rub->id}}">
+                    <td></td>
                     <td>{{ \Carbon\Carbon::parse($rub->date)->format('d/m/Y') }}</td>
                     <td>{{ \Carbon\Carbon::parse($rub->time)->format('H:i') }}</td>
                     <td>{!! $rub->status == 0 ? "<span class='text-danger'>Chưa xử lý</span>" : "<span class='text-success'>Đã xử lý</span>" !!}</td>

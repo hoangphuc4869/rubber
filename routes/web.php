@@ -45,5 +45,13 @@ Route::post('/change-location', [WarehouseController::class, 'change_location'])
 Route::post('/delete-all', [BatchController::class, 'delete_all']);
 Route::post('/export', [WarehouseController::class, 'export']);
 
+Route::delete('/delete-rubber-items', [RubberController::class, 'delete_items'])->name('rubber-delete-items');
+Route::delete('/delete-rolling-items', [RollingController::class, 'delete_items'])->name('rolling-delete-items');
+Route::delete('/delete-machining-items', [MachineController::class, 'delete_items'])->name('machining-delete-items');
+Route::delete('/delete-heat-items', [HeatController::class, 'delete_items'])->name('heat-delete-items');
+Route::delete('/delete-bale-items', [HeatController::class, 'delete_items'])->name('bale-delete-items');
+
+
+
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

@@ -45,7 +45,7 @@ class MachineController extends Controller
 
     /**
      * Store a newly created resource in storage.
-         */
+    */
     public function store(Request $request)
     {
         $data = $request->all();
@@ -111,5 +111,22 @@ class MachineController extends Controller
         }
 
         return redirect()->route('machining.index')->with('delete_success', 'Xóa thành công' );
+    }
+
+    public function delete_items(Request $request)
+    {
+        
+        $items = explode( ',', $request->drums);
+
+        // dd($items);
+
+        foreach ($items as $item) {
+           
+            Drum::findOrFail($item)->delete();
+
+
+        }
+        return redirect()->back()->with('delete_success', 'Xóa thành công' );
+
     }
 }
