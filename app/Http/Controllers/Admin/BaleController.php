@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Drum;
 use App\Models\Bale;
+use App\Models\Batch;
 
 
 class BaleController extends Controller
@@ -104,5 +105,34 @@ class BaleController extends Controller
             $bale->delete();
         }
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
+    }
+
+    public function delete_items(Request $request)
+    {
+        
+        $items = explode( ',', $request->drums);
+
+        // dd($items);
+
+        foreach ($items as $item) {
+           
+            $bale = Bale::find($item);
+            $batch = Batch::find($bale->drum->batch_id);
+            $drum = Drum::findOrFail($bale->drum->id);
+
+            if($drum) {
+                $drum->baled = null;
+                $drum->save();
+                if($bale){
+                    $bale->delete();
+                }
+                if($batch){
+                    $batch->delete();
+                }
+                
+            }
+        }
+        return redirect()->back()->with('delete_success', 'Xóa thành công' );
+
     }
 }

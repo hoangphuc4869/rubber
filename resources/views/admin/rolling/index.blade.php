@@ -74,6 +74,8 @@
        
     </div>
 
+
+
      <table id="datatable" class="ui celled table" style="width:100%">
             <thead>
                 <tr>

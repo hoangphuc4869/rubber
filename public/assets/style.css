@@ -178,6 +178,14 @@
 .rub-row.editing {
     background-color: #c0f9c0 !important;
 }
+.menu .app-brand.demo {
+    height: 90px;
+}
+
+table.dataTable.table > tbody > .no-select {
+    cursor: not-allowed;
+    background-color: #d7d7d7;
+}
 
 .warehouses {
     display: grid;

@@ -3,8 +3,6 @@
 @section('content')
     <h4 class="fw-bold py-3 mb-4">Gia công nhiệt</h4>
 
-    
-
     <div class="card my-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Thêm lệnh</h5>
@@ -25,7 +23,17 @@
                         </select>     
                     </div>
 
-                     <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label" >Nhiệt độ (độ C)</label>
+                        <input type="number" name="temp" class="form-control" value="36">
+                    </div>
+
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label" >Tình trạng</label>
+                        <input type="text" name="state" class="form-control" value="Sạch">
+                    </div>
+
+                    <div class="mb-3 col-lg-6">
                         <label class="form-label" >Ngày thực hiện</label>
                         <input type="date" name="date" id="dateInput" class="form-control">
                     </div>
@@ -50,11 +58,13 @@
         }
     </script>
 
+    <h4 class="fw-bold py-3 mb-4">Chờ gia công nhiệt</h4>
+
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
         <div class="">
             <label for="min" class="form-label mb-0">Lọc ngày</label>
             <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-        </div>
+   </div>
 
         <form action="{{ route('heat-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
             @csrf
@@ -85,7 +95,7 @@
                 <td></td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
                 <td>{{ $drum->code }}</td>
-                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
+                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>

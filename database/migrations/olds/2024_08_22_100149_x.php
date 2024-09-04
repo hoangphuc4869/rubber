@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bales', function (Blueprint $table) {
-            
-            $table->foreignId('drum_id')->nullable()->constrained('drums')->onDelete('set null');
+        Schema::table('warehouses', function (Blueprint $table) {
            
+            $table->foreignId('batch_id')->nullable()->constrained('batches')->onDelete('set null');
+        
         });
     }
 
@@ -23,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bales', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

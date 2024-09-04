@@ -44,7 +44,7 @@
                 {{ session('delete_success') }}
             </div>
         @endif
-        <table id="example" class="ui celled table" style="width:100%">
+        <table id="datalist" class="ui celled table" style="width:100%">
             <thead>
                 <tr>
                     <th>#</th>

@@ -11,20 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bales', function (Blueprint $table) {
-            
-            // $table->dropForeign(['bales_drum_id_foreign']);
-            $table->foreignId('drum_id')->nullable()->constrained('drums')->onDelete('cascade');
-
+        Schema::create('warehosues', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('code');
+            $table->string('stack');
+            $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('warehosues');
     }
 };

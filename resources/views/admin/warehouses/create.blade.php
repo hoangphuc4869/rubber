@@ -4,7 +4,7 @@
 
     <h4 class="fw-bold py-3 mb-2 mt-2">Tạo kho hàng</h4>
     @include('partials.errors')
-     <form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
+    <form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
         @csrf
         
         <label for="warename">Tên kho:</label>
@@ -39,7 +39,7 @@
 
     <h4 class="fw-bold mb-2 mt-4">Danh sách lô hàng</h4>
 
-    <input type="hidden" name="drums[]" id="selected-drums">
+    {{-- <input type="hidden" name="drums[]" id="selected-drums"> --}}
                 
     <!-- Modal -->
 
@@ -72,46 +72,74 @@
         </div>
     </div>
 
+    
+
     <div class="modal fade" id="modalExport" tabindex="-1" aria-labelledby="modalExportLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalExportLabel">Xuất kho</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="exportForm">
-                    <div class="mb-3">
-                        <label for="exportLocation" class="form-label">Nơi xuất</label>
-                        <input type="text" class="form-control" id="exportLocation" placeholder="Nhập nơi xuất">
-                    </div>
-                    <div class="mb-3">
-                        <label for="exportDate" class="form-label">Ngày xuất</label>
-                        <input type="date" class="form-control" id="dateInput" name="dateExport" placeholder="Chọn ngày xuất">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="submitExport">Xác nhận</button>
-            </div>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalExportLabel">Xuất kho</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="exportForm" action="{{route('wexport')}}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label for="exportLocation" class="form-label">Nơi xuất</label>
+                            <input type="text" class="form-control" id="exportLocation" name="exportLocation" required placeholder="Nhập nơi xuất">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exportDate" class="form-label">Ngày xuất</label>
+                            <input type="date" class="form-control" id="dateInput" name="dateExport" placeholder="Chọn ngày xuất">
+                        </div>
+                        
+                        <input type="hidden" name="batches" id="batchesToExport">
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                            <button type="submit" class="btn btn-primary" id="submitExport">Xác nhận</button>
+                        </div>
+
+                    </form>
+                </div>
+                
             </div>
         </div>
     </div>
 
-    
 
-    <div class="filter-date d-flex align-items-center gap-2">
-        <label for="min" class="form-label mb-0">Lọc ngày</label>
-       <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-    </div>     
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="">
+            <label for="min" class="form-label mb-0">Lọc ngày</label>
+            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('batch-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="drums" id="selected-drums">
+                <button class="btn btn-danger" type="submit">Xóa</button>
+            </form>
+
+            <button type="button" class="btn btn-primary exportButton d-none" data-bs-toggle="modal" data-bs-target="#modalExport">
+                Xuất kho
+            </button>
+        </div>
+
+       
+    </div>
               
-            
+    <div class="sync-data my-3">
+        <button class="btn btn-dark">
+            Đồng bộ dữ liệu kiểm duyệt
+        </button>
+    </div>   
     
-    <table id="material-heating" class="ui celled table" style="width:100%">
+    <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th>#</th>
+                <th class="text-center"></th>
                 <th>Ngày</th>
                 <th>Hạng dự kiến (CSR10/20)</th>
                 <th>Lô số</th>
@@ -128,21 +156,21 @@
             
             @foreach ($batches as $index => $batch)
             
-            <tr id={{$batch->id}}>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
+            <tr id={{$batch->id}} class="{{$batch->exported == 1 ? 'no-select' : ''}}">
+                <td></td>
+                <td>{{ \Carbon\Carbon::parse($batch->date)->format('d/m/Y') }}</td>
                 <td>{{ $batch->expected_grade }}</td>
                 <td>{{ $batch->batch_number }}</td>
                 <td>{{ $batch->batch_code }}</td>
-                <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa</span>" : "<span class='text-success'>Đã kiểm</span>"!!}</td>
-                <td>{!! $batch->status == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-success'>Đã xuất kho</span>"!!}</td>
+                <td>{!! $batch->checked == 0 ? "<span class='text-danger'>Chưa</span>" : "<span class='text-dark'>Đã kiểm</span>"!!}</td>
+                <td>{!! $batch->exported == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-dark'>Đã xuất kho</span>"!!}</td>
                 <td>{{ $batch->sample_cut_number }}</td>
                 <td>{{ $batch->packaging_type }}</td>
                 <td>{{ $batch->warehouse !== null ? $batch->warehouse->code . '-'. $batch->warehouse->stack : "trống"}}</td>
              
                 <td>
+                    @if ($batch->exported == 0)
                     <div class="custom d-flex gap-1">
-                        
                             <button type="button" class="editBtn editWare" data-bs-toggle="modal" data-bs-target="#modalCenter"
                              data-id="{{$batch->id}}" data-warehouseId='{{$batch->warehouse_id}}'>
                                 <svg height="1em" viewBox="0 0 512 512">
@@ -151,61 +179,60 @@
                                     ></path>
                                 </svg>
                             </button>
-                        
-                    
                         <form action="{{route('batch.destroy', [$batch->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                                 <button class="bin-button">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 39 7"
-                                class="bin-top"
-                            >
-                                <line stroke-width="4" stroke="white" y2="5" x2="39" y1="5"></line>
-                                <line
-                                stroke-width="3"
-                                stroke="white"
-                                y2="1.5"
-                                x2="26.0357"
-                                y1="1.5"
-                                x1="12"
-                                ></line>
-                            </svg>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 33 39"
-                                class="bin-bottom"
-                            >
-                                <mask fill="white" id="path-1-inside-1_8_19">
-                                <path
-                                    d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-                                ></path>
-                                </mask>
-                                <path
-                                mask="url(#path-1-inside-1_8_19)"
-                                fill="white"
-                                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                ></path>
-                                <path stroke-width="4" stroke="white" d="M12 6L12 29"></path>
-                                <path stroke-width="4" stroke="white" d="M21 6V29"></path>
-                            </svg>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 89 80"
-                                class="garbage"
-                            >
-                                <path
-                                fill="white"
-                                d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
-                                ></path>
-                            </svg>
-                            </button>
-                        </form>
-                    </div>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 39 7"
+                                        class="bin-top"
+                                    >
+                                        <line stroke-width="4" stroke="white" y2="5" x2="39" y1="5"></line>
+                                        <line
+                                        stroke-width="3"
+                                        stroke="white"
+                                        y2="1.5"
+                                        x2="26.0357"
+                                        y1="1.5"
+                                        x1="12"
+                                        ></line>
+                                    </svg>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 33 39"
+                                        class="bin-bottom"
+                                    >
+                                        <mask fill="white" id="path-1-inside-1_8_19">
+                                        <path
+                                            d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
+                                        ></path>
+                                        </mask>
+                                        <path
+                                        mask="url(#path-1-inside-1_8_19)"
+                                        fill="white"
+                                        d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
+                                        ></path>
+                                        <path stroke-width="4" stroke="white" d="M12 6L12 29"></path>
+                                        <path stroke-width="4" stroke="white" d="M21 6V29"></path>
+                                    </svg>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 89 80"
+                                        class="garbage"
+                                    >
+                                        <path
+                                        fill="white"
+                                        d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
+                                        ></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                 </td>
             </tr>
             @endforeach

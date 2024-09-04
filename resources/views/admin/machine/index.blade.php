@@ -128,7 +128,7 @@
                 <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{{ $drum->rolling->code }}</td>
                 <td>{{ $drum->code }}</td>
-                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chưa xử lý nhiệt</span>"  !!}</td>
+                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>

@@ -15,9 +15,10 @@ class BatchController extends Controller
     public function index()
     {
         $drums = Drum::where('status' , 1)->where('baled', null)->orderBy('date', 'desc')->get();
-        $batches = Batch::where('exported', 0)->get();
+        $batches = Batch::all();
         $drums_to_pack = Drum::where('batch_id', null)->where('baled' , 1)->get();
         $warehouses = Warehouse::all();
+        $bales = Bale::all();
 
         $wares1 = Warehouse::where('stack', 1)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
         $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'desc') ->get()->groupBy('name');
@@ -29,12 +30,12 @@ class BatchController extends Controller
         $lastBatch = Batch::orderBy('batch_number', 'desc')->first();
 
         $startIndex = $lastBatch ? $lastBatch->batch_number : 0;
-        return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses', 'wares1', 'wares2', 'wares3', 'wares4'));
+        return view('admin.batch.package', compact('drums', 'batches', 'drums_to_pack', 'startIndex', 'warehouses', 'wares1', 'wares2', 'wares3', 'wares4', 'bales'));
     }
 
     public function list()
     {
-        $batches = Batch::where('exported', 1)->get();
+        $batches = Batch::where('exported', 1)->orderBy('date_export', 'desc')->get();
         return view('admin.batch.list', compact('batches'));
     }
 
@@ -117,24 +118,19 @@ class BatchController extends Controller
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
     }
 
-    public function delete_all(Request $request)
+    public function delete_items(Request $request)
     {
-        $data= $request->input('values'); 
         
-        if ($data && is_array($data)) {
+        $items = explode( ',', $request->drums);
+
+
+        foreach ($items as $item) {
+            Batch::findOrFail($item)->delete();
            
-           foreach ($data as $item) {
-                Batch::findOrFail($item)->delete();
-           }
-            return response()->json([
-                'success' => true,
-                'data' => $data
-            ]);
-        } else {
-            return response()->json([
-                'success' => false,
-            ]);
         }
+        
+        return redirect()->back()->with('delete_success', 'Xóa thành công' );
+
     }
 
 }

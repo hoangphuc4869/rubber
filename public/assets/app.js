@@ -2,6 +2,27 @@ function confirmDelete() {
     return confirm("Bạn có chắc chắn muốn xóa không?");
 }
 
+let classList = new DataTable("#datalist", {
+    language: {
+        sProcessing: "Đang xử lý...",
+        sLengthMenu: "Hiển thị _MENU_ mục trên mỗi trang",
+        sZeroRecords: "Không tìm thấy kết quả",
+        sEmptyTable: "Không có dữ liệu trong bảng",
+        sInfo: "Hiển thị từ _START_ đến _END_ của _TOTAL_ mục",
+        sInfoEmpty: "Hiển thị từ 0 đến 0 của 0 mục",
+        sInfoFiltered: "(lọc từ _MAX_ mục)",
+        sSearch: "Tìm kiếm:",
+        sUrl: "",
+        oPaginate: {
+            sFirst: "Đầu tiên",
+            sPrevious: "Trước",
+            sNext: "Tiếp theo",
+            sLast: "Cuối cùng",
+        },
+    },
+    scrollX: true,
+    autoWidth: false,
+});
 //table-section
 
 //date-filter
@@ -9,12 +30,14 @@ function confirmDelete() {
 $("#min").datepicker({
     dateFormat: "dd/mm/yy",
     onSelect: function () {
-        table2.draw();
+        table.draw();
+        classList.draw();
     },
 });
 
 $("#min").on("change", function () {
-    table2.draw();
+    table.draw();
+    classList.draw();
 });
 
 $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
@@ -39,7 +62,7 @@ $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
 //end-date-filter
 
 //table-settings
-let table2 = new DataTable("#datatable", {
+let table = new DataTable("#datatable", {
     columnDefs: [
         {
             orderable: false,
@@ -70,34 +93,82 @@ let table2 = new DataTable("#datatable", {
     },
     scrollX: true,
     autoWidth: false,
+    rowCallback: function (row, data, index) {
+        if ($(row).hasClass("no-select")) {
+            $(row).addClass("disable-select");
+            $(row).off("click");
+        }
+    },
+});
+
+$("#datatable").on("click", "tr.no-select", function (e) {
+    e.stopImmediatePropagation();
 });
 
 //end-table-settings
 
-function updateButtons() {
-    let selectedRows = table2.rows(".selected").nodes();
-    let values = Array.from(selectedRows).map((row) => row.id);
-    document.getElementById("selected-drums").value = values.join(",");
-
-    if (selectedRows.length > 0) {
-        $(".form-delete-items").removeClass("d-none");
-    } else {
-        $(".form-delete-items").addClass("d-none");
-    }
-}
-
-table2.on("select", updateButtons);
-table2.on("deselect", updateButtons);
+table.on("select", updateButtons);
+table.on("deselect", updateButtons);
 
 $("#select-all").on("change", function () {
     let checked = $(this).prop("checked");
+    let rows = table.rows({ search: "applied" }).nodes(); // Lấy tất cả các hàng hiện tại trên trang
+
+    // Lọc các hàng có thể chọn (không có lớp 'no-select')
+    let selectableRows = $(rows).filter(function () {
+        return !$(this).hasClass("no-select");
+    });
+
+    // Đặt trạng thái chọn cho các hàng đã lọc
     if (checked) {
-        table2.rows({ search: "applied" }).select();
+        // Chọn các hàng có thể chọn
+        selectableRows.each(function () {
+            if (!$(this).hasClass("selected")) {
+                table.row(this).select();
+            }
+        });
     } else {
-        table2.rows({ search: "applied" }).deselect();
+        // Bỏ chọn các hàng có thể chọn
+        selectableRows.each(function () {
+            if ($(this).hasClass("selected")) {
+                table.row(this).deselect();
+            }
+        });
     }
-    updateButtons();
+
+    updateButtons(); // Cập nhật trạng thái của các nút, nếu cần
 });
+
+// Cập nhật nút dựa trên các hàng đã chọn
+function updateButtons() {
+    // Lấy tất cả các hàng được chọn
+    let selectedRows = table.rows(".selected").nodes();
+
+    // Lọc các hàng có thể chọn (không có lớp 'no-select')
+    let selectableRows = Array.from(selectedRows).filter(
+        (row) => !$(row).hasClass("no-select")
+    );
+
+    // Lấy giá trị của các hàng có thể chọn
+    let values = selectableRows.map((row) => row.id);
+
+    // Cập nhật giá trị vào các trường input
+    document.getElementById("selected-drums").value = values.join(",");
+    var batches = document.getElementById("batchesToExport");
+
+    if (batches) {
+        batches.value = values.join(",");
+    }
+
+    // Hiển thị hoặc ẩn các nút dựa trên số lượng hàng được chọn
+    if (values.length > 0) {
+        $(".form-delete-items").removeClass("d-none");
+        $(".exportButton").removeClass("d-none");
+    } else {
+        $(".form-delete-items").addClass("d-none");
+        $(".exportButton").addClass("d-none");
+    }
+}
 
 $(document).ready(function () {
     $(".custom-select").select2();

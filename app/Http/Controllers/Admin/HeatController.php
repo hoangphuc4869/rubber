@@ -17,7 +17,6 @@ class HeatController extends Controller
         $rollings = Rolling::all();
         $drums = Drum::where('status' , 1)->orderBy('date', 'desc')->get();
         
-        
         $drums_per_day = Drum::where('status', 0)->select('date')
         ->selectRaw('COUNT(*) as total_number')
         ->groupBy('date') 
@@ -59,6 +58,8 @@ class HeatController extends Controller
             $drum->status = 1;
             $drum->heated_date = $data['date'];
             $drum->heated_time = $data['time'];
+            $drum->temp = $data['temp'];
+            $drum->state = $data['state'];
             $drum->save();
            }
         }
@@ -100,6 +101,8 @@ class HeatController extends Controller
         if($item) {
             $item->heated_time = null;
             $item->heated_date = null;
+            $item->temp = null;
+            $item->state = null;
             $item->status = 0;
             $item->save();
         }
@@ -120,6 +123,8 @@ class HeatController extends Controller
             if($i) {
                 $i->heated_time = null;
                 $i->heated_date = null;
+                $i->temp = null;
+                $i->state = null;
                 $i->status = 0;
                 $i->save();
             }

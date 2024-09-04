@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Warehouse;
 use Illuminate\Http\Request;
 use App\Models\Batch;
+use Carbon\Carbon;
 
 class WarehouseController extends Controller
 {
@@ -26,7 +27,7 @@ class WarehouseController extends Controller
         $wares2 = Warehouse::where('stack', 2)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
         $wares3 = Warehouse::where('stack', 3)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
         $wares4 = Warehouse::where('stack', 4)->select('*')->orderBy('id', 'asc') ->get()->groupBy('name');
-        $batches = Batch::where('exported', 0)->get();
+        $batches = Batch::all();
         $warehouses = Warehouse::all();
         return view('admin.warehouses.create', compact('wares1','wares2','wares3','wares4', 'batches', 'warehouses'));
     }
@@ -158,41 +159,38 @@ class WarehouseController extends Controller
     }
 
 
-    public function export(Request $request) {  
-        $data= $request->input('values'); 
-        $location= $request->input('location');
-        
-        
-        if($location) {
-            if($data && is_array($data) ){
+    public function export(Request $request) {
 
-                foreach ($data as $item) {
-                    $batch = Batch::findOrFail($item);
-                    $batch->export_location = $location;
-                    $batch->exported = 1;
-                    $batch->warehouse->batch_id = null;
-                    $batch->warehouse->save();
-                    $batch->save();
-                }
+        $ids = explode(',', $request->batches);
+        $batches = Batch::whereIn('id', $ids)->get();
 
-                return response()->json([
-                    'success' => true,
-                    'data' => $data
-                ]);
+        $unverifiedBatches = []; 
+        
+        foreach ($batches as $batch) {
+            if ($batch->checked == 0) {
+                $unverifiedBatches[] = $batch->batch_code; 
             }
-            else {
-                return response()->json([
-                'success' => false,
-                'message' => 'Vui lòng chọn lô để xuất',
-            ]);
-            }
-            
-        } else {
-            return response()->json([
-                'success' => false,
-                'message' => 'Vui lòng nhập nơi tiếp nhận',
-            ]);
         }
+        
+        if (!empty($unverifiedBatches)) {
+            $unverifiedBatchCodes = implode(', ', $unverifiedBatches); 
+            return redirect()->back()->with('export_fail', 'Các lô chưa kiểm duyệt: ' . $unverifiedBatchCodes);
+        }
+
+        foreach ($batches as $batch) {
+            $batch->exported = 1;
+            $batch->export_location = $request->exportLocation;
+            $batch->date_export = $request->dateExport;
+            $warehouse = $batch->warehouse;
+            $warehouse->batch_id = null;
+
+            $batch->save();
+            $warehouse->save();
+        }
+
+        return redirect()->back()->with('success', 'Xuất lô thành công');
     }
+
+
 
 }
