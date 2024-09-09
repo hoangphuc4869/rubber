@@ -136,23 +136,18 @@ $("#select-all").on("change", function () {
         });
     }
 
-    updateButtons(); // Cập nhật trạng thái của các nút, nếu cần
+    updateButtons();
 });
 
-// Cập nhật nút dựa trên các hàng đã chọn
 function updateButtons() {
-    // Lấy tất cả các hàng được chọn
     let selectedRows = table.rows(".selected").nodes();
 
-    // Lọc các hàng có thể chọn (không có lớp 'no-select')
     let selectableRows = Array.from(selectedRows).filter(
         (row) => !$(row).hasClass("no-select")
     );
 
-    // Lấy giá trị của các hàng có thể chọn
     let values = selectableRows.map((row) => row.id);
 
-    // Cập nhật giá trị vào các trường input
     document.getElementById("selected-drums").value = values.join(",");
     var batches = document.getElementById("batchesToExport");
 
@@ -160,7 +155,6 @@ function updateButtons() {
         batches.value = values.join(",");
     }
 
-    // Hiển thị hoặc ẩn các nút dựa trên số lượng hàng được chọn
     if (values.length > 0) {
         $(".form-delete-items").removeClass("d-none");
         $(".exportButton").removeClass("d-none");
@@ -438,5 +432,86 @@ $(document).ready(function () {
 
         $("#rolling-house").val(curingHouse);
         $("#rolling-area").val(curingArea);
+    });
+});
+
+$("#farmSelect").on("change", function () {
+    var selectedFarm = $("#farmSelect option:selected").text();
+    var farmCompany = $("#farmSelect option:selected").data("company");
+
+    $("#receivingPlaceSelect option").each(function () {
+        var receivingPlace = $(this).text();
+
+        if (receivingPlace.includes(selectedFarm)) {
+            $("#receivingPlaceSelect").val($(this).val()).trigger("change");
+            return false;
+        }
+    });
+
+    $("#farmCompany").val(farmCompany);
+});
+
+$("#areaSelect").on("change", function () {
+    var containingValue = $(this).find(":selected").data("containing");
+    $("#weight_to_roll").val(containingValue);
+});
+
+function isSubset(string1, string2) {
+    let array1 = string1.split("");
+    let array2 = string2.split("");
+
+    return array2.every((char) => array1.includes(char));
+}
+
+$(document).ready(function () {
+    $("#areaSelect").on("change", function () {
+        var selectedFarm = $("#areaSelect option:selected").text();
+
+        $("#receivingPlaceSelect option").each(function () {
+            var receivingPlace = $(this).text();
+
+            if (isSubset(receivingPlace, selectedFarm)) {
+                $("#receivingPlaceSelect").val($(this).val()).trigger("change");
+                return false;
+            }
+        });
+    });
+});
+
+$(document).ready(function () {
+    let index = 1;
+
+    $(".add-more").click(function (e) {
+        e.preventDefault();
+
+        let newDeliveryDates = $(".delivery_dates:first").clone();
+
+        newDeliveryDates.find("input").each(function () {
+            let newName = $(this).attr("name").replace("0", index);
+            $(this).attr("name", newName);
+            $(this).val("");
+        });
+
+        newDeliveryDates.append(
+            '<div class="col-lg-12 text-end"><button type="button" class="remove-date btn btn-danger">Xóa</button></div>'
+        );
+
+        $(".delivery_dates_container").append(newDeliveryDates);
+
+        index++;
+    });
+
+    $(document).on("click", ".remove-date", function () {
+        $(this).closest(".delivery_dates").remove();
+    });
+});
+
+$(document).ready(function () {
+    $("#curing_house").on("change", function () {
+        var selectedOption = $(this).find("option:selected");
+
+        var containingValue = selectedOption.data("containing");
+
+        $("#weight_to_roll").val(containingValue);
     });
 });

@@ -2,6 +2,15 @@
 
 @section('content')
     <h4 class="fw-bold py-3 mb-4"> Nguyên liệu</h4>
+    <h5 class="fw-bold">Sơ đồ bãi ủ</h5>
+    <div class="grid-areas">
+        @foreach ($curing_areas as $item)
+            <div class="area-item btn btn-{{$item->containing > 0 ? 'warning' : 'dark' }}">
+                {{$item->code}} <br>
+                {{ number_format($item->containing, 0, '.', ',') }} kg
+            </div>
+        @endforeach
+    </div>
     
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -23,16 +32,24 @@
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Nguồn nguyên liệu</label>
-                        <select name="farm_id" class="form-select custom-select">
+                        <select id="farmSelect" name="farm_id" class="form-select custom-select">
                             @foreach ($farms as $item)
-                                <option  value="{{$item->id}}">{{$item->code}}</option>
+                                <option value="{{$item->id}}" data-company="{{$item->company ? $item->company->code : ''}}">{{$item->code}}</option>
                             @endforeach
                         </select>
                     </div>
 
                     <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Chủng loại mũ</label>
-                        <input type="text" required class="form-control" name="latex_type" value="đông chén" >
+                        <label class="form-label" >Công ty</label>
+                        <input type="text" required  class="form-control" id="farmCompany" value="{{$farms[0]->company ? $farms[0]->company->code : ""}}" disabled >
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Chủng loại mủ</label>
+                        <select id="latex_type" name="latex_type" class="form-select custom-select">
+                            <option value="Mủ đông chén">Mủ đông chén</option>
+                            <option value="Mủ dây">Mủ dây</option>
+                        </select>
         
                     </div>
                     <div class="mb-3 col-lg-3">
@@ -41,8 +58,8 @@
                         
                     </div>
                     <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Khối lượng mũ tươi (kg)</label>
-                        <input type="number" min="0" step="0.001" required class="form-control" name="fresh_weight" value="12.210" >
+                        <label class="form-label" >Khối lượng mủ tươi (kg)</label>
+                        <input type="number" min="0" step="0.001" required class="form-control" name="fresh_weight" value="12210" >
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >DRC (%)</label>
@@ -71,7 +88,7 @@
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Nơi tiếp nhận</label>
-                        <select name="receiving_place_id" class="form-select custom-select">
+                        <select id="receivingPlaceSelect" name="receiving_place_id" class="form-select custom-select">
                             @foreach ($curing_areas as $item)
                                 <option  value="{{$item->id}}">{{$item->code}}</option>
                             @endforeach
@@ -102,6 +119,11 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Giờ</label>
                         <input type="time" name="time" id="timeInput" class="form-control">
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Truy xuất</label>
+                        <input type="text" name="supervisor" class="form-control">
                     </div>
                     
                     <button type="submit" class="btn btn-primary mt-2">Tạo</button>
@@ -137,28 +159,32 @@
                 <th >Trạng thái</th>
                 <th>Số xe</th>
                 <th>Nguồn nguyên liệu</th>
-                <th>Chủng loại mũ</th>
+                <th>Nơi tiếp nhận</th>
+                <th>Công ty</th>
+                <th>Chủng loại mủ</th>
                 <th>Tuổi nguyên liệu (ngày)</th>
-                <th>Khối lượng mũ tươi (kg)</th>
+                <th>Khối lượng mủ tươi (kg)</th>
                 <th>DRC(%)</th>
                 <th>Quy khô (kg)</th>
                 <th>Tình trạng nguyên liệu</th>
                 <th>Tạp chất</th>
-                <th>Nơi tiếp nhận</th>
                 <th>Phân hạng nguyên liệu</th>
+                <th>Giám sát viên</th>
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($rubbers as $index => $rubber)
             <tr id="{{$rubber->id}}">
+
                 <td></td>
-                
                 <td>{{ \Carbon\Carbon::parse($rubber->date)->format('d/m/Y')}}</td>
                 <td>{{ \Carbon\Carbon::parse($rubber->time)->format('H:i')}}</td>
-                <td>{!! $rubber->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chưa xử lý</span>"  !!}</td>
+                <td>{!! $rubber->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chờ xử lý</span>"  !!}</td>
                 <td>{{ $rubber->truck->code }}</td>
                 <td>{{ $rubber->farm->code }}</td>
+                <td>{{ $rubber->curing_area->code }}</td>
+                <td>{{ $rubber->farm->company ? $rubber->farm->company->code : '' }}</td>
                 <td>{{ $rubber->latex_type }}</td>
                 <td>{{ $rubber->material_age }}</td>
                 <td>{{ $rubber->fresh_weight }}</td>
@@ -166,8 +192,8 @@
                 <td>{{ $rubber->dry_weight }}</td>
                 <td>{{ $rubber->material_condition }}</td>
                 <td>{{ $rubber->impurity_type }}</td>
-                <td>{{ $rubber->curing_area->code }}</td>
                 <td>{{ $rubber->grade }}</td>
+                <td>{{ $rubber->supervisor }}</td>
                 <td>
                     <div class="custom d-flex gap-1">
                         <a href="{{route('rubber.edit', [$rubber->id])}}">

@@ -32,6 +32,15 @@
                             </div>
                         @enderror
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" >Nông trường</label>
+                        <select name="farm_id" class="form-select custom-select">
+                            @foreach ($farms as $item)
+                                <option  value="{{$item->id}}" {{$curing_area->farm_id == $item->id ? 'selected' : ''}}>{{$item->code}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     
                     <button type="submit" class="btn btn-primary">Cập nhật</button>
                 </form>

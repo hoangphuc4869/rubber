@@ -2,6 +2,15 @@
 
 @section('content')
     <h4 class="fw-bold py-3 mb-4"> Nguyên liệu</h4>
+    <h5 class="fw-bold">Sơ đồ bãi ủ</h5>
+    <div class="grid-areas">
+        @foreach ($curing_areas as $item)
+            <div class="area-item btn btn-{{$item->containing > 0 ? 'warning' : 'dark' }}">
+                {{$item->code}} <br>
+                {{ number_format($item->containing, 0, '.', ',') }} kg
+            </div>
+        @endforeach
+    </div>
     
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -20,6 +29,10 @@
                     color: #d38a19
                 }
             </style>
+
+            
+            
+            
             
             <form action="{{ route('rubber.update', [$rubber->id]) }}" method="POST">
                 @csrf
@@ -43,7 +56,7 @@
                     </div>
 
                     <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Chủng loại mũ</label>
+                        <label class="form-label" >Chủng loại mủ</label>
                         <input type="text" required class="form-control" name="latex_type" value="{{$rubber->latex_type}}" >
         
                     </div>
@@ -53,7 +66,7 @@
                         
                     </div>
                     <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Khối lượng mũ tươi (kg)</label>
+                        <label class="form-label" >Khối lượng mủ tươi (kg)</label>
                         <input type="number" min="0" step="0.001" required class="form-control" name="fresh_weight" value="{{$rubber->fresh_weight}}" >
                     </div>
                     <div class="mb-3 col-lg-3">
@@ -144,9 +157,9 @@
                     <th >Trạng thái</th>
                     <th>Số xe</th>
                     <th>Nguồn nguyên liệu</th>
-                    <th>Chủng loại mũ</th>
+                    <th>Chủng loại mủ</th>
                     <th>Tuổi nguyên liệu (ngày)</th>
-                    <th>Khối lượng mũ tươi (kg)</th>
+                    <th>Khối lượng mủ tươi (kg)</th>
                     <th>DRC(%)</th>
                     <th>Quy khô (kg)</th>
                     <th>Tình trạng nguyên liệu</th>

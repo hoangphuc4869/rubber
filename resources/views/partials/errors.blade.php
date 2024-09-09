@@ -40,3 +40,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
+
+@if (session('roll_fail'))
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ session('roll_fail') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif

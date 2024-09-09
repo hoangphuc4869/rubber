@@ -58,7 +58,7 @@
         }
     </script>
 
-    <h4 class="fw-bold py-3 mb-4">Chờ gia công nhiệt</h4>
+    <h4 class="fw-bold py-3 mb-4">Chờ ép kiện</h4>
 
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
         <div class="">
@@ -78,32 +78,42 @@
     <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th></th>
-                <th>Ngày</th>
+                <th class="text-center"></th>
+                <th>Ngày </th>
+                {{-- <th>Mã cán vắt</th> --}}
                 <th>Mã thùng</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
-                <th>Bãi ủ</th>
+                {{-- <th>Bãi ủ</th> --}}
                 <th>Nhà ủ</th>
+                <th>Dây chuyền</th>
+                <th>Bề dày tờ mủ</th>
+                <th>Trạng thái cốm</th>
                 <th>Giờ</th>
+                <th>Trưởng ca</th>
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($drums as $index => $drum)
-            <tr id={{$drum->id}}>
+            <tr id="{{$drum->id}}">
                 <td></td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y')}}</td>
+                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
+                {{-- <td>{{ $drum->rolling->code }}</td> --}}
                 <td>{{ $drum->code }}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đã xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
-                <td>{{ $drum->rolling->curing_area }}</td>
-                <td>{{ $drum->rolling->curing_house }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_time)->format('H:i')}}</td>
+                {{-- <td></td> --}}
+                <td>{{ $drum->curing_house->code }}</td>
+                <td>{{ $drum->link }}</td>
+                <td>{{ $drum->thickness }}</td>
+                <td>{{ $drum->trang_thai_com }}</td>
+                <td>{{ \Carbon\Carbon::parse($drum->time)->format('H:i')}}</td>
+                <td>{{ $drum->supervisor }}</td>
                 <td>
                     <div class="custom d-flex gap-1">
 
-                        <form action="{{route('heat.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('machining.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                                 <button class="bin-button">
@@ -155,6 +165,7 @@
                             </svg>
                             </button>
                         </form>
+
                     </div>
                 </td>
             </tr>

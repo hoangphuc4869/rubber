@@ -34,11 +34,14 @@ class TruckController extends Controller
     {
         $data = $request->validate([
             'code' => 'required|unique:trucks,code',
-            'farm_id' => 'required',
+            'name' => 'required|unique:trucks,name',
+            
         ], [
             'code.required' => 'Biển số xe không được để trống.',
             'code.unique' => 'Biển số xe đã tồn tại.',
-            'farm_id.required' => 'Vui lòng chọn nông trường',    
+            'name.required' => 'Tên xe không được để trống.',
+            'name.unique' => 'Tên xe đã tồn tại.'
+           
         ]);
 
         
@@ -74,13 +77,17 @@ class TruckController extends Controller
     public function update(Request $request, string $id)
     {
         $data = $request->validate([
-            'code' => 'required|unique:trucks,code,'. $id,
-            'farm_id' => 'required',
+            'code' => 'required|unique:trucks,code',
+            'name' => 'required|unique:trucks,name',
+            
         ], [
             'code.required' => 'Biển số xe không được để trống.',
             'code.unique' => 'Biển số xe đã tồn tại.',
-            'farm_id.required' => 'Vui lòng chọn nông trường',    
+            'name.required' => 'Tên xe không được để trống.',
+            'name.unique' => 'Tên xe đã tồn tại.'
+           
         ]);
+
 
         
         $truck =  Truck::findOrFail($id);

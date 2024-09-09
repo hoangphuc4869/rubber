@@ -3,13 +3,19 @@
 @section('content')
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Nông trại /</span> Xe</h4>
 <div class="row">
+    <div class="d-flex mb-3 justify-content-end">
+        <a href="{{route('trucks.index')}}">
+            <button class="btn btn-dark">
+                Thêm xe
+            </button>
+        </a>
+    </div>
     <div class="col-lg-4">
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Chỉnh sửa xe</h5>
             </div>
             <div class="card-body">
-                @include('partials.errors')
                 
                 <form action="{{ route('trucks.update', $truck->id) }}" method="POST">
                     @csrf
@@ -24,20 +30,16 @@
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="basic-default-company">Nông trường</label>
-                        <br>
-                        <select name="farm_id" id="" class="form-select custom-select">
-                            @foreach ($farms as $item)
-                                <option value="{{ $item->id }}" {{ $item->id == $truck->farm_id ? 'selected' : '' }}>
-                                    {{ $item->name }}
-                                </option>
-                            @endforeach
-                        </select>
-
-                        
+                        <label class="form-label" for="basic-default-company">Tên xe</label>
+                        <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ $truck->name }}" >
+                        @error('name')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                        @enderror
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Thêm</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
                 </form>
             </div>
         </div>
@@ -54,7 +56,7 @@
                 <tr>
                     <th>#</th>
                     <th>Biển số xe</th>
-                    <th>Tên nông trường</th>
+                    <th>Tên xe</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -63,7 +65,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $truck->code }}</td>
-                    <td>{{ $truck->farm->name }}</td>
+                    <td>{{ $truck->name }}</td>
                     <td>
                        <div class="custom d-flex gap-1">
                          <a href="{{route('trucks.edit', [$truck->id])}}">
@@ -138,14 +140,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <th>#</th>
-                    <th>Biển số xe</th>
-                    <th>Nông trường</th>
-                    <th>Tùy chỉnh</th>
-                </tr>
-            </tfoot>
+            
         </table>
     </div>
 </div>

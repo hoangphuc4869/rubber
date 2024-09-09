@@ -31,6 +31,15 @@
                             </div>
                         @enderror
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Công ty</label>
+                        <select name="company_id" class="form-select custom-select">
+                            @foreach ($companies as $item)
+                                <option  value="{{$item->id}}">{{$item->code}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     
                     <button type="submit" class="btn btn-primary">Tạo</button>
                 </form>
@@ -50,6 +59,7 @@
                     <th>#</th>
                     <th>Mã nông trường</th>
                     <th>Tên nông trường</th>
+                    <th>Công ty</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -59,6 +69,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $farm->code }}</td>
                     <td>{{ $farm->name }}</td>
+                    <td>{{ $farm->company ? $farm->company->code : '' }}</td>
                     <td>
                        <div class="custom d-flex gap-1">
                          <a href="{{route('farms.edit', [$farm->id])}}">

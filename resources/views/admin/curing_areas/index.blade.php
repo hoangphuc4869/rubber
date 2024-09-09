@@ -8,6 +8,8 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Tạo bãi ủ</h5>
             </div>
+
+            
             <div class="card-body">
                 @include('partials.errors')
                 
@@ -30,6 +32,15 @@
                                 {{ $message }}
                             </div>
                         @enderror
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" >Nông trường</label>
+                        <select name="farm_id" class="form-select custom-select">
+                            @foreach ($farms as $item)
+                                <option  value="{{$item->id}}">{{$item->code}}</option>
+                            @endforeach
+                        </select>
                     </div>
                     
                     <button type="submit" class="btn btn-primary">Tạo</button>

@@ -8,6 +8,7 @@ use App\Models\Farm;
 use Illuminate\Http\Request;
 use App\Models\Truck;
 use App\Models\Rubber;
+use App\Models\Company;
 
 class RubberController extends Controller
 {
@@ -19,8 +20,10 @@ class RubberController extends Controller
         $trucks = Truck::all();
         $farms = Farm::all();
         $curing_areas = CuringArea::all();
-        $rubbers = Rubber::orderBy('created_at', 'desc')->get();
-        return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas', 'rubbers'));
+        $companies = Company::all();
+        $rubbers = Rubber::orderBy('date', 'desc')->get();
+        // dd($rubbers[0]);
+        return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas', 'rubbers', 'companies'));
     }
 
     /**
@@ -41,6 +44,8 @@ class RubberController extends Controller
         $rubber = new Rubber;
 
         $rubber->fill($data);
+        $rubber->curing_area->containing += $request->fresh_weight;
+        $rubber->curing_area->save();
         $rubber->save();
         
         return redirect()->back()->with('success', 'Thành công');
@@ -62,7 +67,7 @@ class RubberController extends Controller
         $trucks = Truck::all();
         $farms = Farm::all();
         $curing_areas = CuringArea::all();
-        $rubbers = Rubber::orderBy('created_at', 'desc')->get();
+        $rubbers = Rubber::orderBy('date', 'desc')->get();
         $rubber = Rubber::findOrFail($id);
         return view('admin.rubber.edit', compact('trucks', 'farms', 'curing_areas', 'rubbers', 'rubber'));
     }
@@ -74,6 +79,11 @@ class RubberController extends Controller
     {
         $data = $request->all();
         $rubber = Rubber::findOrFail($id);
+        
+        $rubber->curing_area->containing -= $rubber->fresh_weight;
+        $rubber->curing_area->containing += $request->fresh_weight;
+        // dd($rubber->curing_area->containing,  $rubber->fresh_weight);
+        $rubber->curing_area->save();
         $rubber->fill($data);
         $rubber->save();
         
@@ -88,6 +98,8 @@ class RubberController extends Controller
         $item = Rubber::findOrFail($id);
 
         if($item) {
+            $item->curing_area->containing -= $item->fresh_weight;
+            $item->curing_area->save();
             $item->delete();
         }
 
@@ -100,7 +112,11 @@ class RubberController extends Controller
         $items = explode( ',', $request->drums);
 
         foreach ($items as $item) {
-            Rubber::findOrFail($item)->delete();
+            $rubber = Rubber::findOrFail($item);
+            $rubber->curing_area->containing -= $rubber->fresh_weight;
+            $rubber->curing_area->save();
+            $rubber->delete();
+
         }
         return redirect()->route('rubber.index')->with('delete_success', 'Xóa thành công' );
 

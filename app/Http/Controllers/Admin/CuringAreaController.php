@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CuringArea;
+use App\Models\Farm;
 
 class CuringAreaController extends Controller
 {
@@ -14,7 +15,8 @@ class CuringAreaController extends Controller
     public function index()
     {
         $curing_areas = CuringArea::all();
-        return view('admin.curing_areas.index', compact('curing_areas'));
+        $farms = Farm::all();
+        return view('admin.curing_areas.index', compact('curing_areas', 'farms'));
     }
 
     /**
@@ -33,6 +35,7 @@ class CuringAreaController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:curing_areas,code',
             'name' => 'required|unique:curing_areas,name',
+            'farm_id' => '',
         ], [
             'code.required' => 'Mã bãi ủ không được để trống.',
             'code.unique' => 'Mã bãi ủ đã tồn tại.',
@@ -50,9 +53,10 @@ class CuringAreaController extends Controller
     /**
      * Display the specified resource.
      */
+    
     public function show(string $id)
     {
-        //
+        
     }
 
     /**
@@ -62,7 +66,9 @@ class CuringAreaController extends Controller
     {
         $curing_area = CuringArea::findOrFail($id);
         $curing_areas = CuringArea::all();
-        return view('admin.curing_areas.edit', compact('curing_area', 'curing_areas'));
+        $farms = Farm::all();
+        
+        return view('admin.curing_areas.edit', compact('curing_area', 'curing_areas' , 'farms'));
     }
 
     /**
@@ -73,6 +79,7 @@ class CuringAreaController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:curing_areas,code,'. $id ,
             'name' => 'required|unique:curing_areas,name,'. $id,
+            'farm_id'=> ''
         ], [
             'code.required' => 'Mã bãi ủ không được để trống.',
             'code.unique' => 'Mã bãi ủ đã tồn tại.',

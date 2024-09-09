@@ -132,7 +132,7 @@
               
     <div class="sync-data my-3">
         <button class="btn btn-dark">
-            Đồng bộ dữ liệu kiểm duyệt
+            Cập nhật kiểm duyệt
         </button>
     </div>   
     

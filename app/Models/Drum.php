@@ -17,6 +17,9 @@ class Drum extends Model
         'date',
         'time',
         'rolling_code',
+        'thickness',
+        'trang_thai_com',
+        'inpurity_removing'
     ];
 
     public function rolling() {
@@ -29,5 +32,9 @@ class Drum extends Model
 
     public function batch(){
         return $this->belongsTo(Batch::class);
+    }
+
+    public function curing_house(){
+        return $this->belongsTo(CuringHouse::class);
     }
 }

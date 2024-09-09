@@ -15,7 +15,7 @@ class HeatController extends Controller
     public function index()
     {
         $rollings = Rolling::all();
-        $drums = Drum::where('status' , 1)->orderBy('date', 'desc')->get();
+        $drums = Drum::orderBy('date', 'desc')->get();
         
         $drums_per_day = Drum::where('status', 0)->select('date')
         ->selectRaw('COUNT(*) as total_number')

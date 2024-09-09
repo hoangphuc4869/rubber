@@ -11,12 +11,12 @@
             <input type="text" id="min" name="min" class="form-control" style="width: 200px">
         </div>
 
-        {{-- <form action="{{ route('bale-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+        <form action="{{ route('bale-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
             @csrf
             @method('DELETE')
             <input type="hidden" name="drums" id="selected-drums">
             <button class="btn btn-danger" type="submit">Xóa</button>
-        </form> --}}
+        </form>
        
     </div>
     
@@ -31,7 +31,7 @@
                 <th>Bãi ủ</th>
                 <th>Nhà ủ</th>
                 <th>Giờ xử lý</th>
-                <th>Tùy chỉnh</th>
+                {{-- <th>Tùy chỉnh</th> --}}
             </tr>
         </thead>
         <tbody>
@@ -45,10 +45,10 @@
                 <td>{{ $drum->rolling->curing_area }}</td>
                 <td>{{ $drum->rolling->curing_house }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_time)->format('H:i')}}</td>
-                <td>
+                {{-- <td>
                     <div class="custom d-flex gap-1">
 
-                        <form action="{{route('heat.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('producing.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                                 <button class="bin-button">
@@ -101,7 +101,7 @@
                             </button>
                         </form>
                     </div>
-                </td>
+                </td> --}}
             </tr>
             @endforeach
         </tbody>

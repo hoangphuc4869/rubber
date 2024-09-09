@@ -18,12 +18,13 @@ class RollingController extends Controller
      */
     public function index()
     {
-        $areas = Rubber::select('receiving_place_id')->where('status', 0)->distinct()->get();
+        $areas = CuringArea::where('containing', '>', 0)->get();
         $dates = Rubber::select('date')->distinct()->get();
         $curing_houses = CuringHouse::all();
+        $curing_areas = CuringArea::all();
 
         $rollings = Rolling::all();
-        return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings'));
+        return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings', 'curing_areas'));
     }
 
     /**
@@ -31,7 +32,7 @@ class RollingController extends Controller
      */
     public function create()
     {
-        //
+    
     }
 
     /**
@@ -40,27 +41,38 @@ class RollingController extends Controller
     public function store(Request $request)
     {
         
-        $data = $request->all();
-        // dd($data);
-        $area = CuringArea::findOrFail($data['curing_area']);
-        $house = CuringHouse::findOrFail($data['curing_house']);
-        // dd($house->code);
-        
-        // dd($rubbers[0]);
+        $data = $request->except('curing_house_id', 'curing_area_id');
 
+        // dd($request->all());
+        
+        $area = CuringArea::findOrFail($request->curing_area_id);
+        
+
+        if($request->weight_to_roll > $area->containing){
+            return redirect()->back()->with('roll_fail', 'Khối lượng cán lớn hơn khối lượng hiện có. Vui lòng kiểm tra lại!');
+        }
+      
         $command = new Rolling;
         $command->fill($data);
-        $command->curing_house = $house->code;
-        $command->curing_area = $area->code;
-        $command->code =  $house->code . $area->code . '_' . now()->timestamp;
+        $command->curing_house_id = $request->curing_house_id;
+        $command->curing_area_id = $request->curing_area_id;
+        $command->code =  now()->timestamp;
         $command->save();
+
+        $command->area->containing = max(0, $command->area->containing - $data['weight_to_roll']);
+        $command->area->save(); 
+
+        $command->house->containing = max(0, $command->house->containing + $data['weight_to_roll']);
+        $command->house->save(); 
 
         $rubbers = Rubber::where('receiving_place_id', $area->id)->where('date', $data['date_curing'])->get();
         foreach ($rubbers as $rubber) {
             $rubber->status = $command->id;
             $rubber->save();
         }
+
         return redirect()->back()->with('success', 'Thành công');
+
     }
 
     /**
@@ -98,11 +110,16 @@ class RollingController extends Controller
         if($item) {
             foreach ($rubbers as $rubber) {
                 $rubber->status = 0;
+                
                 $rubber->save();
             }
+            $item->area->containing += $item->weight_to_roll;
+            $item->house->containing = max(0, $item->house->containing - $item->weight_to_roll);
+            $item->area->save();
+            $item->house->save();
             $item->delete();
         }
-        return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công' );
+        return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công');
     }
 
     public function delete_items(Request $request)
@@ -116,7 +133,12 @@ class RollingController extends Controller
                 $rubber->status = 0;
                 $rubber->save();
             }
-            Rolling::findOrFail($item)->delete();
+            $rolling = Rolling::findOrFail($item);
+            $rolling->area->containing = $rolling->area->containing + $rolling->weight_to_roll;
+            $rolling->house->containing = max(0, $rolling->house->containing - $rolling->weight_to_roll);
+            $rolling->area->save();
+            $rolling->house->save();
+            $rolling->delete();
 
 
         }

@@ -9,7 +9,7 @@ class Truck extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['code', 'farm_id'];
+    protected $fillable = ['code', 'farm_id', 'name'];
 
     public function farm()
     {

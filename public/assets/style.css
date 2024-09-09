@@ -164,6 +164,13 @@
     text-align: center;
 }
 
+#datalist th:not(:first-child),
+#datalist td:not(:first-child) {
+    min-width: 150px;
+    max-width: unset;
+    text-align: center;
+}
+
 /* #datatable2 th:not(:first-child),
 #datatable2 td:not(:first-child) {
     min-width: 50px;
@@ -195,6 +202,29 @@ table.dataTable.table > tbody > .no-select {
     grid-auto-flow: column-reverse;
     gap: 3px;
     direction: ltr;
+}
+
+.grid-areas {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    gap: 10px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.area-item {
+    grid-column: span 1;
+    /* background-color: #898585; */
+    height: 100%;
+    padding: 10px;
+    color: #fff;
+}
+
+.area-item.active {
+    background-color: #00af1c;
 }
 
 .ui.table td,
@@ -315,4 +345,12 @@ table.dataTable.table > tbody > .no-select {
         transform: translate(0%, 0%);
         opacity: 1;
     }
+}
+
+.delivery_dates.row {
+    border: 1px solid;
+    padding: 10px;
+    margin-top: 10px;
+    background: #fff;
+    border-radius: 10px;
 }

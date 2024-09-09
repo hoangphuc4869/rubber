@@ -104,10 +104,10 @@
             </li>
             <!-- Components -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Quản lý cao su</span></li>
-            <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') ? "active open" : ""}}" style="">
+            <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') || Route::is('companies.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-tractor"></i>
-                <div data-i18n="Layouts">Nông trại</div>
+                <div data-i18n="Layouts">Nông trường</div>
               </a>
 
               <ul class="menu-sub">
@@ -129,6 +129,12 @@
                 <li class="menu-item {{Route::is('curing_houses.*') ? "active" : ""}}">
                   <a href="{{route('curing_houses.index')}}" class="menu-link">
                     <div data-i18n="Fluid">Nhà ủ</div>
+                  </a>
+                </li>
+
+                <li class="menu-item {{Route::is('companies.*') ? "active" : ""}}">
+                  <a href="{{route('companies.index')}}" class="menu-link">
+                    <div data-i18n="Fluid">Công ty</div>
                   </a>
                 </li>
         
@@ -197,6 +203,47 @@
                     <i class="menu-icon tf-icons fa-solid fa-list"></i>
                     <div data-i18n="Basic">Danh sách lô đã xuất</div>
                 </a>
+            </li>
+
+            <li class="menu-item {{Route::is('customers.*') || Route::is('contract.*') || Route::is('contract-type.*')  ? "active open" : ""}}" style="">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa-solid fa-file-contract"></i>
+                <div data-i18n="Layouts">Hợp đồng</div>
+              </a>
+
+              <ul class="menu-sub" style="list-style:none">
+                <li class="menu-item {{Route::is('customers.*') ? "active" : ""}}">
+                  <a href="{{route('customers.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i> --}}
+                    <div data-i18n="Basic">Khách hàng</div>
+                  </a>
+                </li>
+                <li class="menu-item {{Route::is('contract-type.*') ? "active" : ""}}">
+                  <a href="{{route('contract-type.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
+                    <div data-i18n="Basic">Loại hợp đồng</div>
+                  </a>
+                </li>
+                <li class="menu-item {{Route::is('contract.*') ? "active" : ""}}">
+                  <a href="{{route('contract.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i> --}}
+                    <div data-i18n="Basic">Hợp đồng</div>
+                  </a>
+                </li>
+
+                <li class="menu-item {{Route::is('producing.index') ? "active" : ""}}">
+                  <a href="{{route('producing.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-screwdriver-wrench"></i> --}}
+                    <div data-i18n="Basic">File</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="menu-item {{Route::is('users.*') ? "active" : ""}}">
+              <a href="{{route('users.index')}}" class="menu-link">
+                <i class="menu-icon tf-icons fa-solid fa-user"></i>
+                <div data-i18n="Basic">Phân quyền</div>
+              </a>
             </li>
           </ul>
         </aside>
@@ -284,10 +331,13 @@
                       <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                      <a class="dropdown-item" href="auth-login-basic.html">
-                        <i class="bx bx-power-off me-2"></i>
-                        <span class="align-middle">Log Out</span>
-                      </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
+                        <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bx bx-power-off me-2"></i>
+                            <span class="align-middle">Log Out</span>
+                        </a>
                     </li>
                   </ul>
                 </li>

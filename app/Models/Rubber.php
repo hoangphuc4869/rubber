@@ -13,6 +13,7 @@ class Rubber extends Model
 
     protected $fillable = [
         'status',
+        
         'truck_id',
         'farm_id',
         'receiving_place_id',
@@ -26,6 +27,7 @@ class Rubber extends Model
         'grade',
         'date',
         'time',
+        'supervisor',
     ];
 
     public function truck()

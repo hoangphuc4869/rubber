@@ -9,13 +9,12 @@
                 <h5 class="mb-0">Thêm xe</h5>
             </div>
             <div class="card-body">
-                @include('partials.errors')
                 
                 <form action="{{ route('trucks.store') }}" method="POST">
                     @csrf
                     <div class="mb-3">
                         <label class="form-label" for="basic-default-fullname">Số xe</label>
-                        <input type="text" id="code" class="form-control @error('code') is-invalid @enderror" name="code" value="{{ old('code') }}" placeholder="BHCK-xx">
+                        <input type="text" id="code" class="form-control @error('code') is-invalid @enderror" name="code" value="{{ old('code') }}" >
                         @error('code')
                             <div class="invalid-feedback">
                                 {{ $message }}
@@ -23,13 +22,13 @@
                         @enderror
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="basic-default-company">Nông trường</label>
-                        <br>
-                        <select name="farm_id" id="" class="form-select custom-select">
-                            @foreach ($farms as $item)
-                                <option value="{{$item->id}}">{{$item->name}}</option>
-                            @endforeach
-                        </select>
+                        <label class="form-label" for="basic-default-company">Tên xe</label>
+                        <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" >
+                        @error('name')
+                            <div class="invalid-feedback">
+                                {{ $message }}
+                            </div>
+                        @enderror
                         
                     </div>
                     
@@ -50,7 +49,7 @@
                 <tr>
                     <th>#</th>
                     <th>Biển số xe</th>
-                    <th>Tên nông trường</th>
+                    <th>Tên xe</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -59,7 +58,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $truck->code }}</td>
-                    <td>{{ $truck->farm->name }}</td>
+                    <td>{{ $truck->name }}</td>
                     <td>
                        <div class="custom d-flex gap-1">
                          <a href="{{route('trucks.edit', [$truck->id])}}">
@@ -134,14 +133,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <th>#</th>
-                    <th>Biển số xe</th>
-                    <th>Nông trường</th>
-                    <th>Tùy chỉnh</th>
-                </tr>
-            </tfoot>
+          
         </table>
     </div>
 </div>

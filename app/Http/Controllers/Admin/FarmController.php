@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Farm;
+use App\Models\Company;
 use Illuminate\Http\Request;
 
 class FarmController extends Controller
@@ -14,7 +15,8 @@ class FarmController extends Controller
     public function index()
     {
         $farms = Farm::all();
-        return view('admin.farms.index', compact('farms'));
+        $companies = Company::all();
+        return view('admin.farms.index', compact('farms', 'companies'));
     }
 
     /**
@@ -34,6 +36,7 @@ class FarmController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:farms,code',
             'name' => 'required|unique:farms,name',
+            'company_id' => '',
         ], [
             'code.required' => 'Mã nông trường không được để trống.',
             'code.unique' => 'Mã nông trường đã tồn tại.',
@@ -66,7 +69,9 @@ class FarmController extends Controller
     {
         $farm = Farm::findOrFail($id);
         $farms = Farm::all();
-        return view('admin.farms.edit', compact('farm', 'farms'));
+        $companies = Company::all();
+
+        return view('admin.farms.edit', compact('farm', 'farms', 'companies'));
     }
 
     /**
@@ -77,6 +82,7 @@ class FarmController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:farms,code,' . $id,
             'name' => 'required|unique:farms,name,' . $id,
+            'company_id' => '',
         ], [
             'code.required' => 'Mã nông trường không được để trống.',
             'code.unique' => 'Mã nông trường đã tồn tại.',

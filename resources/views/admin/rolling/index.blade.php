@@ -3,6 +3,15 @@
 @section('content')
     <h4 class="fw-bold py-3 mb-4">Cán vắt</h4>
 
+    <div class="grid-areas">
+        @foreach ($curing_areas as $item)
+            <div class="area-item btn btn-{{$item->containing > 0 ? 'warning' : 'dark' }}">
+                {{$item->code}} <br>
+                {{ number_format($item->containing, 0, '.', ',') }} kg
+            </div>
+        @endforeach
+    </div>
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Thêm lệnh</h5>
@@ -16,15 +25,31 @@
                     <div class="mb-3 col-lg-4">
                         <label class="form-label">Bãi ủ</label>
                         
-                        <select name="curing_area" class="form-select custom-select w-100">
+                        <select name="curing_area_id" id="areaSelect" class="form-select custom-select w-100">
                             @foreach ($areas as $item)
-                                <option  value="{{$item->curing_area->id}}">{{$item->curing_area->code}}</option>
+                                <option  value="{{$item->id}}" data-containing="{{$item->containing}}">{{$item->code}}</option>
                             @endforeach
                         </select>                
                     </div>
 
                     <div class="mb-3 col-lg-4">
-                        <label class="form-label">Ngày ủ</label>
+                        <label class="form-label">Nhà ủ</label>
+                        
+                        <select name="curing_house_id" id="areaSelect" class="form-select custom-select w-100">
+                            @foreach ($curing_houses as $item)
+                                <option  value="{{$item->id}}" data-containing="{{$item->containing}}">{{$item->code}}</option>
+                            @endforeach
+                        </select>                
+                    </div>
+
+
+                    <div class="mb-3 col-lg-4">
+                        <label class="form-label">Khối lượng cán (kg)</label>
+                        <input type="number" min="1" name="weight_to_roll" class="form-control" id="weight_to_roll" value="{{$areas[0]->containing ?? ''}}">  
+                    </div>
+
+                    <div class="mb-3 col-lg-4">
+                        <label class="form-label">Thời gian tồn trữ</label>
                         <select name="date_curing" class="form-select custom-select w-100">
                             @foreach ($dates as $item)
                                 <option  value="{{$item->date}}">{{ \Carbon\Carbon::parse($item->date)->format('d/m/Y')}}</option>
@@ -33,22 +58,18 @@
                     </div>
 
                     <div class="mb-3 col-lg-4">
-                        <label class="form-label">Chọn nhà ủ</label>
-                        <select name="curing_house" class="form-select custom-select w-100">
-                            @foreach ($curing_houses as $item)
-                                <option  value="{{$item->id}}">{{$item->code}}</option>
-                            @endforeach
-                        </select>                
-                    </div>
-
-                     <div class="mb-3 col-lg-4">
-                        <label class="form-label" >Ngày thực hiện</label>
+                        <label class="form-label" >Ngày tiếp nhận</label>
                         <input type="date" name="date" id="dateInput" class="form-control">
                     </div>
 
                     <div class="mb-3 col-lg-4">
                         <label class="form-label" >Giờ</label>
                         <input type="time" name="time" id="timeInput" class="form-control">
+                    </div>
+
+                    <div class="mb-3 col-lg-4">
+                        <label class="form-label" >Tạp chất loại bỏ</label>
+                        <input type="text" name="impurity_removing" class="form-control">
                     </div>
                    
                     
@@ -74,8 +95,6 @@
        
     </div>
 
-
-
      <table id="datatable" class="ui celled table" style="width:100%">
             <thead>
                 <tr>
@@ -86,7 +105,8 @@
                     <th>Thời gian</th>
                     <th>Bãi ủ</th>
                     <th>Nhà ủ</th>
-                    <th>Ngày ủ</th>
+                    <th>Khối lượng (kg)</th>
+                    {{-- <th>Ngày ủ</th> --}}
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -96,11 +116,21 @@
                     <td></td>
                     <td>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
                     <td>{{ $rolling->code }}</td>
-                    <td>{!! $rolling->status !== 0 ? "<span class='text-success'>Đã gia công</span>" : "<span class='text-danger'>Chưa gia công</span>"  !!}</td>
+
+                    <td>
+                        {!! $rolling->status === 0 
+                            ? "<span class='text-danger'>Chờ gia công</span>"
+                            : ($rolling->status === 1
+                                ? "<span class='text-success'>Đã gia công</span>" 
+                                : "<span class='text-warning'>Gia công một phần</span>") 
+                        !!}
+                    </td>
+
                     <td>{{ \Carbon\Carbon::parse($rolling->time)->format('H:i')}}</td>
-                    <td>{{ $rolling->curing_area }}</td>
-                    <td>{{ $rolling->curing_house }}</td>
-                    <td>{{ \Carbon\Carbon::parse($rolling->date_curing)->format('d/m/Y')}}</td>
+                    <td>{{ $rolling->area ? $rolling->area->code : '' }}</td>
+                    <td>{{ $rolling->house ? $rolling->house->code : '' }}</td>
+                    <td>{{  number_format($rolling->weight_to_roll, 0, '.', ',') }}</td>
+                    {{-- <td>{{ \Carbon\Carbon::parse($rolling->date_curing)->format('d/m/Y')}}</td> --}}
                     <td>
                         <div class="custom d-flex gap-1">
                                 {{-- <a href="{{route('rolling.edit', [$rolling->id])}}">
