@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CuringArea;
 use App\Models\Farm;
+use Illuminate\Support\Facades\Gate;
+
 
 class CuringAreaController extends Controller
 {
@@ -16,7 +18,13 @@ class CuringAreaController extends Controller
     {
         $curing_areas = CuringArea::all();
         $farms = Farm::all();
-        return view('admin.curing_areas.index', compact('curing_areas', 'farms'));
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.curing_areas.index', compact('curing_areas', 'farms'));
+
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -36,6 +44,7 @@ class CuringAreaController extends Controller
             'code' => 'required|unique:curing_areas,code',
             'name' => 'required|unique:curing_areas,name',
             'farm_id' => '',
+            'latex_type' => '',
         ], [
             'code.required' => 'Mã bãi ủ không được để trống.',
             'code.unique' => 'Mã bãi ủ đã tồn tại.',
@@ -67,8 +76,11 @@ class CuringAreaController extends Controller
         $curing_area = CuringArea::findOrFail($id);
         $curing_areas = CuringArea::all();
         $farms = Farm::all();
-        
-        return view('admin.curing_areas.edit', compact('curing_area', 'curing_areas' , 'farms'));
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.curing_areas.edit', compact('curing_area', 'curing_areas' , 'farms'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -79,7 +91,8 @@ class CuringAreaController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:curing_areas,code,'. $id ,
             'name' => 'required|unique:curing_areas,name,'. $id,
-            'farm_id'=> ''
+            'farm_id'=> '',
+            'latex_type' => ''
         ], [
             'code.required' => 'Mã bãi ủ không được để trống.',
             'code.unique' => 'Mã bãi ủ đã tồn tại.',

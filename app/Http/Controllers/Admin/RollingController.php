@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use App\Models\Rubber;
 use Illuminate\Support\Facades\DB; 
 use App\Models\Farm;
+use Illuminate\Support\Facades\Gate;
+use Carbon\Carbon;
 
 class RollingController extends Controller
 {
@@ -19,12 +21,21 @@ class RollingController extends Controller
     public function index()
     {
         $areas = CuringArea::where('containing', '>', 0)->get();
-        $dates = Rubber::select('date')->distinct()->get();
+        $dates = Rubber::select('or_time')->where('input_status', 1)->distinct()->get();
+
+        // dd($dates);
         $curing_houses = CuringHouse::all();
         $curing_areas = CuringArea::all();
 
         $rollings = Rolling::all();
-        return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings', 'curing_areas'));
+
+        if (Gate::allows('canvat') || Gate::allows('admin') ) {
+            return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings', 'curing_areas'));
+
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
     }
 
     /**
@@ -41,7 +52,7 @@ class RollingController extends Controller
     public function store(Request $request)
     {
         
-        $data = $request->except('curing_house_id', 'curing_area_id');
+        $data = $request->except('curing_house_id', 'curing_area_id', 'date_curing');
 
         // dd($request->all());
         
@@ -56,6 +67,7 @@ class RollingController extends Controller
         $command->fill($data);
         $command->curing_house_id = $request->curing_house_id;
         $command->curing_area_id = $request->curing_area_id;
+        $command->date_curing = Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y/m/d');
         $command->code =  now()->timestamp;
         $command->save();
 
@@ -65,7 +77,12 @@ class RollingController extends Controller
         $command->house->containing = max(0, $command->house->containing + $data['weight_to_roll']);
         $command->house->save(); 
 
-        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('date', $data['date_curing'])->get();
+        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('input_status', 1)
+            ->whereRaw('DATE(STR_TO_DATE(or_time, "%d-%m-%Y %H:%i")) = ?', [Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y-m-d')])
+            ->get();
+
+
+        // dd($rubbers);
         foreach ($rubbers as $rubber) {
             $rubber->status = $command->id;
             $rubber->save();

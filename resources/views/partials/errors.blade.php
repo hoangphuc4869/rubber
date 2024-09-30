@@ -1,6 +1,6 @@
 @if ($errors->any())
     <div class="alert alert-danger alert-dismissible" role="alert">
-        Vui lòng kiểm tra lại
+        Vui lòng kiểm tra lại 
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
@@ -44,6 +44,13 @@
 @if (session('roll_fail'))
     <div class="alert alert-danger alert-dismissible" role="alert">
         {{ session('roll_fail') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+@if (session('exceed_count'))
+    <div class="alert alert-danger alert-dismissible" role="alert">
+        {{ session('exceed_count') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif

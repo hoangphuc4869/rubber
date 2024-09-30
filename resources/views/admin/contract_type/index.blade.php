@@ -5,7 +5,7 @@
     <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Hợp đồng /</span> Loại hợp đồng</h4>
     @include('partials.errors')
     <div class="sync-data my-3">
-        <a href="{{route('contract.create')}}">
+        <a href="{{route('contract-type.create')}}">
             <button class="btn btn-dark">
                 Thêm loại hợp đồng
             </button>

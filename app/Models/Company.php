@@ -20,4 +20,9 @@ class Company extends Model
 		return $this->hasMany(Farm::class);
 	}
 
+    public function batches()
+	{
+		return $this->hasMany(Batch::class);
+	}
+
 }

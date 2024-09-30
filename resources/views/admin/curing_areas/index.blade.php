@@ -42,6 +42,14 @@
                             @endforeach
                         </select>
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" >Loại mủ</label>
+                        <select name="latex_type" class="form-select custom-select">
+                           <option value="Mủ đông chén">Mủ đông chén</option>
+                           <option value="Mủ dây">Mủ dây</option>
+                        </select>
+                    </div>
                     
                     <button type="submit" class="btn btn-primary">Tạo</button>
                 </form>
@@ -61,6 +69,8 @@
                     <th>#</th>
                     <th>Mã bãi ủ</th>
                     <th>Tên bãi ủ</th>
+                    <th>Nông trường</th>
+                    <th>Loại mủ</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -70,6 +80,8 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $curing_areas->code }}</td>
                     <td>{{ $curing_areas->name }}</td>
+                    <td>{{ $curing_areas->farm?->code }}</td>
+                    <td>{{ $curing_areas->latex_type }}</td>
                     <td>
                        <div class="custom d-flex gap-1">
                          <a href="{{route('curing_areas.edit', [$curing_areas->id])}}">
@@ -144,14 +156,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <th>#</th>
-                    <th>Mã bãi ủ</th>
-                    <th>Tên bãi ủ</th>
-                    <th>Tùy chỉnh</th>
-                </tr>
-            </tfoot>
+           
         </table>
     </div>
 </div>

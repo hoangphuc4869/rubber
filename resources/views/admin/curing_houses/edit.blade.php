@@ -32,6 +32,15 @@
                             </div>
                         @enderror
                     </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" >Bãi ủ</label>
+                        <select name="curing_area_id" class="form-select custom-select">
+                            @foreach ($curing_areas as $item)
+                                <option  value="{{$item->id}}" {{$curing_house->curing_area_id == $item->id ? 'selected' : ''}}>{{$item->code}}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     
                     <button type="submit" class="btn btn-primary">Cập nhật</button>
                 </form>
@@ -46,6 +55,7 @@
                     <th>#</th>
                     <th>Mã nhà ủ</th>
                     <th>Tên nhà ủ</th>
+                    <th>Bãi ủ</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -55,6 +65,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $curing_house->code }}</td>
                     <td>{{ $curing_house->name }}</td>
+                    <td>{{ $curing_house->curing_area->code }}</td>
                     <td>
                        <div class="custom d-flex gap-1">
                          <a href="{{route('curing_houses.edit', [$curing_house->id])}}">
@@ -126,14 +137,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <th>#</th>
-                    <th>Mã nhà ủ</th>
-                    <th>Tên nhà ủ</th>
-                    <th>Tùy chỉnh</th>
-                </tr>
-            </tfoot>
+            
         </table>
     </div>
 </div>

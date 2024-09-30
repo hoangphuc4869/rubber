@@ -19,7 +19,10 @@ class Drum extends Model
         'rolling_code',
         'thickness',
         'trang_thai_com',
-        'inpurity_removing'
+        'inpurity_removing',
+        'time_to_dry',
+        'validation',
+        'remaining_bales'
     ];
 
     public function rolling() {
@@ -30,11 +33,18 @@ class Drum extends Model
         return $this->hasOne(Bale::class);
     }
 
-    public function batch(){
-        return $this->belongsTo(Batch::class);
-    }
+    // public function batch(){
+    //     return $this->belongsTo(Batch::class);
+    // }
 
     public function curing_house(){
         return $this->belongsTo(CuringHouse::class);
+    }
+
+    public function batches()
+    {
+        return $this->belongsToMany(Batch::class, 'batch_drum')
+                    ->withPivot('bale_count')
+                    ->withTimestamps();
     }
 }

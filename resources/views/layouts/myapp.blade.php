@@ -15,12 +15,12 @@
     />
     <meta name="csrf-token" content="{{ csrf_token() }}">  
 
-    <title>Dashboard</title>
+    <title>Quản lý cao su</title>
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/sneat-1.0.0/assets/img/favicon/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/assets/images/favicon-32x32.png" />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,6 +40,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.4/css/dataTables.dataTables.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/select/2.0.5/css/select.dataTables.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/datetime/1.5.3/css/dataTables.dateTime.min.css">
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.1/css/fixedColumns.dataTables.css">
 
     {{-- select2 --}}
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -69,6 +71,10 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="/sneat-1.0.0/assets/js/config.js"></script>
+    
+    <script src="/assets/js_modules/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
 
   </head>
 
@@ -102,8 +108,14 @@
                 <div data-i18n="Analytics">Dashboard</div>
               </a>
             </li>
+          
+
             <!-- Components -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Quản lý cao su</span></li>
+
+
+            @if (Gate::allows('nguyenlieu') || Gate::allows('admin'))
+                
             <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') || Route::is('companies.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-tractor"></i>
@@ -114,6 +126,11 @@
                 <li class="menu-item {{Route::is('farms.*') ? "active" : ""}}">
                   <a href="{{route('farms.index')}}" class="menu-link">
                     <div data-i18n="Without navbar">Nông trường</div>
+                  </a>
+                </li>
+                <li class="menu-item {{Route::is('plots.*') ? "active" : ""}}">
+                  <a href="{{route('plots.index')}}" class="menu-link">
+                    <div data-i18n="Without navbar">Vùng trồng</div>
                   </a>
                 </li>
                 <li class="menu-item {{Route::is('trucks.*') ? "active" : ""}}">
@@ -147,6 +164,10 @@
               </a>
             </li>
 
+            @endif
+
+
+            @if (Gate::allows('canvat') || Gate::allows('admin') || Gate::allows('hat') || Gate::allows('nhiet') || Gate::allows('ep') || Gate::allows('donggoi'))
             <li class="menu-item {{Route::is('rolling.*') || Route::is('machining.*') || Route::is('heat.*') || Route::is('producing.*') || Route::is('batch.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-gears"></i>
@@ -154,58 +175,151 @@
               </a>
 
               <ul class="menu-sub" style="list-style:none">
-                <li class="menu-item {{Route::is('rolling.*') ? "active" : ""}}">
+                @if (Gate::allows('canvat') || Gate::allows('admin'))
+                <li class="menu-item  {{Route::is('rolling.*') ? "active" : ""}}">
                   <a href="{{route('rolling.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i> --}}
                     <div data-i18n="Basic">Cán vắt</div>
                   </a>
                 </li>
-                <li class="menu-item {{Route::is('machining.*') ? "active" : ""}}">
+                @endif
+
+                @if (Gate::allows('hat') || Gate::allows('admin'))
+                <li class="menu-item  {{Route::is('machining.*') ? "active" : ""}}">
                   <a href="{{route('machining.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
                     <div data-i18n="Basic">Gia công hạt</div>
                   </a>
                 </li>
-                <li class="menu-item {{Route::is('heat.*') ? "active" : ""}}">
+                @endif
+
+                @if (Gate::allows('nhiet') || Gate::allows('admin'))
+                <li class="menu-item  {{Route::is('heat.*') ? "active" : ""}}">
                   <a href="{{route('heat.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i> --}}
                     <div data-i18n="Basic">Gia công nhiệt</div>
                   </a>
                 </li>
+                @endif
+                
 
-                <li class="menu-item {{Route::is('producing.index') ? "active" : ""}}">
+                @if (Gate::allows('ep') || Gate::allows('admin'))
+                <li class="menu-item  {{Route::is('producing.index') ? "active" : ""}}">
                   <a href="{{route('producing.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-screwdriver-wrench"></i> --}}
                     <div data-i18n="Basic">Ra lò, ép kiện</div>
                   </a>
                 </li>
+                @endif
 
-                <li class="menu-item {{Route::is('batch.index') ? "active" : ""}}">
+                @if (Gate::allows('donggoi') || Gate::allows('admin'))
+                <li class="menu-item  {{Route::is('batch.index') ? "active" : ""}}">
                   <a href="{{route('batch.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-cube"></i> --}}
                     <div data-i18n="Basic">Đóng gói</div>
                   </a>
                 </li>
+                @endif
         
               </ul>
             </li>
+            @endif
+  
             
-          
-            <li class="menu-item {{Route::is('warehouse.create') ? "active" : ""}}">
+            {{-- <li class="menu-item
+            {{Route::is('warehouse.create') ? "active" : ""}} {{Auth::user()->roles->contains('name', 'Admin') || Auth::user()->roles->contains('name', 'Kho')}} ">
+            
               <a href="{{route('warehouse.create')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
                 <div data-i18n="Basic">Kho hàng</div>
               </a>
+            </li> --}}
+
+            @if (Gate::allows('khoBHCK') || Gate::allows('admin'))
+            <li class="menu-item {{Route::is('warehouseBHCK') || Route::is('shipments.*')  ? "active open" : ""}}" style="">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
+                <div data-i18n="Layouts">Kho hàng BHCK</div>
+              </a>
+
+              <ul class="menu-sub" style="list-style:none">
+                <li class="menu-item {{Route::is('warehouseBHCK') ? "active" : ""}}">
+                  <a href="{{route('warehouseBHCK')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i> --}}
+                    <div data-i18n="Basic">Nhập kho</div>
+                  </a>
+                </li>
+                <li class="menu-item {{Route::is('shipments.*') ? "active" : ""}}">
+                  <a href="{{route('shipments.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
+                    <div data-i18n="Basic">Xuất kho</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            @endif
+
+            
+            
+
+
+            @if (Gate::allows('khoCRCK2') || Gate::allows('admin'))
+            <li class="menu-item {{Route::is('warehouseCRCK2') || Route::is('shipmentsCRCK2.*') ? "active open" : ""}}" style="">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
+                <div data-i18n="Layouts">Kho hàng CRCK2</div>
+              </a>
+
+              <ul class="menu-sub" style="list-style:none">
+                <li class="menu-item {{Route::is('warehouseCRCK2') ? "active" : ""}}">
+                  <a href="{{route('warehouseCRCK2')}}" class="menu-link">
+                    
+                    <div data-i18n="Basic">Nhập kho</div>
+                  </a>
+                </li>
+                <li class="menu-item {{ Route::is('shipmentsCRCK2.*') ? "active" : ""}}" >
+                  <a href="{{route('shipmentsCRCK2.index')}}" class="menu-link">
+                    <div data-i18n="Basic">Xuất kho</div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            @endif
+
+            
+            <li class="menu-item {{Route::is('warehouseTN') || Route::is('shipmentsTNSR.*')  ? "active open" : ""}}" style="">
+              <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons fa-solid fa-warehouse"></i>
+                <div data-i18n="Layouts">Kho hàng 6T-TN</div>
+              </a>
+
+              <ul class="menu-sub" style="list-style:none">
+                <li class="menu-item {{Route::is('warehouseTN') ? "active" : ""}}">
+                  <a href="{{route('warehouseTN')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i> --}}
+                    <div data-i18n="Basic">Nhập kho</div>
+                  </a>
+                </li>
+                <li class="menu-item {{Route::is('shipmentsTNSR.*') ? "active" : ""}}">
+                  <a href="{{route('shipmentsTNSR.index')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
+                    <div data-i18n="Basic">Xuất kho</div>
+                  </a>
+                </li>
+              </ul>
             </li>
 
-            <li class="menu-item {{ Route::is('exported-list') ? 'active' : '' }}">
+
+            {{-- <li class="menu-item {{ Route::is('exported-list') ? 'active' : '' }}">
                 <a href="{{ route('exported-list') }}" class="menu-link">
                     <i class="menu-icon tf-icons fa-solid fa-list"></i>
                     <div data-i18n="Basic">Danh sách lô đã xuất</div>
                 </a>
-            </li>
+            </li> --}}
 
-            <li class="menu-item {{Route::is('customers.*') || Route::is('contract.*') || Route::is('contract-type.*')  ? "active open" : ""}}" style="">
+            @if (Gate::allows('contractBHCK') || Gate::allows('admin') || Gate::allows('contractCRCK2') )
+            
+            <li class="menu-item {{Route::is('customers.*') || Route::is('contract.*') || Route::is('contract-type.*') || Route::is('contractCRCK2.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-file-contract"></i>
                 <div data-i18n="Layouts">Hợp đồng</div>
@@ -214,37 +328,45 @@
               <ul class="menu-sub" style="list-style:none">
                 <li class="menu-item {{Route::is('customers.*') ? "active" : ""}}">
                   <a href="{{route('customers.index')}}" class="menu-link">
-                    {{-- <i class="menu-icon tf-icons fa-regular fa-paint-roller"></i> --}}
+                    
                     <div data-i18n="Basic">Khách hàng</div>
                   </a>
                 </li>
                 <li class="menu-item {{Route::is('contract-type.*') ? "active" : ""}}">
                   <a href="{{route('contract-type.index')}}" class="menu-link">
-                    {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
+                    
                     <div data-i18n="Basic">Loại hợp đồng</div>
                   </a>
                 </li>
+                @if (Gate::allows('contractBHCK') || Gate::allows('admin'))
                 <li class="menu-item {{Route::is('contract.*') ? "active" : ""}}">
                   <a href="{{route('contract.index')}}" class="menu-link">
-                    {{-- <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i> --}}
-                    <div data-i18n="Basic">Hợp đồng</div>
+                    
+                    <div data-i18n="Basic">Hợp đồng BHCK</div>
                   </a>
                 </li>
+                 @endif
 
-                <li class="menu-item {{Route::is('producing.index') ? "active" : ""}}">
-                  <a href="{{route('producing.index')}}" class="menu-link">
-                    {{-- <i class="menu-icon tf-icons fa-regular fa-screwdriver-wrench"></i> --}}
-                    <div data-i18n="Basic">File</div>
+                @if (Gate::allows('contractCRCK2') || Gate::allows('admin'))
+                <li class="menu-item {{Route::is('contractCRCK2.*') ? "active" : ""}}">
+                  <a href="{{route('contractCRCK2.index')}}" class="menu-link">
+                    <div data-i18n="Basic">Hợp đồng CRCK2</div>
                   </a>
                 </li>
+                @endif
               </ul>
             </li>
+
+            @endif
+
+            @if (Gate::allows('admin'))
             <li class="menu-item {{Route::is('users.*') ? "active" : ""}}">
               <a href="{{route('users.index')}}" class="menu-link">
                 <i class="menu-icon tf-icons fa-solid fa-user"></i>
                 <div data-i18n="Basic">Phân quyền</div>
               </a>
             </li>
+            @endif
           </ul>
         </aside>
         <!-- / Menu -->
@@ -252,7 +374,6 @@
         <!-- Layout container -->
         <div class="layout-page">
           <!-- Navbar -->
-
           <nav
             class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
             id="layout-navbar"
@@ -265,26 +386,18 @@
 
             <div class="navbar-nav-right d-flex align-items-center" id="navbar-collapse">
               <!-- Search -->
-              <div class="navbar-nav align-items-center">
-                <div class="nav-item d-flex align-items-center">
-                  <i class="bx bx-search fs-4 lh-0"></i>
-                  <input
-                    type="text"
-                    class="form-control border-0 shadow-none"
-                    placeholder="Search..."
-                    aria-label="Search..."
-                  />
-                </div>
+              <div class="navbar-nav d-block">
+                Xin chào, <span class="text-dark fs-4 fw-bold">{{Auth::user()->name}}</span>
               </div>
               <!-- /Search -->
-
+              
               <ul class="navbar-nav flex-row align-items-center ms-auto">
                
                 <!-- User -->
                 <li class="nav-item navbar-dropdown dropdown-user dropdown">
                   <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                      <img src="/sneat-1.0.0/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                      <img src="/assets/images/User-avatar.svg.png" alt class="w-px-40 h-auto rounded-circle" />
                     </div>
                   </a>
                   <ul class="dropdown-menu dropdown-menu-end">
@@ -293,42 +406,15 @@
                         <div class="d-flex">
                           <div class="flex-shrink-0 me-3">
                             <div class="avatar avatar-online">
-                              <img src="/sneat-1.0.0/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+                              <img src="/assets/images/User-avatar.svg.png" alt class="w-px-40 h-auto rounded-circle" />
                             </div>
                           </div>
                           <div class="flex-grow-1">
-                            <span class="fw-semibold d-block">John Doe</span>
-                            <small class="text-muted">Admin</small>
+                            <span class="fw-semibold d-block">{{Auth::user()->name}}</span>
+                            <small class="text-muted">{{implode(', ', Auth::user()->roles->pluck('name')->toArray())}}</small>
                           </div>
                         </div>
                       </a>
-                    </li>
-                    <li>
-                      <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <i class="bx bx-user me-2"></i>
-                        <span class="align-middle">My Profile</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <i class="bx bx-cog me-2"></i>
-                        <span class="align-middle">Settings</span>
-                      </a>
-                    </li>
-                    <li>
-                      <a class="dropdown-item" href="#">
-                        <span class="d-flex align-items-center align-middle">
-                          <i class="flex-shrink-0 bx bx-credit-card me-2"></i>
-                          <span class="flex-grow-1 align-middle">Billing</span>
-                          <span class="flex-shrink-0 badge badge-center rounded-pill bg-danger w-px-20 h-px-20">4</span>
-                        </span>
-                      </a>
-                    </li>
-                    <li>
-                      <div class="dropdown-divider"></div>
                     </li>
                     <li>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
@@ -388,6 +474,10 @@
     <script src="https://cdn.datatables.net/buttons/3.1.1/js/buttons.dataTables.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.2/moment.min.js"></script>
     <script src="https://cdn.datatables.net/datetime/1.5.3/js/dataTables.dateTime.min.js"></script>
+
+    <script src="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.js"></script>
+
+    <script src="https://cdn.datatables.net/fixedcolumns/5.0.1/js/fixedColumns.dataTables.js"></script>
 
 
 

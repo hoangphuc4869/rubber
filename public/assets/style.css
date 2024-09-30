@@ -26,6 +26,10 @@
     border-radius: 50%;
     filter: blur(10px);
 }
+
+#ui-datepicker-div {
+    z-index: 10 !important;
+}
 .editBtn:hover::before {
     transform: scale(1);
 }
@@ -159,13 +163,32 @@
 
 #datatable th:not(:first-child),
 #datatable td:not(:first-child) {
-    min-width: 150px;
+    min-width: 80px;
+    max-width: unset;
+    text-align: center;
+}
+
+td,
+th {
+    font-size: 13px;
+}
+
+#datatable2 th:not(:first-child),
+#datatable2 td:not(:first-child) {
+    min-width: 80px;
     max-width: unset;
     text-align: center;
 }
 
 #datalist th:not(:first-child),
 #datalist td:not(:first-child) {
+    min-width: 80px;
+    max-width: unset;
+    text-align: center;
+}
+
+#dataOrder th:not(:first-child),
+#dataOrder td:not(:first-child) {
     min-width: 150px;
     max-width: unset;
     text-align: center;
@@ -189,9 +212,19 @@
     height: 90px;
 }
 
-table.dataTable.table > tbody > .no-select {
+/* table.dataTable.table > tbody > .no-select {
     cursor: not-allowed;
     background-color: #d7d7d7;
+} */
+th {
+    text-align: center !important;
+}
+
+input[readonly] {
+    background-color: #e8e8e8 !important;
+    color: #000;
+    border: 1px solid #dfe0e2;
+    user-select: none;
 }
 
 .warehouses {
@@ -206,13 +239,28 @@ table.dataTable.table > tbody > .no-select {
 
 .grid-areas {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    width: 100% !important;
+    grid-template-columns: repeat(5, 1fr);
     justify-content: center;
     align-items: center;
     width: fit-content;
     gap: 10px;
     text-align: center;
     margin-bottom: 30px;
+}
+
+table.dataTable tbody tr > .dtfc-fixed-start,
+table.dataTable tbody tr > .dtfc-fixed-end {
+    z-index: 1;
+    background-color: inherit !important;
+}
+
+table.dataTable.table > tbody > tr.no-select.pe-none {
+    background-color: rgb(233 232 231);
+}
+
+table.dataTable.table > tbody > tr {
+    background-color: #fff;
 }
 
 .area-item {
@@ -335,6 +383,11 @@ table.dataTable.table > tbody > .no-select {
 .stock-wrap .grid-item.occupied {
     cursor: not-allowed;
 }
+
+/* #datatable2_wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+} */
 
 @keyframes throw {
     from {

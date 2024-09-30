@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Company;
-
+use Illuminate\Support\Facades\Gate;
 class CompanyController extends Controller
 {
     /**
@@ -14,7 +14,12 @@ class CompanyController extends Controller
     public function index()
     {
         $companies = Company::all();
-        return view('admin.companies.index', compact('companies'));
+        
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.companies.index', compact('companies'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -62,7 +67,13 @@ class CompanyController extends Controller
     {
         $company = Company::findOrFail($id);
         $companies = Company::all();
-        return view('admin.companies.edit', compact('company', 'companies'));
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.companies.edit', compact('company', 'companies'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
     }
 
     /**

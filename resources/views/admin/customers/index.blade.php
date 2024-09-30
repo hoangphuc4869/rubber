@@ -19,6 +19,7 @@
                 <th>Tên công ty</th>
                 <th>Mô tả</th>
                 <th>SĐT</th>
+                <th>Tài khoản</th>
                 <th>Email</th>
                 <th>Loại</th>
                 <th>Tùy chỉnh</th>
@@ -31,6 +32,7 @@
                 <td>{{ $item->name }}</td>
                 <td>{{ $item->description }}</td>
                 <td>{{ $item->phone }}</td>
+                <td>{{ $item->account }}</td>
                 <td>{{ $item->email }}</td>
                 <td>{{ $item->type }}</td>
                 <td>

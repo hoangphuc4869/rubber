@@ -9,7 +9,7 @@ class CuringHouse extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code'];
+    protected $fillable = ['name', 'code', 'curing_area_id'];
 
     public function rollings() {
         return $this->hasMany(Rolling::class, 'receiving_place_id');
@@ -17,6 +17,10 @@ class CuringHouse extends Model
 
     public function drums() {
         return $this->hasMany(Drum::class);
+    }
+
+    public function curing_area() {
+        return $this->belongsTo(CuringArea::class);
     }
 
     public function setYourColumnAttribute($value)

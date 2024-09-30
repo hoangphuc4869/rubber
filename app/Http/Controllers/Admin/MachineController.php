@@ -10,6 +10,9 @@ use App\Models\Drum;
 use App\Models\DrumPerDay;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
+use App\Models\ResetTime;
+use Illuminate\Support\Facades\Gate;
 
 class MachineController extends Controller
 {
@@ -19,13 +22,17 @@ class MachineController extends Controller
     public function index()
     {
         $rollings = Rolling::all();
+        $houses_containing = CuringHouse::where('containing', '>' , 0)->get();
         $houses = CuringHouse::all();
+        $reset = ResetTime::first();
         $drums = Drum::orderBy('date', 'desc')->get();
+
+        
         
         
         $drums_per_day_3tan = Drum::select('date')
         ->selectRaw('COUNT(*) as total_number')
-        ->where('link', 3)
+        ->where('link', 3)->where('date', now()->format('Y/m/d'))
         ->groupBy('date') 
         ->orderBy('date', 'desc')
         ->get()
@@ -38,7 +45,7 @@ class MachineController extends Controller
 
         $drums_per_day_6tan = Drum::select('date')
         ->selectRaw('COUNT(*) as total_number')
-        ->where('link', 6)
+        ->where('link', 6)->where('date', now()->format('Y/m/d'))
         ->groupBy('date') 
         ->orderBy('date', 'desc')
         ->get()
@@ -49,9 +56,31 @@ class MachineController extends Controller
             ];
         });
 
-        $today = now()->format('d/m/Y');
+        $reset_time = ResetTime::first()->time; 
+        list($resetHour, $resetMinute) = explode(':', $reset_time);
 
-        return view('admin.machine.index' , compact('rollings', 'drums', 'drums_per_day_3tan', 'houses', 'drums_per_day_6tan', 'today'));
+        $currentTime = Carbon::now();
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
+
+    
+        if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
+            $date = $yesterday->format('d/m/Y');
+        } else {
+            $date = $today->format('d/m/Y');
+        }
+
+
+        $drums = Drum::all();
+
+        if (Gate::allows('hat') || Gate::allows('admin') ) {
+            return view('admin.machine.index' , compact('houses_containing', 'reset', 'rollings', 'drums', 'drums_per_day_3tan', 'houses', 'drums_per_day_6tan', 'date', 'drums' ));
+
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
+        
     }
 
     /**
@@ -67,83 +96,46 @@ class MachineController extends Controller
     */
     public function store(Request $request)
     {
-        $data = $request->all();
+        $reset_time = ResetTime::first()->time; 
+        list($resetHour, $resetMinute) = explode(':', $reset_time);
 
-        // dd($request->all());
-
-        $house = CuringHouse::findOrFail($request->curing_house);
-
-        if($request->weight_to_roll > $house->containing){
-            return redirect()->back()->with('roll_fail', 'Khối lượng gia công lớn hơn khối lượng hiện có. Vui lòng kiểm tra lại!');
-        }
-        else {
-            $house->containing = max(0, $house->containing - $request->weight_to_roll);
-            $house->save();
-        }
-
-        $rollings = Rolling::where('curing_house_id', $request->curing_house)
-                            ->where('status', '!=', 1)
-                            ->orderby('id', 'asc')
-                            ->get();
-
-        $remainingWeight = $request->weight_to_roll;
-
-        
-        foreach ($rollings as $rolling) {
-            
-            $rolling->handled += $remainingWeight;
-
-            if ($rolling->handled < $rolling->weight_to_roll) {
-                $rolling->status = 2; 
-                $remainingWeight = 0; 
-            } else {
-                $rolling->status = 1; 
-
-                $remainingWeight = $rolling->handled - $rolling->weight_to_roll;
-                
-                $rolling->handled = $rolling->weight_to_roll;
-                
-            }
-
-            $rolling->save();
-
-            if ($remainingWeight <= 0) {
-                break;
-            }
-        }
-
-
-        // dd($house);
-
-
-        $lastDrum = Drum::where('date', $data['date'])->where('link', $request->link)
-                        ->orderBy('last_index', 'desc')
-                        ->first();
-
-        $startIndex = $lastDrum ? $lastDrum->last_index : 0;
+        $currentTime = Carbon::now();
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
 
     
+        if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
+            $date = $yesterday->format('Y/m/d');
+        } else {
+            $date = $today->format('Y/m/d');
+        }
 
-        $numbers = range($startIndex + 1, $startIndex + $data['drums']);
+        $existingDrumsCount = Drum::whereDate('date', $date)->where('link', $request->input('link') )->count();
 
         
+        $startNumber = $existingDrumsCount + 1;
 
-        foreach ($numbers as $index => $item) {
+        $drumsCount = $request->input('drums');
 
-            $drum = new Drum;
-            $drum->name = $item;
-            $drum->curing_house_id = $request->curing_house;
-            $drum->last_index = $item;
-            $drum->date = $data['date'];
-            $drum->time = $data['time'];
-            $drum->code = now()->timestamp . '_' .$request->link . $item;
-            $drum->link = $request->link == 3 ? 3 : 6;
+    
+        for ($i = $startNumber; $i < $startNumber + $drumsCount; $i++) {
+            $drum = new Drum();
+            $drum->curing_house_id = $request->input('curing_house');
+            $drum->link = $request->input('link');
+            $drum->date = $date;
+            // $drum->time = $request->input('time');
+            $drum->impurity_removing = $request->input('impurity_removing');
+            $drum->thickness = $request->input('thickness');
+            $drum->trang_thai_com = $request->input('trang_thai_com');
+            $drum->code = now()->timestamp . '_' . $request->input('link') . $i; 
+            $drum->name = $i;
+            $drum->rolling_code = $request->rolling_code;
             $drum->supervisor = Auth::user()->name;
-            $drum->impurity_removing = $data['impurity_removing'];
-            $drum->thickness = $data['thickness'];
-            $drum->trang_thai_com = $data['trang_thai_com'];
             $drum->save();
         }
+
+
+    
 
         return redirect()->back()->with('success', 'Thành công');
     }
@@ -203,4 +195,25 @@ class MachineController extends Controller
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
 
     }
+
+    public function getDrumDetails($id)
+    {
+        $drum = Drum::find($id);
+        return response()->json($drum);
+    }
+
+    public function updateDrumDetails(Request $request)
+    {
+        $drum = Drum::find($request->drum_id);
+        $drum->link = $request->link;
+        $drum->impurity_removing = $request->impurity_removing;
+        $drum->thickness = $request->thickness;
+        $drum->trang_thai_com = $request->trang_thai_com;
+        $drum->save();
+
+        return redirect()->back()->with('success', 'Chỉnh sửa thành công' );
+
+    }
+
+
 }

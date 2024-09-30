@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Farm;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class FarmController extends Controller
 {
@@ -16,7 +18,12 @@ class FarmController extends Controller
     {
         $farms = Farm::all();
         $companies = Company::all();
-        return view('admin.farms.index', compact('farms', 'companies'));
+        
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin')) {
+            return view('admin.farms.index', compact('farms', 'companies'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -71,7 +78,13 @@ class FarmController extends Controller
         $farms = Farm::all();
         $companies = Company::all();
 
-        return view('admin.farms.edit', compact('farm', 'farms', 'companies'));
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.farms.edit', compact('farm', 'farms', 'companies'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
     }
 
     /**

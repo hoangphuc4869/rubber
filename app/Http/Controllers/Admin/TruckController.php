@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Truck;
 use App\Models\Farm;
+use Illuminate\Support\Facades\Gate;
 
 class TruckController extends Controller
 {
@@ -16,7 +17,12 @@ class TruckController extends Controller
     {
         $trucks = Truck::all();
         $farms = Farm::all();
-        return view('admin.trucks.index', compact('trucks', 'farms'));
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.trucks.index', compact('trucks', 'farms'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -68,7 +74,13 @@ class TruckController extends Controller
         $truck = Truck::findOrFail($id);
         $trucks = Truck::all();
         $farms = Farm::all();
-        return view('admin.trucks.edit', compact('trucks', 'truck', 'farms'));
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.trucks.edit', compact('trucks', 'truck', 'farms'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
     }
 
     /**

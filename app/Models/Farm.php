@@ -27,4 +27,8 @@ class Farm extends Model
     public function curing_areas() {
         return $this->hasMany(CuringArea::class, 'farm_id');
     }
+
+    public function plots() {
+        return $this->hasMany(Plot::class, 'farm_id');
+    }
 }

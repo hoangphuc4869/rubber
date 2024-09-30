@@ -12,7 +12,7 @@ class Contract extends Model
     protected $table = "contract";
     
     protected $fillable = [
-
+		
     	'contract_type_id',
 
     	'so_ngay_hd',
@@ -67,4 +67,9 @@ class Contract extends Model
 	{
 		return $this->belongsTo(ContractType::class);
 	}
+
+	public function shipments()
+    {
+        return $this->hasMany(Shipment::class);
+    }
 }

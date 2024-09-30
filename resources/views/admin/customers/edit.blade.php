@@ -33,6 +33,11 @@
                     </div>
 
                     <div class="mb-3 col-lg-4">
+                        <label class="form-label" >Tài khoản</label>
+                        <input type="text" name="account" class="form-control" required value="{{$customer->account}}">
+                    </div>
+
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Loại khách hàng</label>
                         <select name="type" class="form-select custom-select w-100 drumdate-select" >
                             <option value="KH Dài hạn" {{$customer->type == 'KH Dài hạn' ? 'selected' : ''}}>KH Dài hạn</option>

@@ -31,6 +31,11 @@
                         <input type="email" name="email" class="form-control" required>
                     </div>
 
+                     <div class="mb-3 col-lg-4">
+                        <label class="form-label" >Tài khoản</label>
+                        <input type="text" name="account" class="form-control" required>
+                    </div>
+
                     <div class="mb-3 col-lg-4">
                         <label class="form-label" >Loại khách hàng</label>
                         <select name="type" class="form-select custom-select w-100 drumdate-select" >

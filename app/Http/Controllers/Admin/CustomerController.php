@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Customer;
+use Illuminate\Support\Facades\Gate;
 
 class CustomerController extends Controller
 {
@@ -14,7 +15,14 @@ class CustomerController extends Controller
     public function index()
     {
         $customers = Customer::all();
-        return view('admin.customers.index', compact('customers'));
+
+        if (Gate::allows('contractBHCK') || Gate::allows('contractCRCK2') || Gate::allows('admin') ) {
+            return view('admin.customers.index', compact('customers'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
+        
 
     }
 
@@ -24,7 +32,12 @@ class CustomerController extends Controller
     public function create()
     {
         $customers = Customer::all();
-        return view('admin.customers.create', compact('customers'));
+        if (Gate::allows('contractBHCK') || Gate::allows('contractCRCK2') || Gate::allows('admin') ) {
+            return view('admin.customers.create', compact('customers'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
     }
 
     /**
@@ -56,7 +69,13 @@ class CustomerController extends Controller
     {
         $customer = Customer::findOrFail($id);
 
-        return view('admin.customers.edit', compact('customer'));
+        if (Gate::allows('contractBHCK') || Gate::allows('contractCRCK2') || Gate::allows('admin') ) {
+            return view('admin.customers.edit', compact('customer'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
+        
     }
 
     /**

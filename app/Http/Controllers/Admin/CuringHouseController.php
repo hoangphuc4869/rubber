@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\CuringHouse;
+use App\Models\CuringArea;
+use Illuminate\Support\Facades\Gate;
 
 class CuringHouseController extends Controller
 {
@@ -14,7 +16,14 @@ class CuringHouseController extends Controller
     public function index()
     {
         $curing_houses = CuringHouse::all();
-        return view('admin.curing_houses.index', compact('curing_houses'));
+        $curing_areas = CuringArea::all();
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.curing_houses.index', compact('curing_houses', 'curing_areas'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
     }
 
     /**
@@ -33,6 +42,7 @@ class CuringHouseController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:curing_houses,code',
             'name' => 'required|unique:curing_houses,name',
+            'curing_area_id' => '',
         ], [
             'code.required' => 'Mã nhà ủ không được để trống.',
             'code.unique' => 'Mã nhà ủ đã tồn tại.',
@@ -62,7 +72,15 @@ class CuringHouseController extends Controller
     {
         $curing_house = CuringHouse::findOrFail($id);
         $curing_houses = CuringHouse::all();
-        return view('admin.curing_houses.edit', compact('curing_house', 'curing_houses'));
+        $curing_areas = CuringArea::all();
+
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+            return view('admin.curing_houses.edit', compact('curing_house', 'curing_houses', 'curing_areas'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
+        
     }
 
     /**
@@ -73,6 +91,7 @@ class CuringHouseController extends Controller
         $data = $request->validate([
             'code' => 'required|unique:curing_houses,code,' . $id,
             'name' => 'required|unique:curing_houses,name,'. $id,
+            'curing_area_id' => '',
         ], [
             'code.required' => 'Mã nhà ủ không được để trống.',
             'code.unique' => 'Mã nhà ủ đã tồn tại.',

@@ -85,8 +85,16 @@
                     <form id="exportForm" action="{{route('wexport')}}" method="POST">
                         @csrf
                         <div class="mb-3">
-                            <label for="exportLocation" class="form-label">Nơi xuất</label>
-                            <input type="text" class="form-control" id="exportLocation" name="exportLocation" required placeholder="Nhập nơi xuất">
+                            <label for="exportLocation" class="form-label">Khách hàng</label>
+                            {{-- {{$customers}} --}}
+                            <select name="exportLocation" id="exportLocation" class="form-control" >
+
+                                @foreach ($customers as $item)
+                                    <option value="{{$item->id}}">{{$item->name}}</option>
+                                @endforeach
+                                
+                            </select>
+                            {{-- <input type="text" class="form-control" id="exportLocation" name="exportLocation" required placeholder="Nhập nơi xuất"> --}}
                         </div>
                         <div class="mb-3">
                             <label for="exportDate" class="form-label">Ngày xuất</label>
@@ -122,18 +130,20 @@
                 <button class="btn btn-danger" type="submit">Xóa</button>
             </form>
 
-            <button type="button" class="btn btn-primary exportButton d-none" data-bs-toggle="modal" data-bs-target="#modalExport">
-                Xuất kho
+            <button type="button" class="btn btn-primary storeButton d-none" data-bs-toggle="modal" data-bs-target="#modalExport">
+                Lưu kho
             </button>
         </div>
 
        
     </div>
               
-    <div class="sync-data my-3">
-        <button class="btn btn-dark">
-            Cập nhật kiểm duyệt
-        </button>
+    <div class="sync-data my-3 d-flex justify-content-end">
+        <a href="/update-lots">
+            <button class="btn btn-dark">
+                Cập nhật kiểm nghiệm
+            </button>
+        </a>
     </div>   
     
     <table id="datatable" class="ui celled table" style="width:100%">
@@ -398,4 +408,10 @@
         </div>
     </div>
 
+
+   
+
 @endsection
+
+
+

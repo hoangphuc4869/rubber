@@ -1,54 +1,42 @@
 @extends('layouts.myapp')
 
 @section('content')
+<h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Nông trường /</span> Vùng trồng</h4>
 <div class="row">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Hợp đồng /</span> Quản lý hợp đồng</h4>
-    @include('partials.errors')
-    <div class="sync-data my-3">
-        <a href="{{route('contract.create')}}">
-            <button class="btn btn-dark">
-                Thêm hợp đồng mới
-            </button>
-        </a>
-    </div>   
-
-    <table id="datalist" class="ui celled table" style="width:100%">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Mã hợp đồng</th>
-                <th>Loại hợp đồng</th>
-                <th>Tên khách hàng</th>
-                <th>Hợp đồng gốc số</th>
-                <th>Tháng giao hàng</th>
-                <th>Số lượng (tấn)</th>
-                <th>Lệnh xuất hàng</th>
-                <th>Tùy chỉnh</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($contracts as $index => $item)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $item->contract_number }}</td>
-                <td>{{ $item->contract_type ? $item->contract_type->name : '' }}</td>
-                <td>{{ $item->customer ? $item->customer->name : '' }}</td>
-                <td>{{ $item->hd_goc_so }}</td>
-                <td>{{ $item->thang_giao_hang }}</td>
-                <td>
-                    {{-- {{$item->delivery_dates}} --}}
-                    @foreach ($item->delivery_dates as $data)
-                        {{$data->amount}}; <br>
-                    @endforeach
-                </td>
-                <td>
-                     @foreach ($item->delivery_dates as $data)
-                        {{$data->shipping_order}}; <br>
-                    @endforeach
-                </td>
-                <td>
-                    <div class="custom d-flex gap-1">
-                        <a href="{{route('contract.edit', [$item->id])}}">
+   
+        <table id="datalist" class="ui celled table" style="width:100%">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tên lô</th>
+                    <th>Nông trường</th>
+                    <th>Năm trồng</th>
+                    <th>Diện tích</th>
+                    <th>Giống</th>
+                    <th>Tổng số cây</th>
+                    <th>Cây hữu hiệu</th>
+                    <th>Không hữu hiệu</th>
+                    <th>Hộ trồng</th>
+                    <th>Tùy chỉnh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($plots as $index => $plot)
+                <tr>
+                    <td>{{$index + 1}}</td>
+                    <td>{{$plot->tenlo}}</td>
+                    <td>{{$plot->farm->code}}</td>
+                    <td>{{$plot->namtrong}}</td>
+                    <td>{{$plot->dientich}}</td>
+                    <td>{{$plot->giong}}</td>
+                    <td>{{$plot->tongsocay}}</td>
+                    <td>{{$plot->cayhuuhieu}}</td>
+                    <td>{{$plot->khonghuuhieu}}</td>
+                    <td>{{$plot->hotrong}}</td>
+                    
+                    <td>
+                       <div class="custom d-flex gap-1">
+                         <a href="{{route('plots.edit', [$plot->id])}}">
                             <button class="editBtn">
                                 <svg height="1em" viewBox="0 0 512 512">
                                     <path
@@ -58,10 +46,10 @@
                             </button>
                         </a>
 
-                        <form action="{{route('contract.destroy', [$item->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('plots.destroy', [$plot->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
-                                <button class="bin-button">
+                             <button class="bin-button">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
@@ -110,12 +98,17 @@
                             </svg>
                             </button>
                         </form>
-                    </div>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
-</div>
 
+                        
+                           
+
+                        </a>
+                       </div>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    
+</div>
 @endsection

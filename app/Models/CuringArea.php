@@ -9,7 +9,7 @@ class CuringArea extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'farm_id'];
+    protected $fillable = ['name', 'code', 'farm_id', 'latex_type'];
 
     public function rubbers() {
         return $this->hasMany(Rubber::class, 'receiving_place_id');
@@ -17,6 +17,10 @@ class CuringArea extends Model
 
     public function rollings() {
         return $this->hasMany(Rolling::class, 'receiving_place_id');
+    }
+
+    public function curing_areas() {
+        return $this->hasMany(CuringArea::class);
     }
 
     public function farm() {

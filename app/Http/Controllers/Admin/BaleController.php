@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Drum;
 use App\Models\Bale;
 use App\Models\Batch;
+use Illuminate\Support\Facades\Gate;
 
 
 class BaleController extends Controller
@@ -16,9 +17,14 @@ class BaleController extends Controller
      */
     public function index()
     {
-        $drums = Drum::where('status' , 1)->where('baled', null)->orderBy('date', 'desc')->get();
+        $drums = Drum::where('status' , 5)->where('baled', null)->orderBy('date', 'desc')->get();
         $bales = Bale::all();
-        return view('admin.bales.index', compact('drums', 'bales'));
+
+        if (Gate::allows('ep') || Gate::allows('admin') ) {
+            return view('admin.bales.index', compact('drums', 'bales'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
     }
 
     /**
@@ -35,6 +41,8 @@ class BaleController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
+
+        // dd($data);
         $request->validate([
             'drums.*' => 'nullable', 
             'drums' => ['required', function ($attribute, $value, $fail) {
@@ -60,6 +68,9 @@ class BaleController extends Controller
             $bale->fill($data);
             $bale->drum_id = $item->id;
             $bale->save();
+
+            $item->bale_id = $bale->id;
+            $item->save();
             
         }
 
@@ -87,10 +98,22 @@ class BaleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function updateB(Request $request)
     {
-        //
+        // dd($request->all());
+        $bale = Drum::findOrFail($request->id)->bale;
+        if ($bale) {
+            $bale->number_of_bales = $request->bale_count;
+            $bale->cut_check = $request->sample_cut;
+            $bale->press_temperature = $request->pressing_temp;
+            $bale->evaluation = $request->evaluation;
+            $bale->save();
+            return redirect()->back()->with('success', 'Cập nhật thành công');
+        } else {
+            return redirect()->back()->with('error', 'Bale not found');
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -122,6 +145,7 @@ class BaleController extends Controller
 
             if($drum) {
                 $drum->baled = null;
+                // $drum->remaining_bales = 0;
                 $drum->save();
                 if($bale){
                     $bale->delete();
@@ -135,4 +159,6 @@ class BaleController extends Controller
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
 
     }
+
+    
 }

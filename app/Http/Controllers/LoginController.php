@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
+
+
+
 class LoginController extends Controller
 {
     public function loginForm(){
@@ -23,21 +26,20 @@ class LoginController extends Controller
 
     public function handle_login(Request $request)
     {
-
-        
         $credentials = $request->only('email', 'password');
-        // dd($credentials);
-
 
         if (Auth::attempt($credentials, $request->remember)) {
-            
-            return redirect()->intended('/'); 
+           
+            $user = Auth::user();
+           
+            return redirect()->intended('/');
         }
 
         return back()->withErrors([
             'email' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('email', 'remember'));
     }
+
 
     public function logout(Request $request)
     {

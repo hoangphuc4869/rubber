@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ContractType;
+use Illuminate\Support\Facades\Gate;
 
 class ContractTypeController extends Controller
 {
@@ -14,7 +15,13 @@ class ContractTypeController extends Controller
     public function index()
     {
         $types = ContractType::all();
-        return view('admin.contract_type.index', compact('types'));
+        
+        if (Gate::allows('admin') || Gate::allows('contractBHCK') || Gate::allows('contractCRCK2')   ) {
+            return view('admin.contract_type.index', compact('types'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
 
     }
 
@@ -24,7 +31,14 @@ class ContractTypeController extends Controller
     public function create()
     {
         $types = ContractType::all();
-        return view('admin.contract_type.create', compact('types'));
+
+        if (Gate::allows('admin') || Gate::allows('contractBHCK') || Gate::allows('contractCRCK2')   ) {
+            return view('admin.contract_type.create', compact('types'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
+        
     }
 
     /**
@@ -56,7 +70,12 @@ class ContractTypeController extends Controller
     {
         $type = ContractType::findOrFail($id);
 
-        return view('admin.contract_type.edit', compact('type'));
+        if (Gate::allows('admin') || Gate::allows('contractBHCK') || Gate::allows('contractCRCK2')   ) {
+            return view('admin.contract_type.edit', compact('type'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
@@ -15,7 +16,13 @@ class UserController extends Controller
     {
         $roles = Role::all(); 
         $users = User::all(); 
-        return view('users.create', compact('roles', 'users'));
+
+        if (Gate::allows('admin')) {
+            return view('users.create', compact('roles', 'users'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+        
     }
 
     /**
@@ -66,7 +73,19 @@ class UserController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+        $users = User::all(); 
+
+        $roles = Role::all(); 
+
+        if (Gate::allows('admin')) {
+            return view('users.edit', compact('roles', 'users', 'user'));
+        } else {
+            abort(403, 'Bạn không có quyền truy cập.');
+        }
+    
+        
+
     }
 
     /**
@@ -74,7 +93,31 @@ class UserController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $id, 
+            'password' => 'nullable',
+            'roles' => 'required|array',
+            'roles.*' => 'exists:roles,id',
+        ]);
+
+        
+        $user = User::findOrFail($id);
+
+       
+        $user->name = $request->name;
+        $user->email = $request->email;
+        
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+
+        $user->save();
+
+        $user->roles()->sync($request->roles);
+
+        return redirect()->back()->with('success', 'Cập nhật người dùng thành công!');
     }
 
     /**
@@ -82,6 +125,10 @@ class UserController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $user = User::findOrFail($id);
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'Xóa thành công');
     }
 }

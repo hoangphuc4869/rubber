@@ -14,19 +14,28 @@ use App\Http\Controllers\Admin\MachineController;
 use App\Http\Controllers\Admin\RubberController;
 use App\Http\Controllers\Admin\TruckController;
 use App\Http\Controllers\Admin\RollingController;
+use App\Http\Controllers\Admin\ShipmentController;
 use App\Http\Controllers\Admin\WarehouseController;
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
-
-
+use App\Http\Controllers\ResetTimeController;
+use App\Models\Shipment;
+use App\Models\User;
+use App\Http\Controllers\Admin\ContractCRCK2Controller;
+use App\Http\Controllers\Admin\ShipmentCRCK2Controller;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PlotControllers;
+use App\Http\Controllers\Admin\ShipmentTNSRController;
+use App\Http\Controllers\Admin\ContractTNSRController;
 
 Route::middleware(['login'] )->group(function() {
-    Route::get('/', function () {
-        return view('admin.home');
-    })->name('home');
 
+    Route::get('/', [HomeController::class, 'index']);
+    
     Route::resources([
         'farms' => FarmController::class,
         'companies' => CompanyController::class,
@@ -42,16 +51,57 @@ Route::middleware(['login'] )->group(function() {
         'warehouse' => WarehouseController::class,
         'customers' => CustomerController::class,
         'contract' => ContractController::class,
+        'contractCRCK2' => ContractCRCK2Controller::class,
+        'contractTNSR' => ContractTNSRController::class,
         'contract-type' => ContractTypeController::class,
         'users' => UserController::class,
+        'shipments' =>  ShipmentController::class,
+        'shipmentsCRCK2' =>  ShipmentCRCK2Controller::class,
+        'shipmentsTNSR' =>  ShipmentTNSRController::class,
+        'plots' =>  PlotControllers::class,
     ]);
+    
+
+    
+    
+
+    
+
 
     Route::get('/exported-list', [BatchController::class, 'list'])->name('exported-list');
+
+    Route::get('/BHCK/warehouses', [WarehouseController::class, 'index'])->name('warehouseBHCK');
+    
+    Route::get('/TNSR/warehouses', [WarehouseController::class, 'indexTNSR'])->name('warehouseTN');
+
+    Route::get('/CRCK2/warehouses', [WarehouseController::class, 'indexCRCK'])->name('warehouseCRCK2');
+
+    Route::delete('/shipment/{id}/destroy', [ContractController::class, 'shipment_destroy']);
+
+    Route::post('/giao-ca', [HeatController::class, 'giaoCa'])->name('giao-ca');
+    Route::post('/nhan-ca', [HeatController::class, 'nhanCa'])->name('nhan.ca');
+
+    Route::put('/update-bale', [BaleController::class, 'updateB'])->name('update.bale');
+
+
+    
+    
+    // Route::get('/CRCR2/export', [ShipmentController::class, 'indexCRCK2'])->name('indexCRCK2');
+
+    Route::get('/get-drum-details/{id}', [MachineController::class, 'getDrumDetails']);
+    Route::post('/update-drum-details', [MachineController::class, 'updateDrumDetails']);
+
+
+    
 
 });
 
 Route::get('/login', [LoginController::class, 'loginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'handle_login'])->name('handle_login');
+
+
+
+Route::get('/get-data', [HomeController::class, 'get_data']);
 // Route::get('/createuser', [LoginController::class, 'createuser']);
 
 
@@ -68,6 +118,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Auth::routes();
 
 Route::post('/change-location', [WarehouseController::class, 'change_location']);
+Route::post('/store-location', [WarehouseController::class, 'store_location']);
 Route::post('/delete-all', [BatchController::class, 'delete_all']);
 Route::post('/export', [WarehouseController::class, 'export'])->name('wexport');
 
@@ -77,6 +128,21 @@ Route::delete('/delete-machining-items', [MachineController::class, 'delete_item
 Route::delete('/delete-heat-items', [HeatController::class, 'delete_items'])->name('heat-delete-items');
 Route::delete('/delete-bale-items', [BaleController::class, 'delete_items'])->name('bale-delete-items');
 Route::delete('/delete-batch-items', [BatchController::class, 'delete_items'])->name('batch-delete-items');
+
+Route::post('/update-reset-time', [ResetTimeController::class, 'update']);
+
+Route::get('/update-lots', [ApiController::class, 'updateLots']);
+
+Route::post('/update-contract-status', [ContractController::class, 'updateStatus']);
+
+Route::post('/update-shipment', [ShipmentController::class, 'updateShipment']);
+
+
+Route::post('/adjust-time', [HeatController::class, 'adjustTime'])->name('adjust-time');
+
+
+
+
 
 
 

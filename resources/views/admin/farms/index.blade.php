@@ -144,14 +144,7 @@
                 </tr>
                 @endforeach
             </tbody>
-            <tfoot>
-                <tr>
-                    <th>#</th>
-                    <th>Mã nông trường</th>
-                    <th>Tên nông trường</th>
-                    <th>Tùy chỉnh</th>
-                </tr>
-            </tfoot>
+            
         </table>
     </div>
 </div>
