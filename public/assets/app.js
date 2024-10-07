@@ -47,10 +47,11 @@ var currentDate = new Date();
 currentDate.setHours(currentDate.getHours() - 6);
 currentDate.setMinutes(currentDate.getMinutes() - 30);
 
-$("#min").datepicker("setDate", currentDate);
+// $("#min").datepicker("setDate", currentDate);
 
 $("#min").on("change", function () {
     table.draw();
+    table5.draw();
     classList.draw();
 });
 
@@ -66,11 +67,11 @@ $("#comFilter").on("change", function () {
     table.draw();
 });
 
-$(document).ready(function () {
-    $("#lineFilter").val("3");
+// $(document).ready(function () {
+//     $("#lineFilter").val("3");
 
-    table.draw();
-});
+//     table.draw();
+// });
 
 $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
     if (
@@ -546,27 +547,54 @@ $(document).ready(function () {
 
 $(document).ready(function () {
     let counter = 0;
+
     $(".add-more").click(function () {
         let newDeliveryDate = `
-            <div class="delivery_dates mb-3 row" id="delivery_dates_${counter}">
-                <div class="mb-3 fw-bold">Xuất hàng đi </div>
-                <div class="mb-3 col-lg-6">
-                    <label class="form-label">Loại hàng</label>
-                    <input type="text" name="delivery_date[${counter}][type]" class="form-control" required value="CSR10">
-                </div>
+        <div class="delivery_dates mb-3 row" id="delivery_dates_${counter}">
+            <div class="mb-3 fw-bold">Xuất hàng đi</div>
 
-                <div class="mb-3 col-lg-6">
-                    <label class="form-label">Khối lượng (tấn)</label>
-                    <input type="number" name="delivery_date[${counter}][amount]" class="form-control" required value="123">
-                </div>
-                <div class="d-flex justify-content-end align-items-center">
-                    <button type="button" class="btn btn-danger btn-sm remove-date">Xóa</button>
-                </div>
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Số Hợp đồng</label>
+                <input type="text" name="delivery_date[${counter}][so_hop_dong]" class="form-control" required placeholder="Số hợp đồng">
             </div>
-        `;
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Loại hàng</label>
+                <input type="text" name="delivery_date[${counter}][type]" class="form-control" required value="CSR10" placeholder="Nhập loại hàng">
+            </div>
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Khối lượng (tấn)</label>
+                <input type="number" name="delivery_date[${counter}][amount]" class="form-control" required placeholder="Nhập khối lượng">
+            </div>
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Ngày đóng cont</label>
+                <input type="date" name="delivery_date[${counter}][closing_date]" class="form-control" placeholder="Chọn ngày đóng cont">
+            </div>
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Ngày nhận hàng</label>
+                <input type="date" name="delivery_date[${counter}][receiving_date]" class="form-control" placeholder="Chọn ngày nhận hàng">
+            </div>
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">Lệnh xuất hàng</label>
+                <input type="text" name="delivery_date[${counter}][shipping_order]" class="form-control" placeholder="Nhập lệnh xuất hàng">
+            </div>
+
+            <div class="mb-3 col-lg-4">
+                <label class="form-label">File đính kèm (PDF)</label>
+                <input type="file" name="delivery_date[${counter}][file]" class="form-control" accept="application/pdf">
+            </div>
+
+            <div class="d-flex justify-content-end align-items-center">
+                <button type="button" class="btn btn-danger btn-sm remove-date">Xóa</button>
+            </div>
+        </div>
+    `;
 
         $(".delivery_dates_container").append(newDeliveryDate);
-
         counter++;
     });
 
@@ -579,6 +607,60 @@ $(document).ready(function () {
 $(document).on("click", ".remove-date", function () {
     $(this).closest(".delivery_date").remove();
 });
+
+function updateShipmentFields(element) {
+    var shipmentId = $(element).data("id");
+    var ma_xuat = $(
+        `input[data-id="${shipmentId}"][data-field="ma_xuat"]`
+    ).val();
+    var ngay_xuat = $(
+        `input[data-id="${shipmentId}"][data-field="ngay_xuat"]`
+    ).val();
+    var ngay_nhan_hang = $(
+        `input[data-id="${shipmentId}"][data-field="ngay_nhan_hang"]`
+    ).val();
+    var so_hop_dong = $(
+        `input[data-id="${shipmentId}"][data-field="so_hop_dong"]`
+    ).val(); // Get value of so_hop_dong
+    var fileInput = $(`input[data-id="${shipmentId}"].shipment-file`)[0];
+
+    var formData = new FormData();
+    formData.append("ma_xuat", ma_xuat);
+    formData.append("ngay_xuat", ngay_xuat);
+    formData.append("ngay_nhan_hang", ngay_nhan_hang);
+    formData.append("so_hop_dong", so_hop_dong);
+
+    if (fileInput.files.length > 0) {
+        formData.append("pdf", fileInput.files[0]);
+    }
+
+    $.ajax({
+        url: `/shipment/${shipmentId}/update`,
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+        method: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            console.log("Updated successfully");
+        },
+        error: function (xhr) {
+            console.error("Error updating:", xhr.responseText);
+        },
+    });
+}
+
+// $(".shipment-field").on("change", function () {
+//     var shipmentId = $(this).data("id");
+//     updateShipmentFields(this);
+// });
+
+// $(".shipment-file").on("change", function () {
+//     var shipmentId = $(this).data("id");
+//     updateShipmentFields(this);
+// });
 
 $(document).ready(function () {
     $("#curing_house").on("change", function () {
@@ -1045,4 +1127,111 @@ $(document).ready(function () {
         editLink = editLink.replace(":id", rowId);
         $("#editLink").attr("href", editLink);
     });
+});
+
+$(document).ready(function () {
+    $("#thang_giao_hang").select2();
+});
+
+// datatable5
+
+$("#min5").datepicker({
+    dateFormat: "dd/mm/yy",
+    onSelect: function () {
+        table.draw();
+        classList.draw();
+    },
+});
+
+var currentDate = new Date();
+currentDate.setHours(currentDate.getHours() - 6);
+currentDate.setMinutes(currentDate.getMinutes() - 30);
+
+$("#min5").on("change", function () {
+    table5.draw();
+});
+
+// $("#comFilter").on("change", function () {
+//     $("#company").val($("#comFilter").val());
+//     table.draw();
+// });
+
+$.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    if (settings.nTable.id !== "datatable5") {
+        return true;
+    }
+
+    // Lọc ngày
+    let filterDateStr = $("#min5").val();
+    let filterDate = filterDateStr
+        ? new Date(convertDate(filterDateStr))
+        : null;
+
+    let rowDateStr = data[0];
+    let rowDate = rowDateStr ? new Date(convertDate(rowDateStr)) : null;
+
+    // console.log("Ngày lọc:", filterDate, "Ngày trong hàng:", rowDate);
+
+    function convertDate(dateStr) {
+        if (!dateStr) return null;
+        let parts = dateStr.split("/");
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    function formatDateToCompare(date) {
+        return date ? date.toISOString().split("T")[0] : null;
+    }
+
+    let formattedFilterDate = formatDateToCompare(filterDate);
+    let formattedRowDate = formatDateToCompare(rowDate);
+
+    if (formattedFilterDate && formattedRowDate !== formattedFilterDate) {
+        return false;
+    }
+
+    let lineFilter = $("#lineFilter5").val();
+    let rowLine = data[7];
+    if (lineFilter && rowLine !== lineFilter) {
+        return false;
+    }
+
+    // Lọc công ty
+    let com = $("#comFilter5").val();
+    let rowCom = data[1];
+    if (com && rowCom !== com) {
+        return false;
+    }
+
+    return true;
+});
+
+// Khởi tạo DataTable
+let table5 = new DataTable("#datatable5", {
+    fixedHeader: true,
+    paging: true,
+    scrollCollapse: true,
+    scrollY: "80vh",
+    language: {
+        sProcessing: "Đang xử lý...",
+        sLengthMenu: "Hiển thị _MENU_ mục trên mỗi trang",
+        sZeroRecords: "Không tìm thấy kết quả",
+        sEmptyTable: "Không có dữ liệu trong bảng",
+        sInfo: "Hiển thị từ _START_ đến _END_ của _TOTAL_ mục",
+        sInfoEmpty: "Hiển thị từ 0 đến 0 của 0 mục",
+        sInfoFiltered: "(lọc từ _MAX_ mục)",
+        sSearch: "Tìm kiếm:",
+        oPaginate: {
+            sFirst: "Đầu tiên",
+            sPrevious: "Trước",
+            sNext: "Tiếp theo",
+            sLast: "Cuối cùng",
+        },
+    },
+    scrollX: true,
+    autoWidth: false,
+});
+
+// Sự kiện khi thay đổi bộ lọc
+$("#min5, #lineFilter5, #comFilter5").on("change", function () {
+    table5.draw();
 });

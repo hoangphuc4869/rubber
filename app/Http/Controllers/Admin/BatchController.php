@@ -26,7 +26,6 @@ class BatchController extends Controller
 
         $currentMonth = Carbon::now()->format('Y-m');
 
-        
         $lastBatch = Batch::where('date', 'like', $currentMonth . '%')
                         ->orderBy('batch_number', 'desc')
                         ->first();
@@ -55,7 +54,7 @@ class BatchController extends Controller
         
         $startIndex = $lastBatch ? $lastBatch->batch_number : 0;
 
-        if (Gate::allows('donggoi') || Gate::allows('admin') ) {
+        if (Gate::allows('6t') || Gate::allows('admin') || Gate::allows('3t') ) {
             return view('admin.batch.package', compact('drumsWithoutBatches','drumsWithBatches', 'startIndex', 'CRCK_batches' , 'BHCK_batches' , 'TNSR_batches'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
@@ -85,16 +84,44 @@ class BatchController extends Controller
    
     public function store(Request $request)  
     {
+
+        // dd($request);
         $requestedIds = explode(',', $request->drums[0]); 
-        $ids = array_unique($requestedIds);  
+        $ids = array_unique($requestedIds);
+
+        // dd($ids); 
+
+        $curing_house = Drum::findOrFail($ids[0])->curing_house;
+        // dd($curing_house);
         
         $ids_copy = array_unique($requestedIds);  
 
         $companyId = Company::where('code', $request->company)->first()->id;
 
-        $incompleteBatch = Batch::where('company_id', $companyId)
-                                ->where('bale_count', '<', 144)
-                                ->first();
+        //  $incompleteBatch = Batch::where('company_id', $companyId)
+        //         ->where('bale_count', '<', 144)
+        //         ->whereMonth('created_at', Carbon::now()->month) 
+        //         ->whereYear('created_at', Carbon::now()->year)  
+        //         ->first();
+
+        if($request->link == 3 ){
+
+            $incompleteBatch = Batch::where('company_id', $companyId)
+                ->where('bale_count', '<', 144)->where('link', 3)
+                ->whereMonth('created_at', Carbon::now()->month) 
+                ->whereYear('created_at', Carbon::now()->year)  
+                ->first();
+                
+        }
+        else {
+
+            $incompleteBatch = Batch::where('company_id', $companyId)
+                ->where('bale_count', '<', 144)->where('link', 6)
+                ->whereMonth('created_at', Carbon::now()->month) 
+                ->whereYear('created_at', Carbon::now()->year)  
+                ->first();
+                
+        }
 
         // dd($incompleteBatch);
 
@@ -144,26 +171,54 @@ class BatchController extends Controller
 
         $currentMonth = Carbon::now()->format('Y-m');
 
-        $CRCK_batches = Batch::with('company')
+        if($request->link == 3){
+            
+            $CRCK_batches = Batch::with('company')
             ->selectRaw('company_id, COUNT(*) as total_batches')
-            ->where('company_id', 2)  
+            ->where('company_id', 2)->where('link', 3)
             ->where('date', 'like', $currentMonth . '%')
             ->groupBy('company_id')
             ->first();
 
-        $BHCK_batches = Batch::with('company')
-            ->selectRaw('company_id, COUNT(*) as total_batches')
-            ->where('company_id', 1)  
-            ->where('date', 'like', $currentMonth . '%')
-            ->groupBy('company_id')
-            ->first();   
+            $BHCK_batches = Batch::with('company')
+                ->selectRaw('company_id, COUNT(*) as total_batches')
+                ->where('company_id', 1)->where('link', 3)
+                ->where('date', 'like', $currentMonth . '%')
+                ->groupBy('company_id')
+                ->first();   
 
-        $TNSR_batches = Batch::with('company')
+            $TNSR_batches = Batch::with('company')
+                ->selectRaw('company_id, COUNT(*) as total_batches')
+                ->where('company_id', 8)->where('link', 3)
+                ->where('date', 'like', $currentMonth . '%')
+                ->groupBy('company_id')
+                ->first();  
+                
+        } 
+
+        if($request->link == 6){
+
+             $CRCK_batches = Batch::with('company')
             ->selectRaw('company_id, COUNT(*) as total_batches')
-            ->where('company_id', 8)  
+            ->where('company_id', 2)->where('link', 6)
             ->where('date', 'like', $currentMonth . '%')
             ->groupBy('company_id')
-            ->first();      
+            ->first();
+
+            $BHCK_batches = Batch::with('company')
+                ->selectRaw('company_id, COUNT(*) as total_batches')
+                ->where('company_id', 1)->where('link', 6)
+                ->where('date', 'like', $currentMonth . '%')
+                ->groupBy('company_id')
+                ->first();   
+
+            $TNSR_batches = Batch::with('company')
+                ->selectRaw('company_id, COUNT(*) as total_batches')
+                ->where('company_id', 8)->where('link', 6)
+                ->where('date', 'like', $currentMonth . '%')
+                ->groupBy('company_id')
+                ->first();
+        }   
 
         $batch_number = 1;
         
@@ -179,9 +234,11 @@ class BatchController extends Controller
         
         $boxBatchData = []; 
         $remainingRolls = [];   
+        
         $drums_with_company_and_largest_batch = Drum::whereHas('curing_house.curing_area.farm.company', function ($query) use ($request) {
             $query->where('code', $request->company);
         })
+        ->where('link', $request->link) 
         ->with(['batches' => function ($query) {
             $query->orderByDesc('id');
         }])
@@ -226,6 +283,7 @@ class BatchController extends Controller
 
 
         $unprocessedIds = []; 
+        $bale_count = 0; 
 
         while (true) {  
             $currentBatchRolls = 0;   
@@ -261,12 +319,15 @@ class BatchController extends Controller
                             $currentBatch->sample_cut_number = $request->sample_cut_number;
                             $currentBatch->packaging_type = $request->packaging_type;
                             $currentBatch->date = $request->date;
+                            $currentBatch->link = $request->link;
                             $currentBatch->batch_number = $batch_number;  
                             $currentBatch->time = $request->time;
                             $currentBatch->company_id = Company::where('code', $request->company)->first()->id;  
                             $currentBatch->bale_count = $currentBatchRolls; 
                             $currentBatch->bale_status = $currentBatchRolls == $requiredRolls ? 1 : 0;
-                            $currentBatch->save();  
+                            $currentBatch->save(); 
+
+                            $bale_count += 144;
 
                             foreach ($batchDrumData as $data) {  
                                 $boxBatchData[] = [  
@@ -359,10 +420,13 @@ class BatchController extends Controller
         $newBatch->date = $request->date; 
         $newBatch->batch_number = $batch_number; 
         $newBatch->time = $request->time;
+        $newBatch->link = $request->link;
         $newBatch->company_id = Company::where('code', $request->company)->first()->id;  
         $newBatch->bale_count = $totalBales; 
         $newBatch->bale_status = 0; 
         $newBatch->save();
+
+        $bale_count += $newBatch->bale_count;
 
         
         foreach ($notInDrumsWithBatches as $item) {
@@ -379,8 +443,18 @@ class BatchController extends Controller
             );
             $drum->remaining_bales = 0;
         }
+
         
-        return redirect()->back()->with('success', 'Lô đã được tạo thành công');  
+        $curing_house->containing -= $bale_count * 35;
+
+        if ($curing_house->containing < 0) {
+            $curing_house->containing = 0;
+        }
+
+        $curing_house->save();
+
+
+        return redirect()->back()->with('success', 'Lô đã được tạo thành công ' . $bale_count);  
     }
 
 

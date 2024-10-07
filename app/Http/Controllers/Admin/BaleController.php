@@ -20,7 +20,7 @@ class BaleController extends Controller
         $drums = Drum::where('status' , 5)->where('baled', null)->orderBy('date', 'desc')->get();
         $bales = Bale::all();
 
-        if (Gate::allows('ep') || Gate::allows('admin') ) {
+        if (Gate::allows('6t') || Gate::allows('admin')  || Gate::allows('3t')) {
             return view('admin.bales.index', compact('drums', 'bales'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');

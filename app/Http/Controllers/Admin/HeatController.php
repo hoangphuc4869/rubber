@@ -40,7 +40,7 @@ class HeatController extends Controller
         });
         // dd($drums_handled);
 
-        if (Gate::allows('nhiet') || Gate::allows('admin') ) {
+        if (Gate::allows('6t') || Gate::allows('admin')  || Gate::allows('3t')) {
             return view('admin.heat.index' , compact('rollings', 'drums', 'drums_per_day', 'drums_handled'));
 
         } else {
@@ -62,54 +62,68 @@ class HeatController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-{
-    $data = $request->all();
-    $ids = explode(',', $data['drums']);
+    
+public function store(Request $request)
+    {
+        $data = $request->all();
+        // dd($request->all());
+        $ids = explode(',', $data['drums']);
 
-    $reset_time = ResetTime::firstOrFail()->time; 
-    list($resetHour, $resetMinute) = explode(':', $reset_time); 
-
-    $lastHeatedStart = Carbon::createFromFormat('H:i', $data['time_start']); 
-
-    foreach ($ids as $id) {
-        $drum = Drum::findOrFail($id);
         
-        if ($drum->status == 0) {
-            $drum->status = 1;
-            $drum->temp = $data['temp'];
-            $drum->temp2 = $data['temp2'];
-            $drum->oven = $data['oven'];
-            $drum->state = $data['state'];
-            $drum->validation = $data['validation'];
-            $drum->time_to_dry = $data['time_to_dry'];
+        $lastHeatedStart = Carbon::createFromFormat('H:i Y-m-d', $request->time_start . ' ' . $request->date);
 
+        foreach ($ids as $id) {
+            $drum = Drum::findOrFail($id);
             
-            $drum->heated_start = $lastHeatedStart;
+            if ($drum->status == 0) {
+                
+                $drum->status = 1;
+                $drum->temp = $data['temp'];
+                $drum->temp2 = $data['temp2'];
+                $drum->oven = $data['oven'];
+                $drum->state = $data['state'];
+                $drum->validation = $data['validation'];
+                $drum->time_to_dry = $data['time_to_dry'];
 
-            
-            $heatedEnd = $lastHeatedStart->copy()->addHours(5);
-            $drum->heated_end = $heatedEnd; 
-            
-            
-            if ($heatedEnd->isAfter(Carbon::parse($data['date'])->endOfDay())) {
-                if ($heatedEnd->hour < $resetHour || 
-                    ($heatedEnd->hour == $resetHour && $heatedEnd->minute < $resetMinute)) {
-                    $drum->heated_date = Carbon::parse($data['date']);
-                } else {
-                    $drum->heated_date = Carbon::parse($data['date'])->addDay();
+
+                $drum->heated_start = $lastHeatedStart;
+
+                
+                if($drum->link == 3){
+                    $heatedEnd = $lastHeatedStart->copy()->addMinutes($data['time_to_dry'] * 30);
                 }
-            } else {
-                $drum->heated_date = Carbon::parse($data['date']);
+                else {
+                    $heatedEnd = $lastHeatedStart->copy()->addMinutes($data['time_to_dry'] * 32);
+                }
+
+
+                // dd($lastHeatedStart, $heatedEnd);
+                $drum->heated_end = $heatedEnd;
+
+                
+                $adjustedDate = $heatedEnd->copy()->subMinutes(390);
+
+                
+                if ($adjustedDate->isYesterday()) {
+                    $adjustedDate->subDay();
+                }
+
+                
+                $drum->heated_date = $adjustedDate;
+
+               
+                $lastHeatedStart = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry']);
+                // dd($lastHeatedStart, $heatedEnd);
+                
+                $drum->save();
+
+                $this->updateBeforeDrum($drum, $drum->link);
+
             }
-
-            $lastHeatedStart = $lastHeatedStart->copy()->addMinutes((int)$data['time_to_dry']);
-            $drum->save();
         }
-    }
 
-    return redirect()->back()->with('success', 'Thành công');
-}
+        return redirect()->back()->with('success', 'Thành công');
+    }
 
 
 
@@ -211,104 +225,218 @@ class HeatController extends Controller
     }
 
 
-    public function adjustTime(Request $request)  
-    {  
+    public function adjustTime(Request $request)
+    {
         if ($request->has('multi')) {
             $drum = Drum::findOrFail($request->drums);
 
-            $adjustDate = Carbon::parse($request->adjust_date);  
-            $adjustTime = Carbon::parse($request->adjust_time);  
-            $adjustDateTime = $adjustDate->setTimeFrom($adjustTime);
+            if ($request->has('adjust_time')) {
 
-            $drum->heated_date = $adjustDateTime;
-            
-            $drum->time_to_dry = $request->adjust_time_dry;
-            
-            $drum->heated_end = $adjustDateTime->copy(); 
-            $drum->heated_start = $drum->heated_end->copy()->subHours(5); 
+                $adjustDateTime = Carbon::parse($request->adjust_date)
+                                    ->setTimeFrom(Carbon::parse($request->adjust_time));
+
+                $drum->heated_start = $adjustDateTime;
+                $this->updateNextDrums($drum, $request->line);
+                $this->updateBeforeDrum($drum, $request->line);
+            }
+
+            if ($request->has('adjust_time_dry')) {
+                $drum->time_to_dry = $request->adjust_time_dry;
+                $drum->save();
+                // dd($drum);
+
+                // $this->updateBeforeDrum($drum, $request->line);
+                $this->updateNextDrums($drum, $request->line);
+            }
 
             $drum->note = $request->reason;
             $drum->save();
+        }
 
-            $processedDrumIds = [];
-            $processedDrumIds[] = $drum->id;
+        return redirect()->back()->with('success', 'Điều chỉnh thành công');
+    }
 
-            $nextDrums = Drum::where('id', '>', $drum->id)  
-                ->where('link', $request->line)  
-                ->whereNotIn('status', [0, 2, 3])  
-                ->orderBy('id', 'asc')  
-                ->get();  
 
-            foreach ($nextDrums as $index => $nextDrum) {
-                if ($index === 0) { 
-                    $nextDrum->heated_start = $adjustDateTime->copy()->addMinutes(+$request->adjust_time_dry); 
+    private function updateNextDrums($drum, $line)
+    {
+        $nextDrums = Drum::where('id', '>', $drum->id)
+            ->where('link', $line)->where('oven', $drum->oven)
+            ->whereNotIn('status', [0, 2, 3])
+            ->orderBy('id', 'asc')
+            ->get();
 
-                    $nextDrum->heated_end = $nextDrum->heated_start->copy()->addHours(5);  
-                } else {
-                    $prevDrum = $nextDrums[$index - 1];
-                    $nextDrum->heated_start = $prevDrum->heated_start->copy()->addMinutes(+$request->adjust_time_dry); 
-                    
-                    $nextDrum->heated_end = $nextDrum->heated_start->copy()->addHours(5);
-                }
+        // dd($line);
+        
 
-                $nextDrum->heated_date = $nextDrum->heated_end; 
+        foreach ($nextDrums as $index => $nextDrum) {
+            $nextDrum->heated_start = $index == 0
+                ? Carbon::parse($drum->heated_start)->addMinutes(+$drum->time_to_dry)
+                : Carbon::parse($nextDrums[$index - 1]->heated_start)->addMinutes(+$nextDrums[$index - 1]->time_to_dry);
+
+            // $nextDrum->heated_end = null;
+            // $nextDrum->heated_date = null;
+            $nextDrum->save();
+
+            $this->updateBeforeDrum($nextDrum, $line);
+        }
+    }
+
+    private function updateBeforeDrum($drum, $line)
+    {
+        if($line == 3) {
+            $beforeDrums = Drum::where('link', $drum->link)
+                ->where('id', '<', $drum->id)->where('oven', $drum->oven)
+                ->whereNotIn('status', [0, 2, 3])   
+                ->orderBy('id', 'desc')         
+                ->take(30) 
+                ->get()
+                ->reverse();
+
+            if ($beforeDrums->first() != null && $beforeDrums->count() == 30) {
                 
-                $nextDrum->time_to_dry = $request->adjust_time_dry;
-                $nextDrum->save();  
-                $processedDrumIds[] = $nextDrum->id; 
-            }
-
-            $prevDrums = ($request->line == 3) 
-                ? Drum::where('id', '<', $drum->id)->where('link', 3)->orderBy('id', 'desc')->limit(30)->get()
-                : Drum::where('id', '<', $drum->id)->where('link', 6)->orderBy('id', 'desc')->limit(32)->get();
-
-
-
-            $timeToStart = $drum->heated_end;
-
-            foreach ($prevDrums as $index => $prevDrum) {
-
-                    $prevDrum->heated_end = $timeToStart->copy()->subMinutes(+$request->adjust_time_dry);
-                    $prevDrum->heated_date = $prevDrum->heated_end;
-                    $timeToStart = $prevDrum->heated_end;
-
-                    $prevDrum->time_to_dry = $request->adjust_time_dry;
-                    $prevDrum->save(); 
-                    $processedDrumIds[] = $prevDrum->id; 
-                
-            }
-
-            foreach ($processedDrumIds as $value) {
-                $drum = Drum::findOrFail($value);
-                $date = Carbon::parse($drum->heated_date)->subMinutes(390);
+                $beforeDrums->first()->heated_end = $drum->heated_start;
+            
+                $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
 
                 if ($date->isYesterday()) {
-                    $date->subDay();  
+                    $date = Carbon::parse($drum->heated_end)->copy()->subDay();
                 }
 
-                $drum->heated_date = $date; 
-                $drum->save();
-            }        
+                $beforeDrums->first()->heated_date = $date;
+                $beforeDrums->first()->save();
+            }
         }
         else {
+            $beforeDrums = Drum::where('link', $drum->link)
+                ->where('id', '<', $drum->id)->where('oven', $drum->oven)
+                ->whereNotIn('status', [0, 2, 3])   
+                ->orderBy('id', 'desc')         
+                ->take(32) 
+                ->get()
+                ->reverse();
 
-                $drum = Drum::findOrFail($request->drums);
+            if ($beforeDrums->first() != null && $beforeDrums->count() == 32) {
+                $beforeDrums->first()->heated_end = $drum->heated_start;
+                $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
 
-                $adjustDate = Carbon::parse($request->adjust_date);  
-                $adjustTime = Carbon::parse($request->adjust_time);  
-                $adjustDateTime = $adjustDate->setTimeFrom($adjustTime);
+                if ($date->isYesterday()) {
+                     $date = Carbon::parse($drum->heated_end)->copy()->subDay();
+                }
 
-                $drum->heated_date = $adjustDateTime;
-                
-                $drum->time_to_dry = $request->adjust_time_dry;
-                
-                $drum->heated_end = $adjustDateTime->copy(); 
-                $drum->heated_start = $drum->heated_end->copy()->subHours(5); 
-
-                $drum->note = $request->reason;
-                $drum->save();
-
+                $beforeDrums->first()->heated_date = $date;
+                $beforeDrums->first()->save();
+            }
         }
+
+        
+    }
+
+
+
+    // public function adjustTime(Request $request)  
+    // {  
+    //     if ($request->has('multi')) {
+    //         $drum = Drum::findOrFail($request->drums);
+
+    //         $adjustDate = Carbon::parse($request->adjust_date);  
+    //         $adjustTime = Carbon::parse($request->adjust_time);  
+    //         $adjustDateTime = $adjustDate->setTimeFrom($adjustTime);
+
+    //         $drum->heated_date = $adjustDateTime;
+            
+    //         $drum->time_to_dry = $request->adjust_time_dry;
+            
+    //         $drum->heated_end = $adjustDateTime->copy(); 
+    //         $drum->heated_start = $drum->heated_end->copy()->subHours(5); 
+
+    //         $drum->note = $request->reason;
+    //         $drum->save();
+
+    //         $processedDrumIds = [];
+    //         $processedDrumIds[] = $drum->id;
+
+    //         $nextDrums = Drum::where('id', '>', $drum->id)  
+    //             ->where('link', $request->line)  
+    //             ->whereNotIn('status', [0, 2, 3])  
+    //             ->orderBy('id', 'asc')  
+    //             ->get();  
+
+    //         foreach ($nextDrums as $index => $nextDrum) {
+    //             if ($index === 0) { 
+    //                 $nextDrum->heated_start = $adjustDateTime->copy()->addMinutes(+$request->adjust_time_dry); 
+
+    //                 $nextDrum->heated_end = $nextDrum->heated_start->copy()->addHours(5);  
+    //             } else {
+    //                 $prevDrum = $nextDrums[$index - 1];
+    //                 $nextDrum->heated_start = $prevDrum->heated_start->copy()->addMinutes(+$request->adjust_time_dry); 
+                    
+    //                 $nextDrum->heated_end = $nextDrum->heated_start->copy()->addHours(5);
+    //             }
+
+    //             $nextDrum->heated_date = $nextDrum->heated_end; 
+                
+    //             $nextDrum->time_to_dry = $request->adjust_time_dry;
+    //             $nextDrum->save();  
+    //             $processedDrumIds[] = $nextDrum->id; 
+    //         }
+
+    //         $prevDrums = ($request->line == 3) 
+    //             ? Drum::where('id', '<', $drum->id)->where('link', 3)->orderBy('id', 'desc')->limit(30)->get()
+    //             : Drum::where('id', '<', $drum->id)->where('link', 6)->orderBy('id', 'desc')->limit(32)->get();
+
+
+
+    //         $timeToStart = $drum->heated_end;
+
+    //         foreach ($prevDrums as $index => $prevDrum) {
+
+    //                 $prevDrum->heated_end = $timeToStart->copy()->subMinutes(+$request->adjust_time_dry);
+    //                 $prevDrum->heated_date = $prevDrum->heated_end;
+    //                 $timeToStart = $prevDrum->heated_end;
+
+    //                 $prevDrum->time_to_dry = $request->adjust_time_dry;
+    //                 $prevDrum->save(); 
+    //                 $processedDrumIds[] = $prevDrum->id; 
+                
+    //         }
+
+    //         foreach ($processedDrumIds as $value) {
+    //             $drum = Drum::findOrFail($value);
+    //             $date = Carbon::parse($drum->heated_date)->subMinutes(390);
+
+    //             if ($date->isYesterday()) {
+    //                 $date->subDay();  
+    //             }
+
+    //             $drum->heated_date = $date; 
+    //             $drum->save();
+    //         }        
+    //     }
+    //     else {
+
+    //             $drum = Drum::findOrFail($request->drums);
+
+    //             $adjustDate = Carbon::parse($request->adjust_date);  
+    //             $adjustTime = Carbon::parse($request->adjust_time);  
+    //             $adjustDateTime = $adjustDate->setTimeFrom($adjustTime);
+
+    //             $drum->heated_date = $adjustDateTime;
+                
+    //             $drum->time_to_dry = $request->adjust_time_dry;
+                
+    //             $drum->heated_end = $adjustDateTime->copy(); 
+    //             $drum->heated_start = $drum->heated_end->copy()->subHours(5); 
+
+    //             $drum->note = $request->reason;
+    //             $drum->save();
+
+    //     }
+    //     return redirect()->back()->with('success', 'Thời gian đã được điều chỉnh');
+    // }
+
+    public function adjustDryTime(Request $request)
+    {  
+        
         return redirect()->back()->with('success', 'Thời gian đã được điều chỉnh');
     }
 
@@ -339,36 +467,37 @@ class HeatController extends Controller
 
     public function nhanCa(Request $request)
     {
-        $request->validate([
-            'drum_ids' => 'required|string',
-            'gio_ra_lo' => 'required|string',
-            'ngay_ra_lo' => 'required|date',
-        ]);
+        // $request->validate([
+        //     'drum_ids' => 'required|string',
+        //     'gio_ra_lo' => 'required|string',
+        //     'ngay_ra_lo' => 'required|date',
+        // ]);
 
         $drumIds = explode(',', $request->drum_ids);
-        $previousEndTime = null;
+        // $previousEndTime = null;
 
         foreach ($drumIds as $id) {
             $drum = Drum::find($id);
             if ($drum) {
                 
-                $currentHeatingTime = Carbon::createFromFormat('H:i', $request->gio_ra_lo);
+                // $currentHeatingTime = Carbon::createFromFormat('H:i', $request->gio_ra_lo);
                 
                 
-                if ($previousEndTime) {
-                    $currentHeatingTime = $previousEndTime;
-                }
+                // if ($previousEndTime) {
+                //     $currentHeatingTime = $previousEndTime;
+                // }
                 
                 $drum->status = 1;
+                $drum->note = 'nhận ca';
                 
-                $drum->heated_end = $currentHeatingTime->format('Y-m-d H:i:s'); 
-                $drum->heated_date = $request->ngay_ra_lo; 
+                // $drum->heated_end = $currentHeatingTime->format('Y-m-d H:i:s'); 
+                // $drum->heated_date = $request->ngay_ra_lo; 
 
-                $currentHeatingTime->addMinutes($drum->time_to_dry);
+                // $currentHeatingTime->addMinutes($drum->time_to_dry);
 
                 $drum->save();
 
-                $previousEndTime = $currentHeatingTime;
+                // $previousEndTime = $currentHeatingTime;
             }
         }
 

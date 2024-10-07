@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CuringHouse;
+use App\Models\CuringArea;
 use App\Models\Rolling;
 use Illuminate\Http\Request;
 use App\Models\Drum;
@@ -24,6 +25,9 @@ class MachineController extends Controller
         $rollings = Rolling::all();
         $houses_containing = CuringHouse::where('containing', '>' , 0)->get();
         $houses = CuringHouse::all();
+        $areas = CuringArea::whereIn('code', ['NLTMMD', 'MDBH', 'MDCR'])->get();
+
+        // dd($areas);
         $reset = ResetTime::first();
         $drums = Drum::orderBy('date', 'desc')->get();
 
@@ -73,8 +77,8 @@ class MachineController extends Controller
 
         $drums = Drum::all();
 
-        if (Gate::allows('hat') || Gate::allows('admin') ) {
-            return view('admin.machine.index' , compact('houses_containing', 'reset', 'rollings', 'drums', 'drums_per_day_3tan', 'houses', 'drums_per_day_6tan', 'date', 'drums' ));
+        if (Gate::allows('6t') || Gate::allows('admin')  || Gate::allows('3t')) {
+            return view('admin.machine.index' , compact( 'areas', 'houses_containing', 'reset', 'rollings', 'drums', 'drums_per_day_3tan', 'houses', 'drums_per_day_6tan', 'date', 'drums' ));
 
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
@@ -99,18 +103,20 @@ class MachineController extends Controller
         $reset_time = ResetTime::first()->time; 
         list($resetHour, $resetMinute) = explode(':', $reset_time);
 
-        $currentTime = Carbon::now();
-        $today = Carbon::today();
-        $yesterday = Carbon::yesterday();
+        // dd($request->all());
+
+        // $currentTime = Carbon::now();
+        // $today = Carbon::today();
+        // $yesterday = Carbon::yesterday();
 
     
-        if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
-            $date = $yesterday->format('Y/m/d');
-        } else {
-            $date = $today->format('Y/m/d');
-        }
+        // if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
+        //     $date = $yesterday->format('Y/m/d');
+        // } else {
+        //     $date = $today->format('Y/m/d');
+        // }
 
-        $existingDrumsCount = Drum::whereDate('date', $date)->where('link', $request->input('link') )->count();
+        $existingDrumsCount = Drum::whereDate('date', $request->date)->where('link', $request->input('link') )->count();
 
         
         $startNumber = $existingDrumsCount + 1;
@@ -122,7 +128,7 @@ class MachineController extends Controller
             $drum = new Drum();
             $drum->curing_house_id = $request->input('curing_house');
             $drum->link = $request->input('link');
-            $drum->date = $date;
+            $drum->date = $request->date;
             // $drum->time = $request->input('time');
             $drum->impurity_removing = $request->input('impurity_removing');
             $drum->thickness = $request->input('thickness');

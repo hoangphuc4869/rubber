@@ -55,8 +55,24 @@ class AppServiceProvider extends ServiceProvider
             return $user->roles->pluck('name')->contains('Kho BHCK');
         });
 
-        Gate::define('khoTNSR', function ($user) {
-            return $user->roles->pluck('name')->contains('Kho TNSR');
+        Gate::define('admin', function ($user) {
+            return $user->roles->pluck('name')->contains('Admin');
+        });
+
+        Gate::define('6t', function ($user) {
+            return $user->roles->pluck('name')->contains('ca trưởng 6T');
+        });
+
+        Gate::define('3t', function ($user) {
+            return $user->roles->pluck('name')->contains('ca trưởng 3T');
+        });
+
+        Gate::define('DRC', function ($user) {
+            return $user->roles->pluck('name')->contains('DRC');
+        });
+
+          Gate::define('khoBHCK', function ($user) {
+            return $user->roles->pluck('name')->contains('Kho BHCK');
         });
 
         Gate::define('khoCRCK2', function ($user) {
@@ -69,14 +85,6 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('contractCRCK2', function ($user) {
             return $user->roles->pluck('name')->contains('Hợp đồng CRCK2');
-        });
-
-        Gate::define('contractTNSR', function ($user) {
-            return $user->roles->pluck('name')->contains('Hợp đồng TNSR');
-        });
-
-        Gate::define('admin', function ($user) {
-            return $user->roles->pluck('name')->contains('Admin');
         });
 
 

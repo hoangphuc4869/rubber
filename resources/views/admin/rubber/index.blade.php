@@ -222,6 +222,30 @@
         </div>
     </div>
 
+    <div class="d-flex justify-content-between">
+        <div class="my-3">
+            <div class="mb-1"> - Tổng MDC BHCK: <span class="fw-bold fs-4 text-danger">{{$mu_dong_chen_bhck/1000}} tấn</span>  </div>
+            <div class="mb-1"> - Tổng MDC CRCK2: <span class="fw-bold fs-4 text-success">{{$mu_dong_chen_crck/1000}} tấn</span>  </div>
+            <div class="mb-1"> - Tổng MDC Thu mua: <span class="fw-bold fs-4 text-warning">{{$mu_dong_chen_tm/1000}} tấn</span>  </div>
+            <div class="mb-1"> - Tổng MDC TNSR: <span class="fw-bold fs-4">{{$mu_dong_chen_tnsr/1000}} tấn</span>  </div>
+        </div>
+
+        <div class="my-3">
+            <div class="mb-1"> - Tổng MD BHCK: <span class="fw-bold fs-4 text-danger">{{$mu_day_bhck/1000}} tấn</span>  </div>
+            <div class="mb-1"> - Tổng MD CRCK2: <span class="fw-bold fs-4 text-success">{{$mu_day_crck/1000}} tấn</span>  </div>
+            <div class="mb-1"> - Tổng MD Thu mua: <span class="fw-bold fs-4 text-warning">{{$mu_day_tm/1000}} tấn</span>  </div>
+        </div>
+    </div>
+
+    {{-- <ul>
+        <span>Tổng mủ đông chén:</span>
+        <li>CRCK2: {{$mu_dong_chen_crck/1000}} tấn</li>
+        <li>BHCK: {{$mu_dong_chen_bhck/1000}} tấn</li>
+        <li>Thu mua: {{$mu_dong_chen_tm/1000}} tấn</li>
+        <li>TNSR: {{$mu_dong_chen_tnsr/1000}} tấn</li>
+    </ul> --}}
+
+
 
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
         <div class="">

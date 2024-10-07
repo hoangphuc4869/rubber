@@ -114,7 +114,7 @@
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Quản lý cao su</span></li>
 
 
-            @if (Gate::allows('nguyenlieu') || Gate::allows('admin'))
+            @if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC'))
                 
             <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') || Route::is('companies.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -167,7 +167,7 @@
             @endif
 
 
-            @if (Gate::allows('canvat') || Gate::allows('admin') || Gate::allows('hat') || Gate::allows('nhiet') || Gate::allows('ep') || Gate::allows('donggoi'))
+            @if (Gate::allows('canvat') || Gate::allows('admin') || Gate::allows('6t') || Gate::allows('3t') )
             <li class="menu-item {{Route::is('rolling.*') || Route::is('machining.*') || Route::is('heat.*') || Route::is('producing.*') || Route::is('batch.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-gears"></i>
@@ -184,35 +184,35 @@
                 </li>
                 @endif
 
-                @if (Gate::allows('hat') || Gate::allows('admin'))
+               @if (Gate::allows('6t') || Gate::allows('admin') || Gate::allows('3t'))
                 <li class="menu-item  {{Route::is('machining.*') ? "active" : ""}}">
                   <a href="{{route('machining.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-hammer"></i> --}}
                     <div data-i18n="Basic">Gia công hạt</div>
                   </a>
                 </li>
-                @endif
+                
 
-                @if (Gate::allows('nhiet') || Gate::allows('admin'))
+               
                 <li class="menu-item  {{Route::is('heat.*') ? "active" : ""}}">
                   <a href="{{route('heat.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-solid fa-fire-flame-curved"></i> --}}
                     <div data-i18n="Basic">Gia công nhiệt</div>
                   </a>
                 </li>
-                @endif
+                
                 
 
-                @if (Gate::allows('ep') || Gate::allows('admin'))
+                
                 <li class="menu-item  {{Route::is('producing.index') ? "active" : ""}}">
                   <a href="{{route('producing.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-screwdriver-wrench"></i> --}}
                     <div data-i18n="Basic">Ra lò, ép kiện</div>
                   </a>
                 </li>
-                @endif
+                
 
-                @if (Gate::allows('donggoi') || Gate::allows('admin'))
+                
                 <li class="menu-item  {{Route::is('batch.index') ? "active" : ""}}">
                   <a href="{{route('batch.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-cube"></i> --}}
@@ -284,7 +284,7 @@
                 </li>
               </ul>
             </li>
-            @endif
+            
 
             
             <li class="menu-item {{Route::is('warehouseTN') || Route::is('shipmentsTNSR.*')  ? "active open" : ""}}" style="">
@@ -308,6 +308,7 @@
                 </li>
               </ul>
             </li>
+            @endif
 
 
             {{-- <li class="menu-item {{ Route::is('exported-list') ? 'active' : '' }}">

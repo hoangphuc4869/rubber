@@ -77,9 +77,6 @@ class ShipmentController extends Controller
                 $batch->warehouse->save();
             }
         }
-
-
-
         return redirect()->route('shipments.index')->with('success', 'Xuất hàng thành công');
     }
 
@@ -144,4 +141,53 @@ class ShipmentController extends Controller
         }
         return response()->json(['message' => 'Không tìm thấy đơn hàng!'], 404);
     }
+
+    public function updateField(Request $request, $id)
+    {
+        $shipment = Shipment::findOrFail($id);
+
+        
+        $request->validate([
+            'ma_xuat' => 'string|nullable',
+            'ngay_xuat' => 'date|nullable',
+            'ngay_nhan_hang' => 'date|nullable',
+            'pdf' => 'file|mimes:pdf|max:2048|nullable',
+        ]);
+
+        
+        if ($request->has('ma_xuat')) {
+            $shipment->ma_xuat = $request->input('ma_xuat');
+        }
+        if ($request->has('ngay_xuat')) {
+            $shipment->ngay_xuat = $request->input('ngay_xuat');
+        }
+        if ($request->has('ngay_nhan_hang')) {
+            $shipment->ngay_nhan_hang = $request->input('ngay_nhan_hang');
+        }
+
+        if ($request->has('so_hop_dong')) {  
+            $shipment->so_hop_dong = $request->input('so_hop_dong');
+        }
+
+        if ($request->hasFile('pdf')) {
+            
+            if ($shipment->pdf) {
+                $oldFilePath = public_path('contract_orders/' . $shipment->pdf);
+                if (file_exists($oldFilePath)) {
+                    unlink($oldFilePath); 
+                }
+            }
+
+            
+            $fileName = time() . '_' . $request->file('pdf')->getClientOriginalName();
+            $request->file('pdf')->move(public_path('contract_orders'), $fileName); 
+            $shipment->pdf = $fileName;
+        }
+
+        $shipment->save();
+
+        return response()->json(['success' => true]);
+    }
+
+
 }

@@ -257,7 +257,7 @@
                 <th>Công ty</th>
                 <th>Thùng số</th>
                 <th>Mã thùng</th>
-                <th>Thời gian ra lò</th>
+                <th>Thời gian ép kiện</th>
                 <th>Dây chuyền</th>
                 <th>Trạng thái</th>
                 <th>Số bành/thùng</th>
@@ -274,7 +274,7 @@
                
                 <tr id={{$bale->id}}>
                         <td></td>
-                        <td>{{ \Carbon\Carbon::parse($bale->date)->format('d/m/Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($bale->created_at)->format('d/m/Y') }}</td>
                         <td>{{ $bale->curing_house->curing_area->farm->company->code }}</td>
                         <td>{{ $bale->name }}</td>
                         <td>{{ $bale->code }}</td>
@@ -381,17 +381,47 @@
     {{-- {{dd($drumsWithBatches[0]->bale)}} --}}
 
 
-    <table id="datatable2" class="ui celled table" style="width:100%">
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="d-flex gap-3">
+            <div class="">
+                <label for="min5" class="form-label mb-0">Lọc ngày</label>
+                <input type="text" id="min5" name="min5" class="form-control" style="width: 200px">
+            </div>
+            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+                <div class="">
+                    <label for="lineFilter5" class="form-label mb-0">Dây chuyền</label>
+                    <select id="lineFilter5" class="form-control" style="width: 200px">
+                        <option value="3">3 tấn</option>
+                        <option value="6">6 tấn</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+                <div class="">
+                    <label for="comFilter5" class="form-label mb-0">Công ty</label>
+                    <select id="comFilter5" class="form-control" style="width: 200px">
+                        <option value="BHCK">BHCK</option>
+                        <option value="CRCK2" selected>CRCK2</option>
+                        <option value="TNSR">TNSR</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+
+
+    <table id="datatable5" class="ui celled table" style="width:100%">
         <thead>
             <tr>
-                <th class="text-center"></th>
                 <th>Ngày thực hiện</th>
                 <th>Công ty</th>
                 <th>Thùng số</th>
                 <th>Mã thùng</th>
                 <th>Mã lô</th>
                 <th>Số bành/thùng</th>
-                <th>Thời gian ra lò</th>
+                <th>Thời gian tạo lô</th>
                 <th>Dây chuyền</th>
                 <th>Trạng thái</th>
                 <th>Nhiệt độ ép bành (độ C)</th>
@@ -405,8 +435,7 @@
             @foreach ($drumsWithBatches as $bale)
                
                 <tr id="{{$bale->id}}">
-                        <td></td>
-                        <td>{{ \Carbon\Carbon::parse($bale->date)->format('d/m/Y') }}</td>
+                        <td>{{ \Carbon\Carbon::parse($bale->bale->created_at)->format('d/m/Y') }}</td>
                         <td>{{ $bale->curing_house->curing_area->farm->company->code }}</td>
                         <td>{{ $bale->name }}</td>
                         <td>{{ $bale->code }}</td>

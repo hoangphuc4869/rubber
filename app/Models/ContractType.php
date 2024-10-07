@@ -21,4 +21,9 @@ class ContractType extends Model
 	{
 		return $this->hasMany(Contract::class);
 	}
+
+    public function contract_type_sub()
+	{
+		return $this->hasMany(Contract::class);
+	}
 }

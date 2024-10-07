@@ -48,37 +48,20 @@ class ContractController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request->all());
-        $data = $request->all();
+        $data = $request->except('thang_giao_hang');
 
         $contract = new Contract;
         $contract->fill($data);
+        
         $contract->supplier = 'BHCK';
-        $contract->save();
 
-        $index = 1;
-        $totalAmount = 0;
-
-        if($request->delivery_date){
-            foreach ($request->delivery_date as $delivery) {
-
-                $totalAmount += $delivery['amount']; 
-
-    
-                if ($totalAmount > $request->count_contract) {
-                    return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
-                }
-
-
-                $shipment = new Shipment;
-                $shipment->ma_xuat = "PX".$index."_". now()->timestamp; 
-                $shipment->loai_hang = $delivery['type']; 
-                $shipment->so_luong = $delivery['amount']; 
-                $shipment->contract_id = $contract->id;
-                $shipment->save();
-                $index++;
-            }
+       
+        if ($request->has('thang_giao_hang')) {
+            $contract->thang_giao_hang = json_encode($request->input('thang_giao_hang'));  
         }
+
+        $contract->save();
+        
         return redirect()->route('contract.index')->with('success', 'Tạo hợp đồng thành công!');
     }
 
@@ -101,8 +84,10 @@ class ContractController extends Controller
         
         $contract = Contract::findOrFail($id);
 
+        $subContracts = $contract->subContracts();
+
         if (Gate::allows('admin') || Gate::allows('contractBHCK') ) {
-            return view('admin.contract.BHCK.edit', compact('types', 'customers', 'contract'));
+            return view('admin.contract.BHCK.edit', compact('types', 'customers', 'contract', 'subContracts'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -111,40 +96,57 @@ class ContractController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    
     public function update(Request $request, string $id)
     {
-        $data = $request->all();
-
+        
         $contract = Contract::findOrFail($id);
-        $contract->fill($data);
+        $contract->fill($request->all());
         $contract->save();
 
-
+       
         $currentTotalAmount = $contract->shipments->sum('so_luong'); 
         $newTotalAmount = 0;
 
-
-        if($request->delivery_date){
-            foreach ($data['delivery_date'] as $delivery) {
-
-                $newTotalAmount += $delivery['amount']; 
-
+        
+        if ($request->delivery_date) {
+            foreach ($request->delivery_date as $delivery) {
                 
-                if (($currentTotalAmount + $newTotalAmount) > $request->count_contract) {
-                    return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
-                }
+                $newTotalAmount += $delivery['amount']; 
+            }
 
+            
+            if (($currentTotalAmount + $newTotalAmount) > $request->count_contract) {
+                return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
+            }
+
+            
+            foreach ($request->delivery_date as $delivery) {
                 $shipment = new Shipment;
-                $shipment->ma_xuat = "PX".($contract->shipments->count() + 1)."_" . now()->timestamp; 
+                $shipment->ma_xuat = $delivery['shipping_order']; 
                 $shipment->loai_hang = $delivery['type']; 
                 $shipment->so_luong = $delivery['amount']; 
+                $shipment->so_hop_dong = $delivery['so_hop_dong'];
                 $shipment->contract_id = $contract->id;
+
+                
+                if (isset($delivery['file']) && $delivery['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    $file = $delivery['file'];
+                    $fileName = time() . '_' . $file->getClientOriginalName(); 
+                    $file->move(public_path('contract_orders'), $fileName);
+                    // $shipment->file_path = 'contract_orders/' . $fileName; 
+                    $shipment->pdf = $fileName;
+                }
+
+                $shipment->ngay_xuat = $delivery['closing_date'];
+                $shipment->ngay_nhan_hang = $delivery['receiving_date'];
                 $shipment->save();
             }
         }
 
         return redirect()->back()->with('success', 'Cập nhật hợp đồng thành công!');
     }
+
 
     /**
      * Remove the specified resource from storage.
@@ -183,4 +185,18 @@ class ContractController extends Controller
 
         return response()->json(['message' => 'Hợp đồng không tồn tại!'], 404);
     }
+
+    public function getSubContracts(Request $request)
+    {
+        $contract = Contract::findOrFail($request->contract_id);
+        
+        $subContracts = $contract->subContracts()->get(); 
+
+        return response()->json([
+            'contract' => $contract->contract_number,
+            'subcontracts' => $subContracts,
+        ]);
+    }
+
+
 }

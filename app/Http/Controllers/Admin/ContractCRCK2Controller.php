@@ -61,23 +61,36 @@ class ContractCRCK2Controller extends Controller
         $index = 1;
         $totalAmount = 0;
 
-        if($request->delivery_date){
+        if ($request->delivery_date) {
             foreach ($request->delivery_date as $delivery) {
-
+                
                 $totalAmount += $delivery['amount']; 
+            }
 
-    
-                if ($totalAmount > $request->count_contract) {
-                    return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
-                }
+            
+            if ($totalAmount > $request->count_contract) {
+                return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
+            }
 
+            
+            foreach ($request->delivery_date as $delivery) {
                 $shipment = new Shipment;
-                $shipment->ma_xuat = "PX".$index."_". now()->timestamp; 
+                $shipment->ma_xuat = $delivery['shipping_order']; 
                 $shipment->loai_hang = $delivery['type']; 
                 $shipment->so_luong = $delivery['amount']; 
                 $shipment->contract_id = $contract->id;
+
+                
+                if (isset($delivery['file']) && $delivery['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    $file = $delivery['file'];
+                    $fileName = time() . '_' . $file->getClientOriginalName(); 
+                    $file->move(public_path('contract_orders'), $fileName);
+                    $shipment->pdf = $fileName; 
+                }
+
+                $shipment->ngay_xuat = $delivery['closing_date'];
+                $shipment->ngay_nhan_hang = $delivery['receiving_date'];
                 $shipment->save();
-                $index++;
             }
         }
         return redirect()->route('contractCRCK2.index')->with('success', 'Tạo hợp đồng thành công!');
@@ -114,37 +127,55 @@ class ContractCRCK2Controller extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $data = $request->all();
-
+        
         $contract = Contract::findOrFail($id);
-        $contract->fill($data);
+        $contract->fill($request->all());
         $contract->save();
 
+       
         $currentTotalAmount = $contract->shipments->sum('so_luong'); 
         $newTotalAmount = 0;
 
-
-        if($request->delivery_date){
-            foreach ($data['delivery_date'] as $delivery) {
-
-                $newTotalAmount += $delivery['amount']; 
-
+        
+        if ($request->delivery_date) {
+            foreach ($request->delivery_date as $delivery) {
                 
-                if (($currentTotalAmount + $newTotalAmount) > $request->count_contract) {
-                    return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
-                }
+                $newTotalAmount += $delivery['amount']; 
+            }
 
+            
+            if (($currentTotalAmount + $newTotalAmount) > $request->count_contract) {
+                return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
+            }
+
+            
+            foreach ($request->delivery_date as $delivery) {
                 $shipment = new Shipment;
-                $shipment->ma_xuat = "PX".($contract->shipments->count() + 1)."_" . now()->timestamp; 
+                $shipment->ma_xuat = $delivery['shipping_order']; 
                 $shipment->loai_hang = $delivery['type']; 
                 $shipment->so_luong = $delivery['amount']; 
                 $shipment->contract_id = $contract->id;
+
+                
+                if (isset($delivery['file']) && $delivery['file'] instanceof \Illuminate\Http\UploadedFile) {
+                    $file = $delivery['file'];
+                    $fileName = time() . '_' . $file->getClientOriginalName(); 
+                    $file->move(public_path('contract_orders'), $fileName);
+                    // $shipment->file_path = 'contract_orders/' . $fileName; 
+                    $shipment->pdf = $fileName; 
+                }
+
+                $shipment->ngay_xuat = $delivery['closing_date'];
+                $shipment->ngay_nhan_hang = $delivery['receiving_date'];
                 $shipment->save();
             }
         }
 
         return redirect()->back()->with('success', 'Cập nhật hợp đồng thành công!');
     }
+
+
+
 
     /**
      * Remove the specified resource from storage.

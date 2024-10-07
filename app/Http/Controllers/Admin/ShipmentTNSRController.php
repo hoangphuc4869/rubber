@@ -34,7 +34,7 @@ class ShipmentTNSRController extends Controller
 
         // dd($contracts);
 
-        if (Gate::allows('khoTNSR') || Gate::allows('admin') ) {
+        if (Gate::allows('khoCRCK2') || Gate::allows('admin') ) {
             return view('admin.shipments.TNSR.index' , compact('batches', 'shipments', 'companyName'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');

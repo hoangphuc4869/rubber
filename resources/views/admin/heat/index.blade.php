@@ -17,17 +17,17 @@
 
                     <div class="mb-3 col-lg-6">
                         <label class="form-label" >Nhiệt độ T1 (độ C)</label>
-                        <input type="number" name="temp" min="0" class="form-control" value="127">
+                        <input type="number" name="temp" min="0" class="form-control" value="103">
                     </div>
 
                     <div class="mb-3 col-lg-6">
                         <label class="form-label" >Nhiệt độ T2 (độ C)</label>
-                        <input type="number" name="temp2" min="0" class="form-control" value="126">
+                        <input type="number" name="temp2" min="0" class="form-control" value="105">
                     </div>
 
                     <div class="mb-3 col-lg-6">
                         <label class="form-label" >Thời gian sấy (phút)</label>
-                        <input type="number" name="time_to_dry" min="0" class="form-control" value="10">
+                        <input type="number" name="time_to_dry" min="0" step="0.1" class="form-control" value="10">
                     </div>
 
                     <div class="mb-3 col-lg-6">
@@ -88,7 +88,7 @@
                 <form id="nhanCaForm" method="POST" action="{{route('nhan.ca')}}">
                     @csrf
                     <input type="hidden" name="drum_ids" id="drumIds">
-                    <div class="d-flex align-items-center gap-2">
+                    {{-- <div class="d-flex align-items-center gap-2">
                         <div class="form-group col-6">
                             <label for="gioRaLo">Giờ ra lò:</label>
                             <input type="time" class="form-control" id="gioRaLo" name="gio_ra_lo" required>
@@ -97,7 +97,7 @@
                             <label for="ngayRaLo">Ngày ra lò:</label>
                             <input type="date" class="form-control" id="ngayRaLo" name="ngay_ra_lo">
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="d-flex gap-2 justify-content-center align-items-center my-2">
                         <button type="submit" class="btn btn-primary">Xác nhận</button>
                         <button type="button" class="btn btn-secondary closenhanca" data-dismiss="modal">Hủy</button>
@@ -119,7 +119,7 @@
                 <form id="doiCaForm" method="POST" action="{{route('nhan.ca')}}">
                     @csrf
                     <input type="hidden" name="drum_ids" id="drumIdsDoiCa">
-                    <div class="d-flex align-items-center gap-2">
+                    {{-- <div class="d-flex align-items-center gap-2">
                         <div class="form-group col-6">
                             <label for="gioDoiCa">Giờ ra lò:</label>
                             <input type="time" class="form-control" id="gioDoiCa" name="gio_ra_lo" required>
@@ -128,7 +128,7 @@
                             <label for="ngayDoiCa">Ngày ra lò:</label>
                             <input type="date" class="form-control" id="ngayDoiCa" name="ngay_ra_lo">
                         </div>
-                    </div>
+                    </div> --}}
                     <div class="d-flex gap-2 justify-content-center align-items-center my-2">
                         <button type="submit" class="btn btn-primary">Xác nhận</button>
                         <button type="button" class="btn btn-secondary closedoica" data-dismiss="modal">Hủy</button>
@@ -151,9 +151,17 @@
                 <div class="">
                     <label for="lineFilter" class="form-label mb-0">Dây chuyền</label>
                     <select id="lineFilter" class="form-control" style="width: 200px">
-                        <option value="3" selected>3 tấn</option>
-                        <option value="6">6 tấn</option>
+
+                        @if (Gate::allows('admin') || Gate::allows('6t'))
+                            <option value="6" selected>6 tấn</option>
+                        @endif
+
+                        @if (Gate::allows('admin') || Gate::allows('3t'))
+                            <option value="3" selected>3 tấn</option>
+                        @endif
+
                     </select>
+
                 </div>
             </div>
         </div>
@@ -278,12 +286,12 @@ style="
 
                         <div class="flex-grow-1" style="width: 100px">
                             <label for="adjust_time_start" class="form-label">Thời gian sấy:</label>
-                            <input type="number" min="1" name="adjust_time_dry" id="adjust_time_start" class="form-control">
+                            <input type="number" min="1" step="0.1" name="adjust_time_dry" id="adjust_time_start" class="form-control" >
                         </div>
 
 
                         <div class="flex-grow-1">
-                            <label for="adjust-time" class="form-label" style="font-size: 12px">Thời gian hoạt động lại:</label>
+                            <label for="adjust-time" class="form-label" style="font-size: 12px">Thời gian bắt đầu sấy:</label>
                             <input type="time" name="adjust_time" id="adjust-time" class="form-control">
                         </div>
 
@@ -305,7 +313,7 @@ style="
                         <label for="change_shift" class="form-check-label">Đổi ca</label>
                     </div> --}}
 
-                    <div class="mb-3 d-flex align-items-center gap-1">
+                    <div class="mb-3 d-flex align-items-center gap-1" style="opacity: 0">
                         <input type="checkbox" checked name="multi" id="multi" onclick="toggleAdjustTimeStart()">
                         <label for="multi" class="form-label mb-0" >Điều chỉnh nhiều thùng</label>
                     </div>
@@ -343,6 +351,39 @@ style="
 </div>
 
 
+{{-- tg sấy --}}
+{{-- <div class="modal fade" id="adjustDryTimeModal" tabindex="-1" aria-labelledby="adjustDryTimeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adjustDryTimeModalLabel">Điều chỉnh thời gian sấy</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ route('adjust-dry-time') }}" method="POST" onsubmit="return handleAdjustDryTimeSubmit(event);" id="adjust-dry-time-form">
+                    @csrf
+                    <input type="hidden" name="drums" id="adjust-drums-dry">
+                    <input type="hidden" name="line" id="selected-line-dry" value="3">
+
+                    <div class="mb-3 d-flex gap-2">
+                        <div class="flex-grow-1" style="width: 100px">
+                            <label for="adjust_time_dry" class="form-label">Thời gian sấy (giờ):</label>
+                            <input type="number" min="1" name="adjust_time_dry" id="adjust_time_dry" class="form-control" placeholder="Nhập giờ sấy">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="submit" class="btn btn-primary">Xác nhận điều chỉnh</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> --}}
+
+
+
 
     <table id="datatable2" class="ui celled table hover" style="width:100%">
         <thead>
@@ -368,16 +409,16 @@ style="
         </thead>
         <tbody>
             @foreach ($drums_handled as $index => $drum)
-            <tr id="{{$drum->id}}" data-end="{{\Carbon\Carbon::parse($drum->heated_end)->format('H:i')}}" data-date="{{\Carbon\Carbon::parse($drum->heated_date)->format('Y-m-d')}}" data-dry="{{$drum->time_to_dry}}">
+            <tr id="{{$drum->id}}" data-link="{{$drum->link}}" data-start="{{\Carbon\Carbon::parse($drum->heated_start)->format('H:i')}}" data-date="{{\Carbon\Carbon::parse($drum->heated_date)->format('Y-m-d')}}" data-dry="{{$drum->time_to_dry}}">
                 <td></td>
                 <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đang xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_start)->format('H:i') }}</td>
                 <td>{{ $drum->time_to_dry }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_end)->format('H:i') }}</td>
+                <td>{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('H:i') : '' }}</td>
                 <td><span class="text-danger">{{$drum->note}}</span></td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y') }}</td>
+                <td>{{ $drum->heated_date ? \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y') : '' }}</td>
                 
                 <td>{{ $drum->temp }}</td>
                 <td>{{ $drum->temp2 }}</td>
@@ -476,9 +517,7 @@ style="
 
     function handleAdjustTimeButtonClick(event) {  
         const selectedDrums = document.getElementById('selected-drums2').value.split(',');  
-        const line = document.getElementById('lineFilter').value;  
-
-        console.log(selectedDrums, line);
+        
         
 
         if (selectedDrums.length !== 1) {  
@@ -494,7 +533,8 @@ style="
  
                 const dryTime = selectedDrumElement.getAttribute('data-dry') || '';  
                 const date = selectedDrumElement.getAttribute('data-date') || '';  
-                const endTime = selectedDrumElement.getAttribute('data-end') || '';  
+                const endTime = selectedDrumElement.getAttribute('data-start') || '';  
+                const line = selectedDrumElement.getAttribute('data-link') || '';  
 
                  
                 document.getElementById('adjust-drums').value = selectedDrumId;  

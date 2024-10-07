@@ -72,4 +72,9 @@ class Contract extends Model
     {
         return $this->hasMany(Shipment::class);
     }
+
+	public function subContracts()
+    {
+        return $this->hasMany(SubContract::class);
+    }
 }

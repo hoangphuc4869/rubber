@@ -171,9 +171,15 @@
                     </div> --}}
 
                    
+                    
+                        @if (Gate::allows('admin') || Gate::allows('DRC'))
+                            <button type="submit" name="save_btn" value="save" class="btn btn-primary my-2">Lưu</button>
+                        @endif
 
-                    <button type="submit" name="save_btn" value="save" class="btn btn-primary my-2">Lưu</button>
-                    <button type="submit" name="confirm_btn" value="confirm" class="btn btn-secondary">Xác nhận</button>
+                        @if (Gate::allows('admin') || Gate::allows('nguyenlieu'))
+                            <button type="submit" name="confirm_btn" value="confirm" class="btn btn-secondary">Xác nhận</button>
+                        @endif
+                        
                     
                     {{-- <button type="submit" class="btn btn-primary mt-2">Xác nhận</button> --}}
                 </div>

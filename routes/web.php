@@ -31,6 +31,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PlotControllers;
 use App\Http\Controllers\Admin\ShipmentTNSRController;
 use App\Http\Controllers\Admin\ContractTNSRController;
+use App\Http\Controllers\Admin\SubContractController;
 
 Route::middleware(['login'] )->group(function() {
 
@@ -59,6 +60,7 @@ Route::middleware(['login'] )->group(function() {
         'shipmentsCRCK2' =>  ShipmentCRCK2Controller::class,
         'shipmentsTNSR' =>  ShipmentTNSRController::class,
         'plots' =>  PlotControllers::class,
+        'sub-con' =>  SubContractController::class,
     ]);
     
 
@@ -82,6 +84,13 @@ Route::middleware(['login'] )->group(function() {
     Route::post('/nhan-ca', [HeatController::class, 'nhanCa'])->name('nhan.ca');
 
     Route::put('/update-bale', [BaleController::class, 'updateB'])->name('update.bale');
+
+    Route::post('/shipment/{id}/update', [ShipmentController::class, 'updateField']);
+
+    Route::post('/adjust-dry-time', [HeatController::class, 'adjustDryTime'])->name('adjust-dry-time');
+
+
+
 
 
     

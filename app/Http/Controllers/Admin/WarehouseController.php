@@ -22,14 +22,15 @@ class WarehouseController extends Controller
     public function index()
     {
         
-        $wares = Warehouse::whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK', 'B3-BHCK'])
+        $wares = Warehouse::whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK', 'B3-BHCK','X3T-BHCK', 'X6T-BHCK'])
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
 
         
         
-        $warehouses = Warehouse::whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK', 'B3-BHCK'])
+        $warehouses = Warehouse::whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK', 'B3-BHCK','X3T-BHCK', 'X6T-BHCK'])
+        ->whereNull('batch_id')
             ->orderBy('id', 'asc')
             ->get();
             
@@ -40,15 +41,30 @@ class WarehouseController extends Controller
 
         
         if ($company) {
-            $batches = $company->batches; 
+            $batches = $company->batches()->orderBy('id', 'desc')->get(); 
         } else {
             $batches = collect(); 
         }
-        // dd($company->code, $warehouses);
+
+        
+        $csr10_count = $company->batches()->where('expected_grade', 'CSR10')->sum('bale_count');
+
+        // Đếm số lượng batch với expected_grade là CSR20
+        $csr20_count = $company->batches()->where('expected_grade', 'CSR20')->sum('bale_count');
+
+
+
+        $count = $batches->count();
+
+        $total_bales = 0;
+
+        foreach ($batches as $item) {
+            $total_bales += $item->bale_count;
+        }
 
         
         if (Gate::allows('khoBHCK') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName'));
+            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -57,15 +73,17 @@ class WarehouseController extends Controller
     public function indexCRCK()
     {
         
-        $wares = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3'])
+        $wares = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3','X3T', 'X6T'])
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
 
         
-        $warehouses = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3'])
+        $warehouses = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'X3T', 'X6T'])
+            ->whereNull('batch_id') 
             ->orderBy('id', 'asc')
             ->get();
+
         $customers = Customer::all();
 
         $companyName = 'CRCK2'; 
@@ -73,15 +91,28 @@ class WarehouseController extends Controller
 
         
         if ($company) {
-            $batches = $company->batches; 
+            $batches = $company->batches()->orderBy('id', 'desc')->get();
         } else {
             $batches = collect(); 
         }
         // dd($company->code, $warehouses);
 
+
         
+        $csr10_count = $company->batches()->where('expected_grade', 'CSR10')->sum('bale_count');
+        $csr20_count = $company->batches()->where('expected_grade', 'CSR20')->sum('bale_count');
+
+        
+        $count = $batches->count();
+
+        $total_bales = 0;
+
+        foreach ($batches as $item) {
+            $total_bales += $item->bale_count;
+        }
+
         if (Gate::allows('khoCRCK2') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName'));
+            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -90,15 +121,12 @@ class WarehouseController extends Controller
     public function indexTNSR()
     {
         
-        $wares = Warehouse::whereIn('name', ['A1-TN', 'A2-TN', 'A3-TN', 'B1-TN', 'B2-TN', 'B3-TN'])
+        $wares = Warehouse::whereIn('name', ['TNSR'])
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
 
         
-        $warehouses = Warehouse::whereIn('name', ['A1-TN', 'A2-TN', 'A3-TN', 'B1-TN', 'B2-TN', 'B3-TN'])
-            ->orderBy('id', 'asc')
-            ->get();
         $customers = Customer::all();
 
         $companyName = 'TNSR'; 
@@ -110,11 +138,27 @@ class WarehouseController extends Controller
         } else {
             $batches = collect(); 
         }
-        // dd($company->code, $warehouses);
+
+        $count = $batches->count();
+
+        $warehouses = Warehouse::whereIn('name', ['TNSR'])
+            ->orderBy('id', 'asc')
+            ->get();
+        
+        $total_bales = 0;
+
+        foreach ($batches as $item) {
+            $total_bales += $item->bale_count;
+        }
+       
+
+       
+        $csr10_count = $company->batches()->where('expected_grade', 'CSR10')->sum('bale_count');
+        $csr20_count = $company->batches()->where('expected_grade', 'CSR20')->sum('bale_count');
 
         
-        if (Gate::allows('khoTNSR') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName'));
+        if (Gate::allows('khoCRCK2') || Gate::allows('admin') ) {
+            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales' , 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -137,18 +181,18 @@ class WarehouseController extends Controller
     {
         // dd($request->all());
 
-        $request->validate([
-           'name' => 'required|unique:warehouses,name'
-        ],[
-            'name.unique' => 'Kho đã tồn tại'
-        ]);
+        // $request->validate([
+        //    'name' => 'required|unique:warehouses,name'
+        // ],[
+        //     'name.unique' => 'Kho đã tồn tại'
+        // ]);
 
             
-            for ($row = 1; $row <= $request->rows; $row++) {
+            for ($row = 1; $row <= 30; $row++) {
                 
                 for ($col = 1; $col <= 6; $col++) {
                     
-                    $value = 'B3-' . $row . $col;
+                    $value = 'TN-' . $row . $col;
 
                     Warehouse::create([
                         'name' => $request->name,

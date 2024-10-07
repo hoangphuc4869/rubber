@@ -27,10 +27,15 @@ class RollingController extends Controller
         $curing_houses = CuringHouse::all();
         $curing_areas = CuringArea::all();
 
+        $cv_crck = CuringHouse::whereIn('code', ['NLCVNT1', 'NLCVNT2', 'NLCVNT3', 'NLCVNT6'])->sum('containing');
+        $cv_bhck = CuringHouse::whereIn('code', ['NLCVNT4', 'NLCVNT5', 'NLCVNT7', 'NLCVNT8'])->sum('containing');
+        $cv_tm = CuringHouse::whereIn('code', ['NLCVTM'])->sum('containing');
+        $cv_tnsr = CuringHouse::whereIn('code', ['NLCVTNSR'])->sum('containing');
+
         $rollings = Rolling::all();
 
         if (Gate::allows('canvat') || Gate::allows('admin') ) {
-            return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings', 'curing_areas'));
+            return view('admin.rolling.index' , compact('areas', 'dates', 'curing_houses', 'rollings', 'curing_areas', 'cv_crck', 'cv_bhck', 'cv_tm', 'cv_tnsr'));
 
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
@@ -68,6 +73,7 @@ class RollingController extends Controller
         $command->curing_house_id = $request->curing_house_id;
         $command->curing_area_id = $request->curing_area_id;
         $command->date_curing = Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y/m/d');
+        // $command->date_curing = '2024/09/30';
         $command->code =  now()->timestamp;
         $command->save();
 
@@ -77,16 +83,16 @@ class RollingController extends Controller
         $command->house->containing = max(0, $command->house->containing + $data['weight_to_roll']);
         $command->house->save(); 
 
-        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('input_status', 1)
-            ->whereRaw('DATE(STR_TO_DATE(or_time, "%d-%m-%Y %H:%i")) = ?', [Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y-m-d')])
-            ->get();
+        // $rubbers = Rubber::where('receiving_place_id', $area->id)->where('input_status', 1)
+        //     ->whereRaw('DATE(STR_TO_DATE(or_time, "%d-%m-%Y %H:%i")) = ?', [Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y-m-d')])
+        //     ->get();
 
 
         // dd($rubbers);
-        foreach ($rubbers as $rubber) {
-            $rubber->status = $command->id;
-            $rubber->save();
-        }
+        // foreach ($rubbers as $rubber) {
+        //     $rubber->status = $command->id;
+        //     $rubber->save();
+        // }
 
         return redirect()->back()->with('success', 'Thành công');
 

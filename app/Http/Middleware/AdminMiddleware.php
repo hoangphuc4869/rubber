@@ -16,13 +16,12 @@ class AdminMiddleware
      */
     public function handle($request, Closure $next, ...$roles)
     {
+        // $user = Auth::user();
 
-        dd($roles);
-        $user = Auth::user();
-
-        if (!$user || !$user->roles()->whereIn('name', $roles)->exists()) {
-            abort(403, 'Bạn không có quyền truy cập.');
-        }
+        // // Kiểm tra nếu user có bất kỳ vai trò nào trong danh sách
+        // if (!$user->roles()->whereIn('name', $roles)->exists()) {
+        //     abort(403, 'Bạn không có quyền truy cập.');
+        // }
 
         return $next($request);
     }

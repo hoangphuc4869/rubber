@@ -23,10 +23,23 @@ class RubberController extends Controller
         $curing_areas = CuringArea::all();
         $companies = Company::all();
         $rubbers = Rubber::orderBy('date', 'desc')->get();
+
+        $mu_dong_chen_crck = CuringArea::whereIn('code', ['NLNT1', 'NLNT2', 'NLNT3', 'NLNT6'])->sum('containing');
+        $mu_dong_chen_bhck = CuringArea::whereIn('code', ['NLNT4', 'NLNT5', 'NLNT7', 'NLNT8'])->sum('containing');
+        $mu_dong_chen_tm = CuringArea::whereIn('code', ['NLTM'])->sum('containing');
+        $mu_dong_chen_tnsr = CuringArea::whereIn('code', ['NLTNSR'])->sum('containing');
+
+        $mu_day_crck = CuringArea::whereIn('code', ['MDCR'])->sum('containing');
+        $mu_day_bhck = CuringArea::whereIn('code', ['MDBH'])->sum('containing');
+        $mu_day_tm = CuringArea::whereIn('code', ['NLTMMD'])->sum('containing');
+
         // dd($rubbers[0]);
 
-        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
-            return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas', 'rubbers', 'companies'));
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC') ) {
+            return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas',
+             'rubbers', 'companies', 'mu_dong_chen_crck',
+              'mu_dong_chen_bhck','mu_dong_chen_tm', 'mu_dong_chen_tnsr'
+              , 'mu_day_crck', 'mu_day_bhck' , 'mu_day_tm'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -80,7 +93,7 @@ class RubberController extends Controller
         $rubbers = Rubber::orderBy('date', 'desc')->get();
         $rubber = Rubber::findOrFail($id);
 
-        if (Gate::allows('nguyenlieu') || Gate::allows('admin') ) {
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC') ) {
             return view('admin.rubber.edit', compact('trucks', 'farms', 'curing_areas', 'rubbers', 'rubber'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');

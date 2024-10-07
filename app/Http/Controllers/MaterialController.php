@@ -50,7 +50,7 @@ class MaterialController extends Controller
                     
                     if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
                         $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
-                    } elseif ($item['chung_loai'] === "MỦ DÂY") {  
+                    } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
                         $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
                     } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
                         $curingArea = CuringArea::where('code', 'NLTM')->first();  
@@ -106,7 +106,7 @@ class MaterialController extends Controller
             $curingArea = null;
             if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
                 $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
-            } elseif ($item['chung_loai'] === "MỦ DÂY") {  
+            } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
                 $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
             } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
                 $curingArea = CuringArea::where('code', 'NLTM')->first();  
