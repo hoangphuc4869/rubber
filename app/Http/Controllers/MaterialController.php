@@ -13,20 +13,20 @@ use Illuminate\Support\Facades\Auth;
 class MaterialController extends Controller
 {
 
-    public function login(Request $request)
-    {
-        $credentials = $request->only('email', 'password');
+    // public function login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($credentials, $request->remember)) {
-            $user = Auth::user();
+    //     if (Auth::attempt($credentials, $request->remember)) {
+    //         $user = Auth::user();
             
-            $token = $user->createToken('Login')->plainTextToken;
+    //         $token = $user->createToken('Login')->plainTextToken;
 
-            return response()->json(['token' => $token], 200);
-        }
+    //         return response()->json(['token' => $token], 200);
+    //     }
 
-        return response()->json(['message' => 'Unauthorized'], 401);
-    }
+    //     return response()->json(['message' => 'Unauthorized'], 401);
+    // }
 
 
     public function insert(Request $request)  
@@ -38,85 +38,87 @@ class MaterialController extends Controller
         $failedEntries = []; 
 
         foreach ($rubberRecords as $item) {  
+            if($item['loai_phieu'] !== 'Phiếu Xuất'){
+                
+                $existingRecord = Rubber::where('package_code', $item['so_phieu'])->first();  
             
-            $existingRecord = Rubber::where('package_code', $item['so_phieu'])->first();  
-            
-            if ($existingRecord) {  
-                 
-                if ($existingRecord->input_status === 0) {  
+                if ($existingRecord) {  
                     
-                    $farm = $this->getFarmByNguonGoc($item['nguon_goc']);  
-                    $curingArea = null; 
-                    
-                    if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
-                        $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
-                    } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
-                        $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
-                    } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
-                        $curingArea = CuringArea::where('code', 'NLTM')->first();  
+                    if ($existingRecord->input_status === 0) {  
+                        
+                        $farm = $this->getFarmByNguonGoc($item['nguon_goc']);  
+                        $curingArea = null; 
+                        
+                        if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
+                            $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
+                        } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
+                            $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
+                        } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
+                            $curingArea = CuringArea::where('code', 'NLTM')->first();  
+                        }  
+
+                        
+                        $existingRecord->update([  
+                            'or_time' => $item['thoi_gian'],   
+                            'truck_name' => $item['bien_so_xe'],  
+                            'farm_name' => $item['nguon_goc'],  
+                            'fresh_weight' => $item['khoi_luong_mu'],  
+                            'latex_type' => $item['chung_loai'],   
+                            'farm_id' => $farm ? $farm->id : null,  
+                            'receiving_place_id' => $curingArea ? $curingArea->id : null,  
+                            'trong_luong_vao' => $item['so_can_tong'],  
+                            'trong_luong_ra' => $item['so_can_bi'],  
+                            'khoi_luong_phieu' => $item['so_can_phieu'],  
+                            'time_di' => $item['gio_can_tong'],  
+                            'time_ve' => $item['gio_can_bi'],
+                            'kho' =>  $item['kho'],
+                            'tai_xe' =>  $item['tai_xe']
+                        ]);  
+                    } else {  
+                        
+                        $failedEntries[] = $item['so_phieu'];  
                     }  
-
-                    
-                    $existingRecord->update([  
-                        'or_time' => $item['thoi_gian'],   
-                        'truck_name' => $item['bien_so_xe'],  
-                        'farm_name' => $item['nguon_goc'],  
-                        'fresh_weight' => $item['khoi_luong_mu'],  
-                        'latex_type' => $item['chung_loai'],   
-                        'farm_id' => $farm ? $farm->id : null,  
-                        'receiving_place_id' => $curingArea ? $curingArea->id : null,  
-                        'trong_luong_vao' => $item['so_can_tong'],  
-                        'trong_luong_ra' => $item['so_can_bi'],  
-                        'khoi_luong_phieu' => $item['so_can_phieu'],  
-                        'time_di' => $item['gio_can_tong'],  
-                        'time_ve' => $item['gio_can_bi'],
-                        'kho' =>  $item['kho'],
-                        'tai_xe' =>  $item['tai_xe']
-                    ]);  
-                } else {  
-                    
-                    $failedEntries[] = $item['so_phieu'];  
+                    continue; 
                 }  
-                continue; 
-            }  
 
-            $data = [  
-                'status' => 0,  
-                'or_time' => $item['thoi_gian'],   
-                'truck_name' => $item['bien_so_xe'],  
-                'farm_name' => $item['nguon_goc'],  
-                'fresh_weight' => $item['khoi_luong_mu'],  
-                'latex_type' => $item['chung_loai'],   
-                'package_code' => $item['so_phieu'], 
-                'trong_luong_vao' => $item['so_can_tong'],
-                'trong_luong_ra' => $item['so_can_bi'],
-                'khoi_luong_phieu' => $item['so_can_phieu'],  
-                'time_di' => $item['gio_can_tong'],
-                'time_ve' => $item['gio_can_bi'],
-                'kho' =>  $item['kho'],
-                'tai_xe' =>  $item['tai_xe']
-            ];
+                $data = [  
+                    'status' => 0,  
+                    'or_time' => $item['thoi_gian'],   
+                    'truck_name' => $item['bien_so_xe'],  
+                    'farm_name' => $item['nguon_goc'],  
+                    'fresh_weight' => $item['khoi_luong_mu'],  
+                    'latex_type' => $item['chung_loai'],   
+                    'package_code' => $item['so_phieu'], 
+                    'trong_luong_vao' => $item['so_can_tong'],
+                    'trong_luong_ra' => $item['so_can_bi'],
+                    'khoi_luong_phieu' => $item['so_can_phieu'],  
+                    'time_di' => $item['gio_can_tong'],
+                    'time_ve' => $item['gio_can_bi'],
+                    'kho' =>  $item['kho'],
+                    'tai_xe' =>  $item['tai_xe']
+                ];
 
-        
-            $farm = $this->getFarmByNguonGoc($item['nguon_goc']);  
-            if ($farm) {  
-                $data['farm_id'] = $farm->id;  
-            }  
+            
+                $farm = $this->getFarmByNguonGoc($item['nguon_goc']);  
+                if ($farm) {  
+                    $data['farm_id'] = $farm->id;  
+                }  
 
-            $curingArea = null;
-            if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
-                $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
-            } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
-                $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
-            } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
-                $curingArea = CuringArea::where('code', 'NLTM')->first();  
-            }  
+                $curingArea = null;
+                if (in_array($item['chung_loai'], ["MỦ ĐÔNG CHÉN", "MĐC GIA CÔNG"])) {  
+                    $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
+                } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
+                    $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
+                } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
+                    $curingArea = CuringArea::where('code', 'NLTM')->first();  
+                }  
 
-            if (isset($curingArea)) {  
-                $data['receiving_place_id'] = $curingArea ? $curingArea->id : null;  
-            }  
+                if (isset($curingArea)) {  
+                    $data['receiving_place_id'] = $curingArea ? $curingArea->id : null;  
+                }  
 
-            $rubberData[] = $data;  
+                $rubberData[] = $data; 
+            } 
         }  
 
     

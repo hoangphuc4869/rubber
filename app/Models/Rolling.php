@@ -19,17 +19,18 @@ class Rolling extends Model
         'curing_house',
         'date_curing',
         'weight_to_roll',
-        'impurity_removing'
+        'impurity_removing',
+        'timeRoll',
     ];
 
     public function rubbers()
     {
-        return $this->hasMany(Rubber::class);
+        return $this->hasMany(Rubber::class, 'rubber_warehouse_id');
     }
 
     public function drums()
     {
-        return $this->hasMany(Drum::class);
+        return $this->hasMany(Drum::class, 'rolling_code');
     }
 
     public function house()

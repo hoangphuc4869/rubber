@@ -72,7 +72,7 @@
             @csrf
             <div class="row">
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Bãi ủ</label>
+                    <label class="form-label">Bãi nguyên liệu</label>
 
                     <select name="curing_area_id" id="areaSelect" class="form-select custom-select w-100">
                         @foreach ($areas as $item)
@@ -94,25 +94,25 @@
 
 
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Khối lượng cán (kg)</label>
+                    <label class="form-label">Trọng lượng quy khô (kg)</label>
 
                     <input type="number" min="1" name="weight_to_roll" class="form-control" id="weight_to_roll"
                         value="{{$areas[0]->containing ?? ''}}">
                 </div>
 
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Thời gian tồn trữ</label>
+                    <label class="form-label">Ngày tiếp nhận</label>
                     <input type="date" name="date_curing" require class="form-control">
-                    <!-- <select name="date_curing" class="form-select custom-select w-100">
+                    {{-- <select name="date_curing" class="form-select custom-select w-100">
                         @foreach ($dates as $item)
                         <option value="{{ \Carbon\Carbon::parse($item->or_time)->format('d/m/Y')}}"
                             data-house="$item->">{{ \Carbon\Carbon::parse($item->or_time)->format('d/m/Y')}}</option>
                         @endforeach
-                    </select> -->
+                    </select>  --}}
                 </div>
 
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Ngày tiếp nhận</label>
+                    <label class="form-label">Ngày cán vắt</label>
                     <input type="date" name="date" id="dateInput" class="form-control">
                 </div>
 
@@ -124,6 +124,11 @@
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Tạp chất loại bỏ</label>
                     <input type="text" name="impurity_removing" class="form-control">
+                </div>
+
+                <div class="mb-3 col-lg-4">
+                    <label class="form-label">Số lần cán</label>
+                    <input type="number" name="timeRoll" required class="form-control" value="2">
                 </div>
 
 
@@ -175,14 +180,16 @@
     <thead>
         <tr>
             <th class="text-center"></th>
-            <th>Ngày</th>
+            <th>Ngày cán vắt</th>
             <th>Mã lệnh</th>
             <th>Trạng thái</th>
             <th>Thời gian</th>
-            <th>Bãi ủ</th>
+            
+            <th>Bãi nguyên liệu</th>
             <th>Nhà ủ</th>
-            <th>Khối lượng (kg)</th>
-            <th>Ngày ủ</th>
+            <th>Khối lượng quy khô (kg)</th>
+            <th>Ngày tiếp nhận</th>
+            <th>Số lần cán</th>
 
         </tr>
     </thead>
@@ -190,7 +197,7 @@
         @foreach ($rollings as $index => $rolling)
         <tr id="{{$rolling->id}}">
             <td></td>
-            <td>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
+            <td data-sort='{{ \Carbon\Carbon::parse($rolling->date)->format('Y-m-d')}}'>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
             <td>{{ $rolling->code }}</td>
 
             <td>
@@ -207,6 +214,7 @@
             <td>{{ $rolling->house ? $rolling->house->code : '' }}</td>
             <td>{{  number_format($rolling->weight_to_roll, 0, '.', ',') }}</td>
             <td>{{ \Carbon\Carbon::parse($rolling->date_curing)->format('d/m/Y')}}</td>
+            <td>{{ $rolling->timeRoll}}</td>
         </tr>
         @endforeach
     </tbody>

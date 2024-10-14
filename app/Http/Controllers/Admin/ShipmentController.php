@@ -43,8 +43,6 @@ class ShipmentController extends Controller
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
-
-        
     }
 
     /**
@@ -178,7 +176,6 @@ class ShipmentController extends Controller
                 }
             }
 
-            
             $fileName = time() . '_' . $request->file('pdf')->getClientOriginalName();
             $request->file('pdf')->move(public_path('contract_orders'), $fileName); 
             $shipment->pdf = $fileName;

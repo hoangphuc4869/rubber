@@ -132,7 +132,7 @@ let table = new DataTable("#datatable", {
     // },
     scrollCollapse: true,
     scrollY: "80vh",
-    order: [[1, "asc"]],
+    order: [[1, "desc"]],
     language: {
         sProcessing: "Đang xử lý...",
         sLengthMenu: "Hiển thị _MENU_ mục trên mỗi trang",
@@ -163,6 +163,17 @@ let table = new DataTable("#datatable", {
         }
     },
 });
+
+if (
+    $("#datatable thead th").eq(5).text() === "Thời gian ra lò" ||
+    $("#datatable thead th").eq(5).text() === "Thời gian ép kiện"
+) {
+    table.order([[5, "asc"]]).draw();
+}
+
+if ($("#datatable thead th").eq(11).text() === "Thời gian ra lò") {
+    table.order([[11, "asc"]]).draw();
+}
 
 $("#datatable").on("click", "tr.no-select", function (e) {
     e.stopImmediatePropagation();
@@ -208,15 +219,21 @@ function updateButtons() {
     $("#selected-drums").val(values.join(","));
     $("#selected-drums2").val(values.join(","));
     $("#batchesToExport").val(values.join(","));
+    $("#drumsEdit").val(values.join(","));
+    $("#rubberEdit").val(values.join(","));
+    $("#rubbersDRC").val(values.join(","));
 
     if (values.length > 0) {
         $(".form-delete-items").removeClass("d-none");
         $(".editMat").removeClass("d-none");
         $(".storeButton").removeClass("d-none");
+        $(".storeButton").removeClass("d-none");
+        $(".editDRC").removeClass("d-none");
     } else {
         $(".form-delete-items").addClass("d-none");
         $(".storeButton").addClass("d-none");
         $(".editMat").addClass("d-none");
+        $(".editDRC").addClass("d-none");
     }
 }
 
@@ -682,6 +699,7 @@ let table2 = new DataTable("#datatable2", {
     // },
     scrollCollapse: true,
     scrollY: "100vh",
+    order: [[6, "asc"]],
     columnDefs: [
         {
             orderable: false,
@@ -840,98 +858,195 @@ let order = new DataTable("#dataOrder", {
     autoWidth: false,
 });
 
-// giao ca
 $(document).ready(function () {
     var table = $("#datatable2").DataTable();
     var selectedDrums = [];
 
     $(".switch_within_day").on("click", function () {
-        var lineFilter = $("#lineFilter").val();
+        var lineFilter = $("#lineFilter2").val();
         var totalRows = table.data().length;
 
         var buttonId = $(this).attr("id");
         $("#typeInput").val(buttonId);
 
-        var rowsToSelect = lineFilter == 3 ? 30 : 32;
+        var oven1Data = [];
+        var oven2Data = [];
+        var oven3Data = [];
 
-        if (totalRows < rowsToSelect) {
-            alert("Không đủ thùng");
+        for (var i = 0; i < totalRows; i++) {
+            var row = table.row(i).node();
+            var drumId = parseInt($(row).attr("id"), 10);
+            var dataOven = $(row).data("oven");
+            var dataLink = $(row).data("link");
+
+            if (dataOven == 1 && dataLink == 6) {
+                oven1Data.push({ row: row, id: drumId });
+            } else if (dataOven == 2 && dataLink == 6) {
+                oven2Data.push({ row: row, id: drumId });
+            } else if (dataOven == 1 && dataLink == 3) {
+                oven3Data.push({ row: row, id: drumId });
+            }
+        }
+
+        if (lineFilter == 3) {
+            var rowsData = oven3Data;
+
+            if (rowsData.length < 30) {
+                alert(
+                    `Không đủ thùng: Chỉ có ${rowsData.length} thùng, cần đủ 30 thùng.`
+                );
+            } else {
+                rowsData.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+                rowsData = rowsData.slice(0, 30);
+
+                console.log(rowsData);
+
+                selectedDrums = [];
+                rowsData.forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                // Update hidden input and modal text
+                $("#drumsInput").val(selectedDrums.join(","));
+                $(".so-thung-giao-ca").text(selectedDrums.length);
+                $("#confirmModal").modal("show");
+            }
         } else {
-            var rowsData = [];
+            if (oven1Data.length < 32 || oven2Data.length < 32) {
+                var missingOven1 = Math.max(32 - oven1Data.length, 0);
+                var missingOven2 = Math.max(32 - oven2Data.length, 0);
+                alert(
+                    `Không đủ thùng: Thiếu ${missingOven1} thùng từ lò 1, và ${missingOven2} thùng từ lò 2.`
+                );
+            } else {
+                oven1Data.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+                oven2Data.sort(function (a, b) {
+                    return b.id - a.id;
+                });
 
-            for (var i = 0; i < totalRows; i++) {
-                var row = table.row(i).node();
-                var drumId = parseInt($(row).attr("id"), 10);
-                rowsData.push({ row: row, id: drumId });
+                var selectedOven1 = oven1Data.slice(0, 32);
+                var selectedOven2 = oven2Data.slice(0, 32);
+
+                selectedDrums = [];
+
+                selectedOven1.forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                selectedOven2.forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                $("#drumsInput").val(selectedDrums.join(","));
+                $(".so-thung-giao-ca").text(selectedDrums.length);
+                $("#confirmModal").modal("show");
             }
-
-            rowsData.sort(function (a, b) {
-                return b.id - a.id;
-            });
-
-            selectedDrums = [];
-
-            for (var i = 0; i < Math.min(rowsToSelect, rowsData.length); i++) {
-                var selectedRow = rowsData[i].row;
-                $(selectedRow).addClass("selected");
-                selectedDrums.push(rowsData[i].id);
-            }
-
-            $("#drumsInput").val(selectedDrums.join(","));
-            $(".so-thung-giao-ca").text(selectedDrums.length);
-            $("#confirmModal").modal("show");
         }
     });
 
     $(".close-modal").on("click", function () {
         $("#confirmModal").modal("hide");
-        table.$("tr.selected").removeClass("selected");
+        // table.$("tr.selected").removeClass("selected");
         selectedDrums = [];
         $("#drumsInput").val("");
     });
 });
 
 // đổi ca
-
 $(document).ready(function () {
     var table = $("#datatable2").DataTable();
     var selectedDrums = [];
 
     $(".switch_another_day").on("click", function () {
-        var lineFilter = $("#lineFilter").val();
+        var lineFilter = $("#lineFilter2").val();
         var totalRows = table.data().length;
 
         var buttonId = $(this).attr("id");
         $("#typeInput").val(buttonId);
 
-        var rowsToSelect = lineFilter == 3 ? 27 : 28;
+        var oven1Data = [];
+        var oven2Data = [];
+        var oven3Data = [];
 
-        if (totalRows < rowsToSelect) {
-            alert("Không đủ thùng");
+        for (var i = 0; i < totalRows; i++) {
+            var row = table.row(i).node();
+            var drumId = parseInt($(row).attr("id"), 10);
+            var dataOven = $(row).data("oven");
+
+            var dataLink = $(row).data("link");
+
+            if (dataOven == 1 && dataLink == 6) {
+                oven1Data.push({ row: row, id: drumId });
+            } else if (dataOven == 2 && dataLink == 6) {
+                oven2Data.push({ row: row, id: drumId });
+            } else if (dataOven == 1 && dataLink == 3) {
+                oven3Data.push({ row: row, id: drumId });
+            }
+        }
+
+        if (lineFilter == 3) {
+            var rowsData = oven3Data;
+
+            if (rowsData.length < 27) {
+                alert(
+                    `Không đủ thùng: Cần 27 thùng nhưng chỉ có ${rowsData.length}`
+                );
+            } else {
+                rowsData.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+                selectedDrums = [];
+
+                rowsData.slice(0, 27).forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                $("#drumsInput").val(selectedDrums.join(","));
+                $(".so-thung-giao-ca").text(selectedDrums.length);
+                $("#confirmModal").modal("show");
+            }
         } else {
-            var rowsData = [];
+            if (oven1Data.length < 28 || oven2Data.length < 28) {
+                var missingOven1 = Math.max(28 - oven1Data.length, 0);
+                var missingOven2 = Math.max(28 - oven2Data.length, 0);
+                alert(
+                    `Không đủ thùng: Thiếu ${missingOven1} từ lò 1, và ${missingOven2} từ lò 2.`
+                );
+            } else {
+                oven1Data.sort(function (a, b) {
+                    return b.id - a.id;
+                });
+                oven2Data.sort(function (a, b) {
+                    return b.id - a.id;
+                });
 
-            for (var i = 0; i < totalRows; i++) {
-                var row = table.row(i).node();
-                var drumId = parseInt($(row).attr("id"), 10);
-                rowsData.push({ row: row, id: drumId });
+                var selectedOven1 = oven1Data.slice(0, 28);
+                var selectedOven2 = oven2Data.slice(0, 28);
+
+                selectedDrums = [];
+
+                selectedOven1.forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                selectedOven2.forEach(function (data) {
+                    $(data.row).addClass("selected");
+                    selectedDrums.push(data.id);
+                });
+
+                $("#drumsInput").val(selectedDrums.join(","));
+                $(".so-thung-giao-ca").text(selectedDrums.length);
+                $("#confirmModal").modal("show");
             }
-
-            rowsData.sort(function (a, b) {
-                return b.id - a.id;
-            });
-
-            selectedDrums = [];
-
-            for (var i = 0; i < Math.min(rowsToSelect, rowsData.length); i++) {
-                var selectedRow = rowsData[i].row;
-                $(selectedRow).addClass("selected");
-                selectedDrums.push(rowsData[i].id);
-            }
-
-            $("#drumsInput").val(selectedDrums.join(","));
-            $(".so-thung-giao-ca").text(selectedDrums.length);
-            $("#confirmModal").modal("show");
         }
     });
 
@@ -957,16 +1072,27 @@ $(document).ready(function () {
     $("#doiCaBtn").on("click", function () {
         var selectedDrumIds = [];
 
+        var lineFilter = $("#lineFilter").val();
+
         table.rows(".thungdoica").every(function (rowIdx, tableLoop, rowLoop) {
             var row = this.node();
             $(row).addClass("selected");
             var drumId = $(row).attr("id");
-            selectedDrumIds.push(drumId);
+            var dataLink = $(row).data("link");
+
+            if (lineFilter == 3 && dataLink == 3) {
+                $(row).addClass("selected");
+                selectedDrumIds.push(drumId);
+            } else if (lineFilter == 6 && dataLink == 6) {
+                selectedDrumIds.push(drumId);
+            }
         });
 
         if (selectedDrumIds.length === 0) {
             alert("Không có thùng nào được chọn để đổi ca.");
             return;
+        } else {
+            $("#num3t").text(selectedDrumIds.length);
         }
 
         $("#drumIdsDoiCa").val(selectedDrumIds.join(","));
@@ -1095,39 +1221,31 @@ $(document).ready(function () {
 $(document).ready(function () {
     $(".editDrumBtn").on("click", function () {
         var drumId = $(this).data("id");
+        $("#editModal").modal("show");
 
-        $.ajax({
-            url: "/get-drum-details/" + drumId,
-            type: "GET",
-            success: function (data) {
-                $("#editLink").val(data.link);
-                $("#editImpurity").val(data.impurity_removing);
-                $("#editThickness").val(data.thickness);
-                $("#editTrangThaiCom").val(data.trang_thai_com);
+        // $.ajax({
+        //     url: "/get-drum-details/" + drumId,
+        //     type: "GET",
+        //     success: function (data) {
+        //         $("#editLink").val(data.link);
+        //         $("#editImpurity").val(data.impurity_removing);
+        //         $("#editThickness").val(data.thickness);
+        //         $("#editTrangThaiCom").val(data.trang_thai_com);
 
-                $("#drumId").val(drumId);
+        //         $("#drumId").val(drumId);
 
-                $("#editModal").modal("show");
-            },
-            error: function (error) {
-                console.error("Error fetching drum details:", error);
-            },
-        });
+        //     },
+        //     error: function (error) {
+        //         console.error("Error fetching drum details:", error);
+        //     },
+        // });
     });
 });
 
-$(document).ready(function () {
-    var table = $("#datatable").DataTable();
+// $(document).ready(function () {
+//     var table = $("#datatable").DataTable();
 
-    $("#datatable tbody").on("click", "tr", function () {
-        var rowId = $(this).attr("id");
-        console.log("Row ID:", rowId);
-
-        var editLink = "/rubber/:id/edit";
-        editLink = editLink.replace(":id", rowId);
-        $("#editLink").attr("href", editLink);
-    });
-});
+// });
 
 $(document).ready(function () {
     $("#thang_giao_hang").select2();
@@ -1135,17 +1253,15 @@ $(document).ready(function () {
 
 // datatable5
 
-$("#min5").datepicker({
-    dateFormat: "dd/mm/yy",
-    onSelect: function () {
-        table.draw();
-        classList.draw();
-    },
-});
-
 var currentDate = new Date();
 currentDate.setHours(currentDate.getHours() - 6);
 currentDate.setMinutes(currentDate.getMinutes() - 30);
+
+$("#min5").datepicker({
+    dateFormat: "dd/mm/yy",
+});
+
+$("#min5").datepicker("setDate", currentDate);
 
 $("#min5").on("change", function () {
     table5.draw();
@@ -1205,7 +1321,45 @@ $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
     return true;
 });
 
-// Khởi tạo DataTable
+$.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+    if (settings.nTable.id !== "datatable2") {
+        return true;
+    }
+
+    let filterDateStr = $("#min5").val();
+    let filterDate = filterDateStr
+        ? new Date(convertDate(filterDateStr))
+        : null;
+
+    let rowDateStr = data[1];
+    let rowDate = rowDateStr ? new Date(convertDate(rowDateStr)) : null;
+
+    function convertDate(dateStr) {
+        if (!dateStr) return null;
+        let parts = dateStr.split("/");
+        return new Date(parts[2], parts[1] - 1, parts[0]);
+    }
+
+    function formatDateToCompare(date) {
+        return date ? date.toISOString().split("T")[0] : null;
+    }
+
+    let formattedFilterDate = formatDateToCompare(filterDate);
+    let formattedRowDate = formatDateToCompare(rowDate);
+
+    if (formattedFilterDate && formattedRowDate !== formattedFilterDate) {
+        return false;
+    }
+
+    let lineFilter = $("#lineFilter2").val();
+    let rowLine = data[12];
+    if (lineFilter && rowLine !== lineFilter) {
+        return false;
+    }
+
+    return true;
+});
+
 let table5 = new DataTable("#datatable5", {
     fixedHeader: true,
     paging: true,
@@ -1227,11 +1381,234 @@ let table5 = new DataTable("#datatable5", {
             sLast: "Cuối cùng",
         },
     },
+
     scrollX: true,
     autoWidth: false,
+
+    select: {
+        style: "multi",
+    },
 });
 
-// Sự kiện khi thay đổi bộ lọc
-$("#min5, #lineFilter5, #comFilter5").on("change", function () {
+$("#min5, #lineFilter5, #comFilter5, #lineFilter2").on("change", function () {
     table5.draw();
+    table2.draw();
+});
+
+table5.on("select deselect", function () {
+    updateSelectedRows();
+});
+
+// if ($("#datatable5 thead th").eq(6).text() === "Thời gian tạo lô") {
+//     table5.order([[6, "asc"]]).draw();
+//     // table5.page.len(-1).draw();
+// }
+
+function updateSelectedRows() {
+    let selectedRows = table5.rows({ selected: true }).nodes().toArray();
+
+    // Get the 'id' attribute from each <tr>
+    let selectedIds = selectedRows.map((row) => $(row).attr("id"));
+
+    if (selectedIds.length > 0) {
+        $(".form-delete-items").removeClass("d-none");
+
+        $("#selected-drums").val(selectedIds.join(","));
+    } else {
+        $(".form-delete-items").addClass("d-none");
+
+        $("#selected-drums").val("");
+    }
+}
+
+//update DRC
+
+//update bale
+
+$("#updatebale").on("click", function () {
+    var baleCount = $("#bale_count").val();
+    var sampleCut = $("#sample_cut").val();
+    var pressingTemp = $("#pressing_temp").val();
+    var evaluation = $("#evaluation").val();
+    var baleId = $("#selected-drums").val();
+
+    console.log(baleCount);
+
+    $.ajax({
+        url: "/update-bale",
+        type: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+        data: JSON.stringify({
+            ids: baleId,
+            bale_count: baleCount,
+            sample_cut: sampleCut,
+            pressing_temp: pressingTemp,
+            evaluation: evaluation,
+        }),
+        success: function (data) {
+            var table = $("#datatable").DataTable();
+            data.updated_bales.forEach(function (item) {
+                var row = $(`#${item.id}`);
+
+                if (row.length) {
+                    row.find("td").eq(8).text(item.bale_count);
+                    row.find("td").eq(9).text(item.bale_count);
+                    row.find("td").eq(12).text(item.sample_cut);
+                    row.find("td").eq(10).text(item.pressing_temp);
+                    row.find("td").eq(13).text(item.evaluation);
+                } else {
+                    console.warn(`Row with ID ${item.id} not found`);
+                }
+            });
+
+            table.draw();
+            alert("Cập nhật thành công");
+
+            $("#exampleModal").modal("hide");
+        },
+        error: function (xhr, status, error) {
+            console.error("Error:", error);
+            alert("Đã xảy ra lỗi khi cập nhật.");
+        },
+    });
+});
+
+//filter stat & time start based on oven
+
+$(document).ready(function () {
+    var table2 = $("#datatable2").DataTable();
+    var initialStartTime = "";
+
+    // $("#stat").val("Đang xử lý nhiệt");
+    // var initialValue = $("#stat").val();
+    // table2.column(2).search(initialValue, false, false).draw();
+
+    // $("#stat").on("change", function () {
+    //     var selectedValue = $(this).val();
+    //     table2.column(2).search(selectedValue, false, false).draw();
+    // });
+
+    $('select[name="oven"]').on("change", function () {
+        var selectedOven = $(this).val();
+
+        var rows = table2.rows().nodes();
+        var filteredRows = [];
+        $(rows).each(function () {
+            var rowOven = $(this).data("oven");
+            var rowStatus = $(this).data("status");
+
+            if (rowOven == selectedOven && rowStatus == 1) {
+                filteredRows.push(this);
+            }
+        });
+
+        if (filteredRows.length > 0) {
+            var lastRow = filteredRows[filteredRows.length - 1];
+            var startTime = $(lastRow).find("td:eq(4)").text();
+
+            var extraMinutes = parseInt($(lastRow).find("td:eq(5)").text());
+
+            initialStartTime = startTime;
+
+            var startTimeParts = startTime.split(":");
+            var startHour = parseInt(startTimeParts[0]);
+            var startMinutes = parseInt(startTimeParts[1]);
+            var totalStartMinutes = startHour * 60 + startMinutes;
+
+            var endTotalMinutes = totalStartMinutes + extraMinutes;
+
+            var endHour = Math.floor(endTotalMinutes / 60);
+            var endMinutes = endTotalMinutes % 60;
+
+            var formattedEndHour = endHour.toString().padStart(2, "0");
+            var formattedEndMinutes = endMinutes.toString().padStart(2, "0");
+
+            $("#timeInput").val(`${formattedEndHour}:${formattedEndMinutes}`);
+        } else {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+
+            hours = String(hours).padStart(2, "0");
+            minutes = String(minutes).padStart(2, "0");
+
+            const currentTime = `${hours}:${minutes}`;
+            $("#timeInput").val(currentTime);
+            initialStartTime = currentTime;
+        }
+    });
+
+    // $('input[name="time_to_dry"]').on("input", function () {
+    //     var dryingTime = parseInt($(this).val());
+
+    //     if (!initialStartTime) {
+    //         return;
+    //     }
+
+    //     var startTimeParts = initialStartTime.split(":");
+    //     var startHour = parseInt(startTimeParts[0]);
+    //     var startMinutes = parseInt(startTimeParts[1]);
+    //     var totalStartMinutes = startHour * 60 + startMinutes;
+
+    //     if (!isNaN(dryingTime)) {
+    //         var endTotalMinutes = totalStartMinutes + dryingTime;
+
+    //         var endHour = Math.floor(endTotalMinutes / 60);
+    //         var endMinutes = endTotalMinutes % 60;
+
+    //         var formattedEndHour = endHour.toString().padStart(2, "0");
+    //         var formattedEndMinutes = endMinutes.toString().padStart(2, "0");
+
+    //         $("#timeInput").val(`${formattedEndHour}:${formattedEndMinutes}`);
+    //     } else {
+    //         $("#timeInput").val(initialStartTime);
+    //     }
+    // });
+});
+
+$(document).ready(function () {
+    var table = $("#datatable").DataTable();
+
+    let totalWeight = 0;
+    let maxWeight = parseFloat($("#so_luong").text()) * 1000;
+    let selectedBatches = [];
+
+    table.on("change", function () {
+        let row = $(this).closest("tr");
+        let baleCount = parseFloat(row.data("bale"));
+        console.log(baleCount);
+
+        let batchCode = row.data("code");
+        let weight = baleCount * 35;
+
+        if (this.checked) {
+            totalWeight += weight;
+            selectedBatches.push(batchCode);
+        } else {
+            totalWeight -= weight;
+            selectedBatches = selectedBatches.filter(
+                (code) => code !== batchCode
+            );
+        }
+
+        $("#total_weight").text(totalWeight.toFixed(2));
+
+        if (totalWeight > maxWeight) {
+            let excess = totalWeight - maxWeight;
+            $("#status_message").html(
+                `<span class='text-danger'>Đủ khối lượng. Còn dư ${excess.toFixed(
+                    2
+                )} kg, thuộc mã lô: ${selectedBatches.join(", ")}</span>`
+            );
+        } else {
+            $("#status_message").html(
+                `<span class='text-success'>Chưa đạt đủ khối lượng. Còn thiếu: ${(
+                    maxWeight - totalWeight
+                ).toFixed(2)} kg.</span>`
+            );
+        }
+    });
 });

@@ -37,7 +37,9 @@ class Rubber extends Model
         'trong_luong_ra',
         'khoi_luong_phieu',
         'tai_xe',
-        'kho'
+        'kho',
+        'note',
+        'loai_phieu'
     ];
 
     public function truck()
@@ -55,8 +57,8 @@ class Rubber extends Model
         return $this->belongsTo(CuringArea::class, 'receiving_place_id');
     }
 
-    public function rubberWarehouse()
+    public function rubber_warehouse()
     {
-        return $this->belongsTo(Rolling::class);
+        return $this->belongsTo(Rolling::class, 'rubber_warehouse_id');
     }
 }

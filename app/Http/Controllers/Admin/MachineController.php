@@ -22,13 +22,14 @@ class MachineController extends Controller
      */
     public function index()
     {
-        $rollings = Rolling::all();
+        $rollings = Rolling::orderBy('date', 'desc')->get();
         $houses_containing = CuringHouse::where('containing', '>' , 0)->get();
         $houses = CuringHouse::all();
         $areas = CuringArea::whereIn('code', ['NLTMMD', 'MDBH', 'MDCR'])->get();
 
         // dd($areas);
         $reset = ResetTime::first();
+
         $drums = Drum::orderBy('date', 'desc')->get();
 
         
@@ -105,16 +106,16 @@ class MachineController extends Controller
 
         // dd($request->all());
 
-        // $currentTime = Carbon::now();
-        // $today = Carbon::today();
-        // $yesterday = Carbon::yesterday();
+        $currentTime = Carbon::now();
+        $today = Carbon::today();
+        $yesterday = Carbon::yesterday();
 
     
-        // if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
-        //     $date = $yesterday->format('Y/m/d');
-        // } else {
-        //     $date = $today->format('Y/m/d');
-        // }
+        if ($currentTime->hour < $resetHour || ($currentTime->hour == $resetHour && $currentTime->minute < $resetMinute)) {
+            $date = $yesterday->format('Y/m/d');
+        } else {
+            $date = $today->format('Y/m/d');
+        }
 
         $existingDrumsCount = Drum::whereDate('date', $request->date)->where('link', $request->input('link') )->count();
 
@@ -123,10 +124,20 @@ class MachineController extends Controller
 
         $drumsCount = $request->input('drums');
 
+        
+        
+
     
         for ($i = $startNumber; $i < $startNumber + $drumsCount; $i++) {
+
             $drum = new Drum();
-            $drum->curing_house_id = $request->input('curing_house');
+            if($request->curing_house == 11 || $request->curing_house == 21 || $request->curing_house == 22){
+                $drum->curing_area_id = $request->curing_house;
+            }
+            else {
+                $drum->curing_house_id = $request->curing_house;
+            }
+            
             $drum->link = $request->input('link');
             $drum->date = $request->date;
             // $drum->time = $request->input('time');
@@ -140,8 +151,14 @@ class MachineController extends Controller
             $drum->save();
         }
 
+        $weight = Rolling::findOrFail($request->rolling_code);
 
-    
+        $house = $weight->house;
+
+        
+        $weight->status = 1;
+        $weight->save();
+        $house->save();
 
         return redirect()->back()->with('success', 'Thành công');
     }
@@ -178,7 +195,7 @@ class MachineController extends Controller
     {
         $item = Drum::findOrFail($id);
 
-        if($item) {
+        if($item && $item->status ==0) {
             $item->delete();
         }
 
@@ -190,12 +207,13 @@ class MachineController extends Controller
         
         $items = explode( ',', $request->drums);
 
-        // dd($items);
-
         foreach ($items as $item) {
-           
-            Drum::findOrFail($item)->delete();
-
+            
+            $drum = Drum::findOrFail($item);
+            if($drum && $drum->status == 0){
+                $drum->delete();
+            }
+    
 
         }
         return redirect()->back()->with('delete_success', 'Xóa thành công' );
@@ -208,18 +226,51 @@ class MachineController extends Controller
         return response()->json($drum);
     }
 
+    
+        
+
+
     public function updateDrumDetails(Request $request)
     {
-        $drum = Drum::find($request->drum_id);
-        $drum->link = $request->link;
-        $drum->impurity_removing = $request->impurity_removing;
-        $drum->thickness = $request->thickness;
-        $drum->trang_thai_com = $request->trang_thai_com;
-        $drum->save();
 
-        return redirect()->back()->with('success', 'Chỉnh sửa thành công' );
+        $drums = explode(',', $request->drumsEdit);
 
+        foreach ($drums as $drumId) {
+            $drum = Drum::find($drumId);
+
+            // dd($drum->batches);
+
+           if ($drum && $drum->batches()->count() == 0) {
+                
+                if ($request->filled('link')) {
+                    $drum->link = $request->link;
+                }
+
+                if ($request->filled('curing_house')) {
+                    $drum->curing_house_id = $request->curing_house;
+                }
+
+                if ($request->filled('impurity_removing')) {
+                    $drum->impurity_removing = $request->impurity_removing;
+                }
+
+                if ($request->filled('thickness')) {
+                    $drum->thickness = $request->thickness;
+                }
+
+                if ($request->filled('trang_thai_com')) {
+                    $drum->trang_thai_com = $request->trang_thai_com;
+                }
+
+                $drum->save();
+            } else {
+                return redirect()->back()->with('roll_fail', 'Không thể chỉnh sửa các thùng đã có lô');
+            }
+        }
+
+        return redirect()->back()->with('success', 'Chỉnh sửa thành công');
     }
+
 
 
 }

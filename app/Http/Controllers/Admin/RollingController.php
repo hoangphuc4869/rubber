@@ -20,7 +20,12 @@ class RollingController extends Controller
      */
     public function index()
     {
-        $areas = CuringArea::where('containing', '>', 0)->get();
+        $areas = CuringArea::where('containing', '>', 0)
+            ->whereNotIn('code', ['NLTMMD', 'MDCR', 'MDBH'])
+            ->get();
+
+        // dd(Rolling::orderBy('id', 'desc')->first()->rubbers()->first());
+
         $dates = Rubber::select('or_time')->where('input_status', 1)->distinct()->get();
 
         // dd($dates);
@@ -72,7 +77,7 @@ class RollingController extends Controller
         $command->fill($data);
         $command->curing_house_id = $request->curing_house_id;
         $command->curing_area_id = $request->curing_area_id;
-        $command->date_curing = Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y/m/d');
+        $command->date_curing = $request->date_curing;
         // $command->date_curing = '2024/09/30';
         $command->code =  now()->timestamp;
         $command->save();
@@ -83,16 +88,12 @@ class RollingController extends Controller
         $command->house->containing = max(0, $command->house->containing + $data['weight_to_roll']);
         $command->house->save(); 
 
-        // $rubbers = Rubber::where('receiving_place_id', $area->id)->where('input_status', 1)
-        //     ->whereRaw('DATE(STR_TO_DATE(or_time, "%d-%m-%Y %H:%i")) = ?', [Carbon::createFromFormat('d/m/Y', $request->date_curing)->format('Y-m-d')])
-        //     ->get();
+        $rubbers = Rubber::where('receiving_place_id', $area->id)->where('input_status', 1)->where('date', $request->date_curing)->get();
 
-
-        // dd($rubbers);
-        // foreach ($rubbers as $rubber) {
-        //     $rubber->status = $command->id;
-        //     $rubber->save();
-        // }
+        foreach ($rubbers as $rubber) {
+            $rubber->rubber_warehouse_id = $command->id;
+            $rubber->save();
+        }
 
         return redirect()->back()->with('success', 'Thành công');
 

@@ -23,6 +23,10 @@ class CuringArea extends Model
         return $this->hasMany(CuringArea::class);
     }
 
+    public function drums() {
+        return $this->hasMany(Drum::class);
+    }
+
     public function farm() {
         return $this->belongsTo(Farm::class);
     }

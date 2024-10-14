@@ -35,7 +35,7 @@
     
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-primary">Chỉnh sửa nguyên liệu ngày {{\Carbon\Carbon::parse($rubber->date)->format('d/m/Y')}}</h5>
+            <h5 class="mb-0 text-primary">Chỉnh sửa nguyên liệu ngày {{\Carbon\Carbon::parse($rubber->time_ve)->format('d/m/Y')}}</h5>
         </div>
         <div class="card-body">
             @include('partials.errors')
@@ -97,12 +97,12 @@
 
                      <div class="mb-3 col-lg-3">
                         <label class="form-label" >Ngày</label>
-                        <input type="date" name="date" readonly class="form-control" value="{{ \Carbon\Carbon::parse($rubber->or_time)->format('Y-m-d') }}">
+                        <input type="date" name="date" readonly class="form-control" value="{{ \Carbon\Carbon::parse($rubber->time_ve)->format('Y-m-d') }}">
                     </div>
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Giờ</label>
-                        <input type="time" name="time" id="" readonly class="form-control" value="{{\Carbon\Carbon::parse($rubber->or_time)->format('H:i')}}">
+                        <input type="time" name="time" id="" readonly class="form-control" value="{{\Carbon\Carbon::parse($rubber->time_ve)->format('H:i')}}">
                     </div>
 
                     <div class="mb-3 col-lg-3">
@@ -159,6 +159,11 @@
                         <label class="form-label" >Phân hạng</label>
                         <input type="text" required class="form-control" name="grade" value="{{$rubber->grade}}" >
                         
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label" >Ghi chú</label>
+                        <input type="text" class="form-control" name="note" value="{{$rubber->note}}" >
                     </div>
 
                     {{-- <div class="mb-3 col-lg-3">
@@ -236,6 +241,7 @@
                 <th>Tình trạng nguyên liệu</th>
                 <th>Tạp chất</th>
                 <th>Phân hạng nguyên liệu</th>
+                <th>Ghi chú</th>
             </tr>
         </thead>
         <tbody>
@@ -243,15 +249,15 @@
             <tr id="{{$rubber->id}}">
 
                 <td></td>
-                <td>{{ \Carbon\Carbon::parse($rubber->or_time)->format('d/m/Y')}}</td>
-                <td>{{ \Carbon\Carbon::parse($rubber->or_time)->format('H:i')}}</td>
+                <td>{{ \Carbon\Carbon::parse($rubber->time_ve)->format('d/m/Y')}}</td>
+                <td>{{ \Carbon\Carbon::parse($rubber->time_ve)->format('H:i')}}</td>
                 <td>{!! $rubber->input_status !== 0 ? "<span class='text-success'>Đã xác nhận</span>" : "<span class='text-danger'>Chờ xác nhận</span>"  !!}</td>
                  <td>{!! $rubber->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chờ xử lý</span>"  !!}</td>
                 <td>{{ $rubber->fresh_weight }}</td>
                 <td>{{ $rubber->truck ? $rubber->truck->code: $rubber->truck_name }}</td>
                 <td>{{ $rubber->farm_name }}</td>
                 <td>{{ $rubber->curing_area?->code }}</td>
-                <td>{{ $rubber->farm?->company ? $rubber->farm->company->id : '' }}</td>
+                <td>{{ $rubber->farm?->company ? $rubber->farm->company->code : '' }}</td>
                 <td>{{ $rubber->latex_type }}</td>
                 <td>{{ $rubber->tai_xe }}</td>
                 <td>{{ $rubber->material_age }}</td>
@@ -260,6 +266,7 @@
                 <td>{{ $rubber->material_condition }}</td>
                 <td>{{ $rubber->impurity_type }}</td>
                 <td>{{ $rubber->grade }}</td>
+                <td>{{ $rubber->note}}</td>
                 
             </tr>
             @endforeach

@@ -168,7 +168,7 @@
 
 
             @if (Gate::allows('canvat') || Gate::allows('admin') || Gate::allows('6t') || Gate::allows('3t') )
-            <li class="menu-item {{Route::is('rolling.*') || Route::is('machining.*') || Route::is('heat.*') || Route::is('producing.*') || Route::is('batch.*') ? "active open" : ""}}" style="">
+            <li class="menu-item {{Route::is('list') || Route::is('rolling.*') || Route::is('machining.*') || Route::is('heat.*') || Route::is('producing.*') || Route::is('batch.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-gears"></i>
                 <div data-i18n="Layouts">Chế biến</div>
@@ -217,6 +217,13 @@
                   <a href="{{route('batch.index')}}" class="menu-link">
                     {{-- <i class="menu-icon tf-icons fa-regular fa-cube"></i> --}}
                     <div data-i18n="Basic">Đóng gói</div>
+                  </a>
+                </li>
+
+                <li class="menu-item  {{Route::is('list') ? "active" : ""}}">
+                  <a href="{{route('list')}}" class="menu-link">
+                    {{-- <i class="menu-icon tf-icons fa-regular fa-cube"></i> --}}
+                    <div data-i18n="Basic">Danh sách lô hàng</div>
                   </a>
                 </li>
                 @endif
@@ -368,6 +375,29 @@
               </a>
             </li>
             @endif
+
+            <li class="menu-item">
+              <a href="{{route('export-excel')}}" class="menu-link">
+                <i class="menu-icon tf-icons fa-solid fa-file"></i>
+                <div data-i18n="Basic">Báo cáo</div>
+              </a>
+            </li>
+
+            <li class="menu-item">
+              <a href="/fill-excel" class="menu-link">
+                <i class="menu-icon tf-icons fa-solid fa-file"></i>
+                <div data-i18n="Basic">Báo cáo thông kê</div>
+              </a>
+            </li>
+
+            <li class="menu-item">
+              <a href="/find" class="menu-link">
+                <i class="menu-icon tf-icons fa-solid fa-file"></i>
+                <div data-i18n="Basic">Truy xuất nguồn gốc</div>
+              </a>
+            </li>
+
+
           </ul>
         </aside>
         <!-- / Menu -->
@@ -505,6 +535,7 @@
     
   </script>
     <script src="/assets/app.js"></script>
+    <script src="/assets/js_modules/js/nguyenlieu.js"></script>
 
   </body>
 </html>

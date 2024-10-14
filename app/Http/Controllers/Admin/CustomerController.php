@@ -21,9 +21,6 @@ class CustomerController extends Controller
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
-
-        
-
     }
 
     /**
@@ -92,9 +89,6 @@ class CustomerController extends Controller
         return redirect()->route('customers.index')->with('success', 'Cập nhật thành công');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $item = Customer::findOrFail($id);

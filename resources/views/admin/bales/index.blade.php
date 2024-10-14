@@ -19,7 +19,7 @@
                 <div class="row">
                     <div class="mb-3 col-lg-3">
                         <label class="form-label">Số bành/thùng</label>
-                        <input type="number" min="1" required class="form-control" name="number_of_bales" value="27" >
+                        <input type="number" min="1" required class="form-control" name="number_of_bales" value="13" >
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label">Nhiệt độ ép bành (độ C)</label>
@@ -32,12 +32,11 @@
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Kiểm tra cắt bành</label>
-                        <input type="number" required class="form-control" name="cut_check" value="7" >
+                        <input type="number" required class="form-control" name="cut_check" value="2" >
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Đánh giá</label>
                         <input type="text" required  class="form-control" name="evaluation" value="Chín đều" >
-                        
                     </div>
 
                     <div class="mb-3 col-lg-3">
@@ -45,7 +44,7 @@
                         <input type="date" name="date" id="dateInput" class="form-control">
                     </div>
 
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-3" style="opacity: 0; pointer-events: none">
                         <label class="form-label" >Giờ</label>
                         <input type="time" name="time" id="timeInput" class="form-control">
                     </div>
@@ -78,7 +77,19 @@
                     </div>
                 </div>
             </div>
+
+
         </div>
+
+        {{-- <div class="d-flex align-items-center gap-2">
+            <form action="{{ route('reset.drum') }}" class="form-delete-items d-none" method="POST"
+                onsubmit="return confirmDelete();">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="drums" id="selected-drums">
+                <button class="btn btn-danger" type="submit">Xóa</button>
+            </form>
+        </div> --}}
 
         
        
@@ -102,7 +113,6 @@
                 <th>Đánh giá</th>
                 <th>Vệ sinh thùng</th>
                 <th>Trưởng ca</th>
-                <th>Tùy chỉnh</th>
             </tr>
         </thead>
         <tbody>
@@ -119,68 +129,11 @@
                 <td>{{ $drum->temp2 }}</td>
                 <td>{{ $drum->time_to_dry }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_start)->format('H:i') }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_end)->format('H:i') }}</td>
+                <td data-sort="{{ \Carbon\Carbon::parse($drum->heated_end)->format('Y-m-d H:i') }}">{{ \Carbon\Carbon::parse($drum->heated_end)->format('H:i') }}</td>
                 <td>{{ $drum->validation }}</td>
                 <td>{{ $drum->state }}</td>
-                <td>{{ $drum->heating_supervisor }}</td>
-                <td>
-                    <div class="custom d-flex gap-1">
-
-                        <form action="{{route('producing.destroy', [$drum->id])}}" method="POST" onsubmit="return confirmDelete();">
-                            @csrf
-                            @method('DELETE')
-                                <button class="bin-button">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 39 7"
-                                class="bin-top"
-                            >
-                                <line stroke-width="4" stroke="white" y2="5" x2="39" y1="5"></line>
-                                <line
-                                stroke-width="3"
-                                stroke="white"
-                                y2="1.5"
-                                x2="26.0357"
-                                y1="1.5"
-                                x1="12"
-                                ></line>
-                            </svg>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 33 39"
-                                class="bin-bottom"
-                            >
-                                <mask fill="white" id="path-1-inside-1_8_19">
-                                <path
-                                    d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-                                ></path>
-                                </mask>
-                                <path
-                                mask="url(#path-1-inside-1_8_19)"
-                                fill="white"
-                                d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                ></path>
-                                <path stroke-width="4" stroke="white" d="M12 6L12 29"></path>
-                                <path stroke-width="4" stroke="white" d="M21 6V29"></path>
-                            </svg>
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 89 80"
-                                class="garbage"
-                            >
-                                <path
-                                fill="white"
-                                d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
-                                ></path>
-                            </svg>
-                            </button>
-                        </form>
-
-                    </div>
-                </td>
+                <td>{{ $drum->supervisor }}</td>
+                
             </tr>
             @endforeach
         </tbody>

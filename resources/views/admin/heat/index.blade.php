@@ -25,17 +25,18 @@
                         <input type="number" name="temp2" min="0" class="form-control" value="105">
                     </div>
 
-                    <div class="mb-3 col-lg-6">
-                        <label class="form-label" >Thời gian sấy (phút)</label>
-                        <input type="number" name="time_to_dry" min="0" step="0.1" class="form-control" value="10">
-                    </div>
-
-                    <div class="mb-3 col-lg-6">
-                        <label class="form-label">Lò</label> <br>
-                        <select name="oven" class="form-select custom-select w-100 rolling-code-select w-100">
+                     <div class="mb-3 col-lg-6">
+                        <label class="form-label">Lò sấy</label> <br>
+                        <select name="oven" class="form-select w-100" required>
+                            <option value="" selected disabled>Chọn lò</option>
                             <option value="1">Lò 1</option>
                             <option value="2">Lò 2</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3 col-lg-6">
+                        <label class="form-label" >Thời gian sấy (phút)</label>
+                        <input type="number" name="time_to_dry" min="0" step="0.1" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-6">
@@ -72,7 +73,7 @@
             <button class="btn btn-info fw-bold" id="nhanCaBtn" style="display: none">NHẬN CA</button>
         </div>
         <div class="">
-            <button class="btn btn-warning fw-bold" id="doiCaBtn" style="display: none">NHẬN CA</button>
+            <button class="btn btn-warning fw-bold" id="doiCaBtn" style="display: none">NHẬN ĐỔi CA</button>
         </div>
     </div>
 
@@ -114,6 +115,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="doiCaLabel">Nhận Đổi Ca</h5>
+                <h6 class="modal-title">Số thùng <span id="num3t"></span></h6>
             </div>
             <div class="modal-body">
                 <form id="doiCaForm" method="POST" action="{{route('nhan.ca')}}">
@@ -188,6 +190,7 @@
                 {{-- <th>Bãi ủ</th> --}}
                 <th>Thời gian ra lò</th>
                 <th>Dây chuyền</th>
+                <th>Lò</th>
                 <th>Nhà ủ</th>
                 <th>Bề dày tờ mủ</th>
                 <th>Trạng thái cốm</th>
@@ -196,7 +199,7 @@
         </thead>
         <tbody>
             @foreach ($drums as $index => $drum)
-                <tr id="{{ $drum->id }}" class="{{$drum->status == 2 ? 'thunggiaoca' : ''}} {{$drum->status == 3 ? 'thungdoica' : ''}}">
+                <tr id="{{ $drum->id }}" data-link="{{ $drum->link }}" class="{{$drum->status == 2 ? 'thunggiaoca' : ''}} {{$drum->status == 3 ? 'thungdoica' : ''}}">
                     <td>
                         @if($drum->status == 0)
                             <input type="checkbox" class="select-row" data-row="{{ $drum->id }}">
@@ -223,7 +226,8 @@
                     <td>{{ $drum->heated_start ? \Carbon\Carbon::parse($drum->heated_start)->format('H:i') : '' }}</td>
                     <td>{{ $drum->heated_end }}</td>
                     <td>{{ $drum->link }}</td>
-                    <td>{{ $drum->curing_house->code }}</td>
+                    <td>{{ $drum->oven }}</td>
+                    <td>{{ $drum->curing_house ? $drum->curing_house->code : $drum->curing_area->code }}</td>
 
                     <td>{{ $drum->thickness }}</td>
                     <td>{{ $drum->trang_thai_com }}</td>
@@ -383,6 +387,29 @@ style="
 </div> --}}
 
 
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="d-flex gap-3">
+            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+                <div class="">
+                    <label for="lineFilter2" class="form-label mb-0">Dây chuyền</label>
+                    <select id="lineFilter2" class="form-control" style="width: 200px">
+
+                        @if (Gate::allows('admin') || Gate::allows('6t'))
+                            <option value="6" selected>6 tấn</option>
+                        @endif
+
+                        @if (Gate::allows('admin') || Gate::allows('3t'))
+                            <option value="3" selected>3 tấn</option>
+                        @endif
+
+                    </select>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 
 
     <table id="datatable2" class="ui celled table hover" style="width:100%">
@@ -409,14 +436,14 @@ style="
         </thead>
         <tbody>
             @foreach ($drums_handled as $index => $drum)
-            <tr id="{{$drum->id}}" data-link="{{$drum->link}}" data-start="{{\Carbon\Carbon::parse($drum->heated_start)->format('H:i')}}" data-date="{{\Carbon\Carbon::parse($drum->heated_date)->format('Y-m-d')}}" data-dry="{{$drum->time_to_dry}}">
+            <tr id="{{$drum->id}}" data-status="{{$drum->status}}" data-oven="{{$drum->oven}}" data-link="{{$drum->link}}" data-start="{{\Carbon\Carbon::parse($drum->heated_start)->format('H:i')}}" data-date="{{\Carbon\Carbon::parse($drum->heated_date)->format('Y-m-d')}}" data-dry="{{$drum->time_to_dry}}">
                 <td></td>
                 <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
                 <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đang xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
                 <td>{{ $drum->name }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_start)->format('H:i') }}</td>
                 <td>{{ $drum->time_to_dry }}</td>
-                <td>{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('H:i') : '' }}</td>
+                <td data-sort="{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('Y-m-d H:i') : '' }}">{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('H:i') : '' }}</td>
                 <td><span class="text-danger">{{$drum->note}}</span></td>
                 <td>{{ $drum->heated_date ? \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y') : '' }}</td>
                 

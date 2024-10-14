@@ -260,7 +260,7 @@ public function store(Request $request)
     private function updateNextDrums($drum, $line)
     {
         $nextDrums = Drum::where('id', '>', $drum->id)
-            ->where('link', $line)->where('oven', $drum->oven)
+            ->where('link', $line)
             ->whereNotIn('status', [0, 2, 3])
             ->orderBy('id', 'asc')
             ->get();
@@ -285,7 +285,7 @@ public function store(Request $request)
     {
         if($line == 3) {
             $beforeDrums = Drum::where('link', $drum->link)
-                ->where('id', '<', $drum->id)->where('oven', $drum->oven)
+                ->where('id', '<', $drum->id) 
                 ->whereNotIn('status', [0, 2, 3])   
                 ->orderBy('id', 'desc')         
                 ->take(30) 
@@ -308,7 +308,7 @@ public function store(Request $request)
         }
         else {
             $beforeDrums = Drum::where('link', $drum->link)
-                ->where('id', '<', $drum->id)->where('oven', $drum->oven)
+                ->where('id', '<', $drum->id) 
                 ->whereNotIn('status', [0, 2, 3])   
                 ->orderBy('id', 'desc')         
                 ->take(32) 

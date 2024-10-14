@@ -188,13 +188,14 @@ class WarehouseController extends Controller
         // ]);
 
             
-            for ($row = 1; $row <= 30; $row++) {
+            for ($row = 1; $row <= $request->rows; $row++) {
                 
                 for ($col = 1; $col <= 6; $col++) {
                     
-                    $value = 'TN-' . $row . $col;
+                    $value = 'B3-' . $row . $col;
 
                     Warehouse::create([
+                        
                         'name' => $request->name,
                         'code' => $value,
                     ]);

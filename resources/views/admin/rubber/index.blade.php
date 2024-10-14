@@ -38,9 +38,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Thêm nguyên liệu</h5>
         </div>
-        <div class="card-body">
-            @include('partials.errors')
-            
+        <div class="card-body">            
             <form action="{{ route('rubber.store') }}" method="POST">
                 @csrf
                 <div class="row">
@@ -50,7 +48,7 @@
                             @foreach ($trucks as $item)
                                 <option  value="{{$item->id}}" >{{$item->code}}</option>
                             @endforeach
-                        </select>                
+                        </select>
                     </div>
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Nguồn nguyên liệu</label>
@@ -237,52 +235,69 @@
         </div>
     </div>
 
-    {{-- <ul>
-        <span>Tổng mủ đông chén:</span>
-        <li>CRCK2: {{$mu_dong_chen_crck/1000}} tấn</li>
-        <li>BHCK: {{$mu_dong_chen_bhck/1000}} tấn</li>
-        <li>Thu mua: {{$mu_dong_chen_tm/1000}} tấn</li>
-        <li>TNSR: {{$mu_dong_chen_tnsr/1000}} tấn</li>
-    </ul> --}}
+    @include('partials.errors')
 
-
-
-    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="">
-            <label for="min" class="form-label mb-0">Lọc ngày</label>
-            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-        </div>
-
-        <div class=" d-flex gap-1 align-items-center">
-            
-
-            <div class="editMat d-none">
-                <a href="/rubber/1/edit" id="editLink">
-                    <button class="btn btn-info">
-                        Chỉnh sửa
-                    </button>
-                </a>
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="filter-section  d-flex align-items-end gap-2 my-2">
+            <div class="">
+                <label for="dateFilterNguyenLieu" class="" style="font-size: 14px">Ngày tiếp nhận</label>
+                <input type="text" id="dateFilterNguyenLieu" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
             </div>
-            <form action="{{ route('rubber-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="drums" id="selected-drums">
-                <button class="btn btn-danger" type="submit">Xóa</button>
-            </form>
+
+            <div class="">
+                <label for="statusFilterNguyenLieu" style="font-size: 14px">Trạng thái</label>
+                <select name="" id="statusFilterNguyenLieu" class="form-select">
+                    <option value="0">Chưa xác nhận</option>
+                    <option value="1">Đã xác nhận</option>
+                </select>
+                
+            </div>
+
+            <button id="btnNguyenLieuFilter" class="btn btn-primary">Lọc</button>
         </div>
-       
+
+
+        <div class="filter-date d-flex align-items-end justify-content-end gap-2">
+            <div class=" d-flex gap-1 align-items-center">
+
+                <div class="editDRC d-none">
+                    <div class="d-flex align-items-center gap-1">
+                        <input type="number" step="0.01" placeholder="Giá trị DRC" name='drc' id="drcInput"  class="form-control" style="width: 150px">
+                        <div class="">
+                            <button class="btn btn-warning" id="btnDRC">
+                                Cập nhật DRC
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" name='rubbers' id="rubbersDRC" >
+                </div>
+            
+                <div class="editMat d-none">
+                    <a href="/rubber/1/edit" id="editLink">
+                        <button class="btn btn-info">
+                            Chỉnh sửa
+                        </button>
+                    </a>
+                </div>
+                <form action="{{ route('rubber-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="drums" id="selected-drums">
+                    <button class="btn btn-danger" type="submit">Xóa</button>
+                </form>
+            </div>
+        
+        </div>
+
     </div>
 
 
-    <table id="datatable" class="ui celled table hover" style="width:100%">
+    <table id="nguyenlieu" class="ui celled table hover" style="width:100%">
         <thead>
-            <tr>
-                <th class="text-center"></th>
-              
+            <tr>              
                 <th>Ngày</th>
                 <th >Thời gian</th>
                 <th >Trạng thái tiếp nhận</th>
-                <th >Trạng thái xử lý</th>
                 <th>Khối lượng mủ tươi (kg)</th>
                 <th>Số xe</th>
                 <th>Nguồn nguyên liệu</th>
@@ -296,39 +311,19 @@
                 <th>Tình trạng nguyên liệu</th>
                 <th>Tạp chất</th>
                 <th>Phân hạng nguyên liệu</th>
+                <th>Ghi chú</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach ($rubbers as $index => $rubber)
-            <tr id="{{$rubber->id}}">
-
-                <td></td>
-                <td>{{ \Carbon\Carbon::parse($rubber->or_time)->format('d/m/Y')}} </td>
-                <td>{{ \Carbon\Carbon::parse($rubber->or_time)->format('H:i')}}</td>
-                <td>{!! $rubber->input_status !== 0 ? "<span class='text-success'>Đã xác nhận</span>" : "<span class='text-danger'>Chờ xác nhận</span>"  !!}</td>
-                 <td>{!! $rubber->status !== 0 ? "<span class='text-success'>Đã xử lý</span>" : "<span class='text-danger'>Chờ xử lý</span>"  !!}</td>
-                <td>{{ $rubber->fresh_weight }}</td>
-                <td>{{ $rubber->truck ? $rubber->truck->code: $rubber->truck_name }}</td>
-                <td>{{ $rubber->farm_name }}</td>
-                <td>{{ $rubber->curing_area?->code }}</td>
-                <td>{{ $rubber->farm?->company ? $rubber->farm->company->code : '' }}</td>
-                <td>{{ $rubber->latex_type }}</td>
-                <td>{{ $rubber->tai_xe }}</td>
-
-                <td>{{ $rubber->material_age }}</td>
-                <td>{{ $rubber->drc_percentage }}</td>
-                <td>{{ $rubber->dry_weight }}</td>
-                <td>{{ $rubber->material_condition }}</td>
-                <td>{{ $rubber->impurity_type }}</td>
-                <td>{{ $rubber->grade }}</td>
-
-            </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-
-        </tfoot>
+        
     </table>
 
- 
+    <style>
+        #nguyenlieu th:not(:first-child),
+        #nguyenlieu td:not(:first-child) {
+            min-width: 100px;
+            max-width: unset;
+            text-align: center;
+        }
+    </style>
+
 @endsection

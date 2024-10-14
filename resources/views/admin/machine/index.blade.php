@@ -135,12 +135,14 @@
     <button class="addBtn  btn my-3 btn-dark">Thêm thùng</button>
 </div>
 
+@include('partials.errors')
+
+
 <div class="card mb-4 form-machine">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Thêm lệnh</h5>
     </div>
     <div class="card-body">
-        @include('partials.errors')
 
         <form action="{{ route('machining.store') }}" method="POST">
             @csrf
@@ -162,7 +164,7 @@
 
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Ngày cán vắt</label>
-                    <select name="rolling_code" class="form-select w-100" required>
+                    <select name="rolling_code" class="form-select w-100">
                         <option value="">Chọn ngày</option>
                         @foreach ($rollings as $item)
                         <option value="{{$item->id}}" data-house="{{$item->house->code}}">
@@ -237,13 +239,16 @@
         <input type="text" id="min" name="min" class="form-control" style="width: 200px">
     </div>
 
-    <form action="{{ route('machining-delete-items') }}" class="form-delete-items d-none" method="POST"
-        onsubmit="return confirmDelete();">
-        @csrf
-        @method('DELETE')
-        <input type="hidden" name="drums" id="selected-drums">
-        <button class="btn btn-danger" type="submit">Xóa</button>
-    </form>
+    <div class="d-flex align-items-center gap-2">
+        <form action="{{ route('machining-delete-items') }}" class="form-delete-items d-none" method="POST"
+            onsubmit="return confirmDelete();">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="drums" id="selected-drums">
+            <button class="btn btn-danger" type="submit">Xóa</button>
+        </form>
+        <button class="btn btn-warning form-delete-items d-none editDrumBtn" type="submit">Chỉnh sửa</button>
+    </div>
 
 </div>
 
@@ -260,8 +265,8 @@
             <th>Dây chuyền</th>
             <th>Bề dày tờ mủ</th>
             <th>Trạng thái cốm</th>
+            <th>Tạp chất loại bỏ</th>
             <th>Trưởng ca</th>
-            <th>Tùy chỉnh</th>
         </tr>
 
     </thead>
@@ -271,7 +276,7 @@
             <td>
                 <input type="checkbox" class="select-row" data-row="{{ $drum->name }}">
             </td>
-            <td>{{ \Carbon\Carbon::parse($drum->date)->format("d/m/Y") }}</td>
+            <td data-sort="{{ \Carbon\Carbon::parse($drum->date)->format("Y-m-d") }}">{{ \Carbon\Carbon::parse($drum->date)->format("d/m/Y") }}</td>
             <td>
                 {!!
                 $drum->status === 0
@@ -303,22 +308,13 @@
             <td>{{ $drum->name }}</td>
             <td>{{ $drum->heated_start ? \Carbon\Carbon::parse($drum->heated_start)->format("H:i") : ''}}</td>
             <td>{{ $drum->rolling ? \Carbon\Carbon::parse($drum->rolling->date)->format("d/m/Y") : '' }}</td>
-            <td>{{ $drum->curing_house->code }}</td>
+            <td>{{ $drum->curing_house ? $drum->curing_house->code : $drum->curing_area->code }}</td>
             <td>{{ $drum->link }}</td>
             <td>{{ $drum->thickness }}</td>
             <td>{{ $drum->trang_thai_com }}</td>
+            <td>{{ $drum->impurity_removing }}</td>
             <td>{{$drum->supervisor}}</td>
-            <td>
-
-                <button class="editDrumBtn editBtn" data-id="{{$drum->id}}">
-                    <svg height="1em" viewBox="0 0 512 512">
-                        <path
-                            d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z">
-                        </path>
-                    </svg>
-                </button>
-
-            </td>
+           
         </tr>
         @endforeach
     </tbody>
@@ -338,31 +334,48 @@
             <div class="modal-body">
                 <form id="editForm" action="/update-drum-details" method="POST">
                     @csrf
+                    <input type="hidden" name="drumsEdit" id="drumsEdit">
                     <div class="row g-3">
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-6 col-lg-4 mb-2">
+                            <label class="form-label">Nhà ủ</label><br>
+
+                             @php
+                                $combinedAreas = $houses_containing->merge($areas);
+                            @endphp
+            
+                            <select name="curing_house" class="form-select w-100"
+                                id="curing_house" >
+                                <option value="">Chọn nhà ủ</option>
+                                @foreach ($houses as $item)
+                                    <option value="{{$item->id}}" data-containing="{{$item->containing}}">{{$item->code}}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6 col-lg-4 mb-2">
                             <label class="form-label">Dây chuyền</label>
                             <select name="link" class="form-control" id="editLink">
                                 <option value="3">3T/H</option>
                                 <option value="6">6T/H</option>
                             </select>
                         </div>
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-6 col-lg-4 mb-2">
                             <label class="form-label">Tạp chất loại bỏ</label>
-                            <input type="text" name="impurity_removing" id="editImpurity" required class="form-control"
+                            <input type="text" name="impurity_removing" id="editImpurity"  class="form-control"
                                 placeholder="Nhập tạp chất loại bỏ">
                         </div>
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-6 col-lg-4 mb-2">
                             <label class="form-label">Bề dày tờ mủ (mm)</label>
-                            <input type="text" name="thickness" id="editThickness" required class="form-control"
+                            <input type="text" name="thickness" id="editThickness"  class="form-control"
                                 placeholder="Nhập bề dày tờ mủ">
                         </div>
-                        <div class="col-md-6 mb-2">
+                        <div class="col-md-6 col-lg-4 mb-2">
                             <label class="form-label">Trạng thái cốm</label>
-                            <input type="text" required name="trang_thai_com" id="editTrangThaiCom" class="form-control"
+                            <input type="text"  name="trang_thai_com" id="editTrangThaiCom" class="form-control"
                                 placeholder="Nhập trạng thái cốm">
                         </div>
+                        
                     </div>
                     <input type="hidden" id="drumId" name="drum_id">
                     <div class="modal-footer p-0">

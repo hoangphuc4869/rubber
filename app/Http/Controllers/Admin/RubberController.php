@@ -10,20 +10,30 @@ use App\Models\Truck;
 use App\Models\Rubber;
 use App\Models\Company;
 use Illuminate\Support\Facades\Gate;
+use Yajra\DataTables\Facades\DataTables; 
+use Illuminate\Support\Facades\DB;
 
 class RubberController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+
+        if ($request->ajax()) {
+            $nguyenlieu = Rubber::query();
+            return DataTables::of($nguyenlieu)->make(true); 
+        }
+
+       
         $trucks = Truck::all();
         $farms = Farm::all();
         $curing_areas = CuringArea::all();
         $companies = Company::all();
         $rubbers = Rubber::orderBy('date', 'desc')->get();
 
+       
         $mu_dong_chen_crck = CuringArea::whereIn('code', ['NLNT1', 'NLNT2', 'NLNT3', 'NLNT6'])->sum('containing');
         $mu_dong_chen_bhck = CuringArea::whereIn('code', ['NLNT4', 'NLNT5', 'NLNT7', 'NLNT8'])->sum('containing');
         $mu_dong_chen_tm = CuringArea::whereIn('code', ['NLTM'])->sum('containing');
@@ -33,19 +43,76 @@ class RubberController extends Controller
         $mu_day_bhck = CuringArea::whereIn('code', ['MDBH'])->sum('containing');
         $mu_day_tm = CuringArea::whereIn('code', ['NLTMMD'])->sum('containing');
 
-        // dd($rubbers[0]);
-
-        if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC') ) {
-            return view('admin.rubber.index', compact('trucks', 'farms', 'curing_areas',
-             'rubbers', 'companies', 'mu_dong_chen_crck',
-              'mu_dong_chen_bhck','mu_dong_chen_tm', 'mu_dong_chen_tnsr'
-              , 'mu_day_crck', 'mu_day_bhck' , 'mu_day_tm'));
+        
+        if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC')) {
+            return view('admin.rubber.index', compact(
+                'trucks', 'farms', 'curing_areas', 'rubbers', 'companies',
+                'mu_dong_chen_crck', 'mu_dong_chen_bhck', 'mu_dong_chen_tm', 'mu_dong_chen_tnsr',
+                'mu_day_crck', 'mu_day_bhck', 'mu_day_tm'
+            ));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
-        
     }
 
+    public function getNguyenLieuData(Request $request)
+    {
+        
+        $nguyenlieu = Rubber::with(['truck', 'farm.company', 'curing_area'])
+            ->select([
+                'id',
+                DB::raw("DATE_FORMAT(STR_TO_DATE(time_ve, '%d-%m-%Y %H:%i:%s'), '%d/%m/%Y') as time_ve_date"),
+                DB::raw("DATE_FORMAT(STR_TO_DATE(time_ve, '%d-%m-%Y %H:%i:%s'), '%H:%i') as time_ve_time"),
+                'input_status',
+                'status',
+                'fresh_weight',
+                'truck_name',
+                'farm_name',
+                'farm_id',
+                'receiving_place_id',
+                'latex_type',
+                'tai_xe',
+                'material_age',
+                'drc_percentage',
+                'dry_weight',
+                'material_condition',
+                'impurity_type',
+                'grade',
+                'note'
+
+            ]);
+
+        // dd($request);
+        
+        if ($request->has('date') && $request->date) {
+    
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+
+            $nguyenlieu->where(DB::raw("DATE(STR_TO_DATE(time_ve, '%d-%m-%Y %H:%i'))"), '=', $date);
+        }
+
+        if ($request->has('status') && $request->status !== null) {
+
+            $nguyenlieu->where('input_status', $request->status);
+        }
+
+        // dd($nguyenlieu->first());
+
+        return DataTables::of($nguyenlieu)
+            ->addColumn('company_code', function ($nguyenlieu) {
+                return $nguyenlieu->farm && $nguyenlieu->farm->company
+                    ? $nguyenlieu->farm->company->code
+                    : '';
+            })
+            ->addColumn('area_name', function ($nguyenlieu) {
+                return $nguyenlieu->curing_area
+                    ? $nguyenlieu->curing_area->code
+                    : '';
+            })
+            ->make(true);
+    }
+
+    
     /**
      * Show the form for creating a new resource.
      */
@@ -67,7 +134,7 @@ class RubberController extends Controller
         $rubber->fill($data);
         $rubber->input_status = 1;
         $rubber->truck_name = '';
-        $rubber->curing_area->containing += $request->fresh_weight;
+        $rubber->curing_area->containing += $request->dry_weight;
         $rubber->curing_area->save();
         $rubber->save();
         
@@ -119,10 +186,19 @@ class RubberController extends Controller
             $rubber = Rubber::findOrFail($id);
             $rubber->fill($data);
 
-            if($rubber->input_status == 0){
-                $rubber->curing_area->containing += $request->fresh_weight;
+
+            if ($rubber->input_status == 0) {
+                $rubber->curing_area->containing += $request->dry_weight;
                 $rubber->input_status = 1;
             }
+
+
+            // if($rubber->input_status == 0) {
+
+            //     $rubber->curing_area->containing += $request->dry_weight;
+            //     $rubber->input_status = 1;
+                
+            // }
             $rubber->save();
 
             
@@ -141,7 +217,7 @@ class RubberController extends Controller
 
         if($item) {
             if($item->input_status == 1){
-                $item->curing_area->containing -= $item->fresh_weight;
+                $item->curing_area->containing -= $item->dry_weight;
                 $item->curing_area->save();
                 $item->input_status = 0;
             }
@@ -167,7 +243,7 @@ class RubberController extends Controller
         foreach ($items as $item) {
             $rubber = Rubber::findOrFail($item);
             if($rubber->input_status == 1) {
-                $rubber->curing_area->containing -= $rubber->fresh_weight;
+                $rubber->curing_area->containing -= $rubber->dry_weight;
                 $rubber->curing_area->save();
             }
            
@@ -177,4 +253,43 @@ class RubberController extends Controller
         return redirect()->route('rubber.index')->with('delete_success', 'Xóa thành công' );
 
     }
+
+    public function getDRCAndWeight(Request $request)
+    {
+        
+        // dd($request->all());
+        $ids = $request->ids;
+        $results = []; 
+
+        foreach ($ids as $id) {
+           
+            $rubber = Rubber::findOrFail($id);
+
+            if ($rubber) {
+                
+                $drcPercentage = round($request->drc, 2);
+                $rubber->drc_percentage = $drcPercentage;
+
+                
+                $dryWeight = round($rubber->fresh_weight * $drcPercentage / 100, 2);
+                $rubber->dry_weight = $dryWeight;
+
+                $rubber->save();
+
+                $results[] = [
+                    'id' => $rubber->id,
+                    'drc' => $drcPercentage,
+                    'dry_weight' => $dryWeight,
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'DRC updated successfully!',
+            'results' => $results, 
+        ]);
+        
+    }
+
 }

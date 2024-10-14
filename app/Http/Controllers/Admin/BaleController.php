@@ -160,5 +160,54 @@ class BaleController extends Controller
 
     }
 
+    public function updateBales(Request $request)
+    {
+        $ids = explode(',', $request->ids);
+
+       
+        $updatedBales = [];
+
+        if ($ids) {
+            foreach ($ids as $id) {
+                $drum = Drum::findOrFail($id);
+
+                if ($request->bale_count) {
+                    $drum->bale->number_of_bales = $request->bale_count;
+                }
+
+                if ($request->sample_cut) {
+                    $drum->bale->cut_check = $request->sample_cut;
+                }
+
+                if ($request->pressing_temp) {
+                    $drum->bale->press_temperature = $request->pressing_temp;
+                }
+
+                if ($request->evaluation) {
+                    $drum->bale->evaluation = $request->evaluation;
+                }
+
+                $drum->bale->save();
+
+                $updatedBales[] = [
+                    'id' => $drum->id,
+                    'bale_count' => $drum->bale->number_of_bales,
+                    'sample_cut' => $drum->bale->cut_check,
+                    'pressing_temp' => $drum->bale->press_temperature,
+                    'evaluation' => $drum->bale->evaluation,
+                ];
+            }
+
+
+            return response()->json([
+                'message' => 'Cập nhật thành công',
+                'updated_bales' => $updatedBales
+            ], 200);
+        } else {
+            return response()->json(['message' => 'Không tìm thấy bành'], 404);
+        }
+    }
+
+
     
 }

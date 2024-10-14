@@ -32,6 +32,8 @@ use App\Http\Controllers\PlotControllers;
 use App\Http\Controllers\Admin\ShipmentTNSRController;
 use App\Http\Controllers\Admin\ContractTNSRController;
 use App\Http\Controllers\Admin\SubContractController;
+use App\Http\Controllers\Admin\ExportExcelController;
+
 
 Route::middleware(['login'] )->group(function() {
 
@@ -70,7 +72,7 @@ Route::middleware(['login'] )->group(function() {
     
 
 
-    Route::get('/exported-list', [BatchController::class, 'list'])->name('exported-list');
+    Route::get('/list', [BatchController::class, 'list'])->name('list');
 
     Route::get('/BHCK/warehouses', [WarehouseController::class, 'index'])->name('warehouseBHCK');
     
@@ -99,6 +101,26 @@ Route::middleware(['login'] )->group(function() {
 
     Route::get('/get-drum-details/{id}', [MachineController::class, 'getDrumDetails']);
     Route::post('/update-drum-details', [MachineController::class, 'updateDrumDetails']);
+
+
+    Route::post('/update-drc', [RubberController::class, 'getDRCAndWeight'])->name('update.drc');
+
+    Route::put('/update-bale', [BaleController::class, 'updateBales'])->name('update.bale');
+    Route::delete('/reset-heat', [HeatController::class, 'heatReset'])->name('reset.drum');
+
+    Route::get('/fill-excel', [ExportExcelController::class, 'fillExcel']);
+
+    
+    Route::get('/find', [BatchController::class, 'viewFindBatch']);
+    
+    Route::get('/find-batch', [BatchController::class, 'findBatch']);
+
+    Route::get('/proxy/test', [BatchController::class, 'proxyApiTest']);
+
+
+
+    Route::get('/get-nguyenlieu-data', [RubberController::class, 'getNguyenLieuData']);
+
 
 
     
@@ -148,6 +170,18 @@ Route::post('/update-shipment', [ShipmentController::class, 'updateShipment']);
 
 
 Route::post('/adjust-time', [HeatController::class, 'adjustTime'])->name('adjust-time');
+
+Route::get('/export-excel', [ExportExcelController::class, 'index'])->name('export-excel');
+Route::get('/download-excel', [ExportExcelController::class, 'export'])->name('download-excel');
+Route::get('/download-tntl', [ExportExcelController::class, 'export_tntl'])->name('download-tntl');
+Route::get('/download-cvtt', [ExportExcelController::class, 'export_cvtt'])->name('download-cvtt');
+Route::get('/download-gchtt', [ExportExcelController::class, 'export_gchtt'])->name('download-gchtt');
+Route::get('/download-gcntt', [ExportExcelController::class, 'export_gcntt'])->name('download-gcntt');
+Route::get('/download-rl', [ExportExcelController::class, 'export_rl'])->name('download-rl');
+
+Route::get('/can-vat', [ExportExcelController::class, 'canVat'])->name('download-canVat');
+
+
 
 
 

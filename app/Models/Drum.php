@@ -41,6 +41,10 @@ class Drum extends Model
         return $this->belongsTo(CuringHouse::class);
     }
 
+    public function curing_area(){
+        return $this->belongsTo(CuringArea::class);
+    }
+
     public function batches()
     {
         return $this->belongsToMany(Batch::class, 'batch_drum')

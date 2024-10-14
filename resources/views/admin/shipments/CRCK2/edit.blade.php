@@ -9,7 +9,7 @@
 
     <ul>
         <li>Loại hàng: <span>{{$order->loai_hang}}</span></li>
-        <li>Số lượng: <span>{{$order->so_luong}} tấn</span></li>
+        <li>Số lượng: <span id="so_luong">{{$order->so_luong}} tấn</span></li>
         <li>Khách hàng: <span>{{$order->contract->customer->name}}</span></li>
     </ul>
 
@@ -32,6 +32,12 @@
        
     </div>
 
+    <div class="">
+          Tổng số bành: <span id="total_bale">0</span> bành
+    </div>
+
+    <div id="status_message"></div>
+
     <table id="datatable" class="ui celled table" style="width:100%">
         <thead>
             <tr>
@@ -39,6 +45,7 @@
                 <th>Ngày</th>
                 <th>Công ty</th>
                 <th>Mã lô</th>
+                <th>Số bành</th>
                 <th>Kiểm duyệt</th>
                 <th>Trạng thái</th>
                 <th>Hạng dự kiến (CSR10/20)</th>
@@ -51,18 +58,17 @@
             
             @foreach ($batches as $index => $batch)
                 @if ($batch->exported == 0 && $batch->warehouse_id !== null)
-                    <tr id={{$batch->id}}>
-                        <td></td>
+                    <tr id={{$batch->id}} data-bale="{{ $batch->bale_count }}" data-code="{{ $batch->batch_code }}">
+                         <td><input type="checkbox" class="batch-select"></td> <!-- Checkbox để chọn hàng -->
                         <td>{{ \Carbon\Carbon::parse($batch->date)->format('d/m/Y') }}</td>
                         <td>{{ $batch->company->code }}</td>
                         <td>{{ $batch->batch_code }}</td>
+                        <td>{{ $batch->bale_count }}</td>
                         <td>{!! $batch->checked == 0 ? "<span class='text-danger'>Chưa</span>" : "<span class='text-success'>Đã kiểm</span>"!!}</td>
                         <td>{!! $batch->exported == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span class='text-dark'>Đã xuất kho</span>"!!}</td>
                         <td>{{ $batch->expected_grade }}</td>
                         <td>{{ $batch->sample_cut_number }}</td>
-                        <td>{{ $batch->packaging_type }}</td>
-                        
-                    
+                        <td>{{ $batch->packaging_type }}</td>                    
                     </tr>
                 @endif
             @endforeach

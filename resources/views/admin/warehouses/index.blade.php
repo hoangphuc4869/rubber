@@ -4,7 +4,7 @@
 
 {{-- <h4 class="fw-bold py-3 mb-2 mt-2">Tạo kho hàng</h4> --}}
 @include('partials.errors')
-<!-- <form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
+<form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
     @csrf
 
     <label for="warename">Tên kho:</label>
@@ -13,7 +13,7 @@
     <label for="rows">Số hàng:</label>
     <input type="number" id="rows" name="rows" min="1" required class="cus-input">
     <button type="submit" class="btn btn-dark">Tạo kho</button>
-</form> -->
+</form> 
 
 
 <h4 class="fw-bold my-4">Danh sách lô hàng - {{$companyName}}</h4>
