@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Exports\CvTtExport;
 use App\Exports\GchTtExport;
 use App\Exports\Gcn_TtExport;
@@ -14,70 +13,12 @@ use App\Models\Rolling;
 use App\Models\Rubber;
 use Illuminate\Http\Request; // Sử dụng đúng lớp Request
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExportExcelController extends Controller
 {
-    
-
-    public function fillExcel()
-    {
-
-        $nt1_MDC = Rubber::where('farm_id', 1)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt2_MDC = Rubber::where('farm_id', 2)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt3_MDC = Rubber::where('farm_id', 3)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt4_MDC = Rubber::where('farm_id', 4)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt5_MDC = Rubber::where('farm_id', 5)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt6_MDC = Rubber::where('farm_id', 6)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt7_MDC = Rubber::where('farm_id', 7)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-        $nt8_MDC = Rubber::where('farm_id', 8)->whereIn('latex_type', ['MỦ ĐÔNG CHÉN', 'MĐC GIA CÔNG'])->where('input_status', 1)->sum('fresh_weight');
-
-        $nt1 = Rubber::where('farm_id', 1)->where('input_status', 1)->first();
-        $nt2 = Rubber::where('farm_id', 2)->where('input_status', 1)->first();
-        $nt3 = Rubber::where('farm_id', 3)->where('input_status', 1)->first();
-        $nt6 = Rubber::where('farm_id', 6)->where('input_status', 1)->first();
-
-        // dd($nt1_MDC);
-
-        
-        $filePath = public_path('/excelFiles/Mẫu- báo cáo trạm cân.xlsx');
-
-        $spreadsheet = IOFactory::load($filePath);
-
-        
-        $sheet = $spreadsheet->getActiveSheet();
-
-        $sheet->setCellValue('C10', $nt1_MDC ? $nt1_MDC : '');
-        $sheet->setCellValue('C11', $nt1_MDC ? $nt2_MDC : '');
-        $sheet->setCellValue('C12', $nt3_MDC ? $nt3_MDC : '');
-        $sheet->setCellValue('C13', $nt6_MDC ? $nt6_MDC : '');
-
-        $sheet->setCellValue('D10', $nt1 ? $nt1->drc_percentage : '');
-        $sheet->setCellValue('D11', $nt2 ? $nt2->drc_percentage : '');
-        $sheet->setCellValue('D12', $nt3 ? $nt3->drc_percentage : '');
-        $sheet->setCellValue('D13', $nt6 ? $nt6->drc_percentage : '');
-
-        $sheet->setCellValue('E10', $nt1 && $nt1_MDC ? $nt1_MDC * $nt1->drc_percentage /100 : '' );
-        $sheet->setCellValue('E11', $nt2 && $nt2_MDC ? $nt2_MDC * $nt2->drc_percentage /100 : '');
-        $sheet->setCellValue('E12', $nt3 && $nt3_MDC ? $nt3_MDC * $nt3->drc_percentage /100 : '');
-        $sheet->setCellValue('E13', $nt6 && $nt6_MDC ? $nt6_MDC * $nt6->drc_percentage /100 : '');
-
-
-        // $sheet->setCellValue('C3', 'Dữ liệu tại ô C3');
-
-        $newFileName = 'filled_template.xlsx';
-        $newFilePath = public_path('excelFiles/' . $newFileName);
-
-        
-        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $writer->save($newFilePath);
-
-        return response()->download($newFilePath);
-    }
-
     public function index()
     {
         return view('admin.exportExcel',);
@@ -306,7 +247,389 @@ class ExportExcelController extends Controller
         return response()->download($newFilePath);
     }
 
-    
+    public function export_bc(Request $request)
+    {
+        $start_date_bc = $request->input('start_date_bc');
+        $month_bc = date('m', strtotime($start_date_bc));
+        $year_bc = date('Y', strtotime($start_date_bc));
+        // Đường dẫn đến file Excel
+        $filePath = public_path('/excelFiles/Mẫu- báo cáo trạm cân.xlsx');
+        // Load file Excel
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($filePath);
+        $sheet = $spreadsheet->getActiveSheet();
+        // NÔNG TRƯỜNG 1
+        $totalFreshWeightFarm1 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 1')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm1 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 1')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm1 = ($totalFreshWeightFarm1 * $drcFarm1) / 100;
+        $totalFreshWeightLatexTypeFarm1 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 1')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
 
+        $drcLatexTypeFarm1 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 1')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm1 = ($totalFreshWeightLatexTypeFarm1 * $drcLatexTypeFarm1) / 100;
 
+        $sheet->setCellValue('C10', $totalFreshWeightFarm1);  // Tổng fresh_weight cho NÔNG TRƯỜNG 1
+        $sheet->setCellValue('D10', $drcFarm1);              // DRC% cho NÔNG TRƯỜNG 1
+        $sheet->setCellValue('E10', $dryWeightFarm1);        // Quy khô cho NÔNG TRƯỜNG 1 (fresh_weight * DRC%)
+        $sheet->setCellValue('G10', $totalFreshWeightLatexTypeFarm1);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H10', $drcLatexTypeFarm1);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I10', $dryWeightLatexTypeFarm1);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        // Nông trường 2
+        $totalFreshWeightFarm2 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 2')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm2 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 2')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm2 = ($totalFreshWeightFarm2 * $drcFarm2) / 100;
+        $totalFreshWeightLatexTypeFarm2 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 2')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm2 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 2')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm2 = ($totalFreshWeightLatexTypeFarm2 * $drcLatexTypeFarm2) / 100;
+        $sheet->setCellValue('C11', $totalFreshWeightFarm2);  // Tổng fresh_weight cho NÔNG TRƯỜNG 2
+        $sheet->setCellValue('D11', $drcFarm2);              // DRC% cho NÔNG TRƯỜNG 2
+        $sheet->setCellValue('E11', $dryWeightFarm2);        // Quy khô cho NÔNG TRƯỜNG 2 (fresh_weight * DRC%)
+        $sheet->setCellValue('G11', $totalFreshWeightLatexTypeFarm2);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H11', $drcLatexTypeFarm2);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I11', $dryWeightLatexTypeFarm2);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        // NÔNG TRƯỜNG 3
+        $totalFreshWeightFarm3 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 3')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm3 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 3')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm3 = ($totalFreshWeightFarm3 * $drcFarm3) / 100;
+        $totalFreshWeightLatexTypeFarm3 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 3')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm3 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 3')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm3 = ($totalFreshWeightLatexTypeFarm3 * $drcLatexTypeFarm3) / 100;
+        $sheet->setCellValue('C12', $totalFreshWeightFarm3);  // Tổng fresh_weight cho NÔNG TRƯỜNG 3
+        $sheet->setCellValue('D12', $drcFarm3);              // DRC% cho NÔNG TRƯỜNG 3
+        $sheet->setCellValue('E12', $dryWeightFarm3);        // Quy khô cho NÔNG TRƯỜNG 3 (fresh_weight * DRC%)
+        $sheet->setCellValue('G12', $totalFreshWeightLatexTypeFarm3);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H12', $drcLatexTypeFarm3);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I12', $dryWeightLatexTypeFarm3);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        // NÔNG TRƯỜNG 6
+        $totalFreshWeightFarm6 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 6')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm6 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 6')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm6 = ($totalFreshWeightFarm6 * $drcFarm6) / 100;
+        $totalFreshWeightLatexTypeFarm6 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 6')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm6 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 6')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm6 = ($totalFreshWeightLatexTypeFarm6 * $drcLatexTypeFarm6) / 100;
+        $sheet->setCellValue('C13', $totalFreshWeightFarm6);  // Tổng fresh_weight cho NÔNG TRƯỜNG 6
+        $sheet->setCellValue('D13', $drcFarm6);              // DRC% cho NÔNG TRƯỜNG 6
+        $sheet->setCellValue('E13', $dryWeightFarm6);        // Quy khô cho NÔNG TRƯỜNG 6 (fresh_weight * DRC%)
+        $sheet->setCellValue('G13', $totalFreshWeightLatexTypeFarm6);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H13', $drcLatexTypeFarm6);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I13', $dryWeightLatexTypeFarm6);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        // NÔNG TRƯỜNG 4
+        $totalFreshWeightFarm4 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 4')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm4 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 4')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm4 = ($totalFreshWeightFarm4 * $drcFarm4) / 100;
+        $totalFreshWeightLatexTypeFarm4 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 4')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm4 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 4')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm4 = ($totalFreshWeightLatexTypeFarm4 * $drcLatexTypeFarm4) / 100;
+        $sheet->setCellValue('C15', $totalFreshWeightFarm4);  // Tổng fresh_weight cho NÔNG TRƯỜNG 4
+        $sheet->setCellValue('D15', $drcFarm4);              // DRC% cho NÔNG TRƯỜNG 4
+        $sheet->setCellValue('E15', $dryWeightFarm4);        // Quy khô cho NÔNG TRƯỜNG 4 (fresh_weight * DRC%)
+        $sheet->setCellValue('G15', $totalFreshWeightLatexTypeFarm4);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H15', $drcLatexTypeFarm4);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I15', $dryWeightLatexTypeFarm4);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+
+        // NÔNG TRƯỜNG 5
+        $totalFreshWeightFarm5 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 5')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm5 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 5')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm5 = ($totalFreshWeightFarm5 * $drcFarm5) / 100;
+        $totalFreshWeightLatexTypeFarm5 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 5')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm5 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 5')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm5 = ($totalFreshWeightLatexTypeFarm5 * $drcLatexTypeFarm5) / 100;
+        $sheet->setCellValue('C16', $totalFreshWeightFarm5);  // Tổng fresh_weight cho NÔNG TRƯỜNG 5
+        $sheet->setCellValue('D16', $drcFarm5);              // DRC% cho NÔNG TRƯỜNG 5
+        $sheet->setCellValue('E16', $dryWeightFarm5);        // Quy khô cho NÔNG TRƯỜNG 5 (fresh_weight * DRC%)
+        $sheet->setCellValue('G16', $totalFreshWeightLatexTypeFarm5);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H16', $drcLatexTypeFarm5);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I16', $dryWeightLatexTypeFarm5);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        // NÔNG TRƯỜNG 7
+        $totalFreshWeightFarm7 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 7')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm7 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 7')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm7 = ($totalFreshWeightFarm7 * $drcFarm7) / 100;
+        $totalFreshWeightLatexTypeFarm7 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 7')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm7 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 7')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm7 = ($totalFreshWeightLatexTypeFarm7 * $drcLatexTypeFarm7) / 100;
+        $sheet->setCellValue('C17', $totalFreshWeightFarm7);  // Tổng fresh_weight cho NÔNG TRƯỜNG 7
+        $sheet->setCellValue('D17', $drcFarm7);              // DRC% cho NÔNG TRƯỜNG 7
+        $sheet->setCellValue('E17', $dryWeightFarm7);        // Quy khô cho NÔNG TRƯỜNG 7 (fresh_weight * DRC%)
+        $sheet->setCellValue('G17', $totalFreshWeightLatexTypeFarm7);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H17', $drcLatexTypeFarm7);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I17', $dryWeightLatexTypeFarm7);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+
+        // NÔNG TRƯỜNG 8
+        $totalFreshWeightFarm8 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 8')
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcFarm8 = Rubber::where('farm_name', 'NÔNG TRƯỜNG 8')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightFarm8 = ($totalFreshWeightFarm8 * $drcFarm8) / 100;
+        $totalFreshWeightLatexTypeFarm8 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('input_status', 1)
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 8')
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcLatexTypeFarm8 = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 8')
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $dryWeightLatexTypeFarm8 = ($totalFreshWeightLatexTypeFarm8 * $drcLatexTypeFarm8);
+        $sheet->setCellValue('C18', $totalFreshWeightFarm8);  // Tổng fresh_weight cho NÔNG TRƯỜNG 8
+        $sheet->setCellValue('D18', $drcFarm8);              // DRC% cho NÔNG TRƯỜNG 8
+        $sheet->setCellValue('E18', $dryWeightFarm8);        // Quy khô cho NÔNG TRƯỜNG 8 (fresh_weight * DRC%)
+        $sheet->setCellValue('G18', $totalFreshWeightLatexTypeFarm8);  // Tổng fresh_weight cho MỦ DÂY
+        $sheet->setCellValue('H18', $drcLatexTypeFarm8);               // DRC% cho MỦ DÂY
+        $sheet->setCellValue('I18', $dryWeightLatexTypeFarm8);         // Quy khô cho MỦ DÂY (fresh_weight * DRC%)
+        $totalFreshWeightTNSR = Rubber::where('farm_name', 'TÂY NINH SR')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->sum('fresh_weight');
+        $drcTNSR = Rubber::where('farm_name', 'TÂY NINH SR')
+            ->where('input_status', 1)
+            ->whereDate('date', $start_date_bc)
+            ->value('drc_percentage');
+        $sheet->setCellValue('C23', $totalFreshWeightTNSR);
+        $sheet->setCellValue('E23', $drcTNSR);
+
+        //Month NT1
+        $totalFreshWeightFarm1Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 1')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm1Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 1')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C29', $totalFreshWeightFarm1Month);
+        $sheet->setCellValue('C41', $totalFreshWeightLatexTypeFarm1Month);
+        //Month NT2
+        $totalFreshWeightFarm2Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 2')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm2Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 2')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C30', $totalFreshWeightFarm2Month);
+        $sheet->setCellValue('C42', $totalFreshWeightLatexTypeFarm2Month);
+        //Month3
+        $totalFreshWeightFarm3Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 3')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm3Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 3')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C31', $totalFreshWeightFarm3Month);
+        $sheet->setCellValue('C43', $totalFreshWeightLatexTypeFarm3Month);
+        //Month6
+        $totalFreshWeightFarm6Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 6')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm6Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 6')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C32', $totalFreshWeightFarm6Month);
+        $sheet->setCellValue('C44', $totalFreshWeightLatexTypeFarm6Month);
+        //Month4
+        $totalFreshWeightFarm4Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 4')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm4Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 4')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C34', $totalFreshWeightFarm4Month);
+        $sheet->setCellValue('C46', $totalFreshWeightLatexTypeFarm4Month);
+        //Month5
+        $totalFreshWeightFarm5Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 5')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm5Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 5')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C35', $totalFreshWeightFarm5Month);
+        $sheet->setCellValue('C47', $totalFreshWeightLatexTypeFarm5Month);
+        //Month7
+        $totalFreshWeightFarm7Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 7')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm7Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 7')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C36', $totalFreshWeightFarm7Month);
+        $sheet->setCellValue('C48', $totalFreshWeightLatexTypeFarm7Month);
+        //Month8
+        $totalFreshWeightFarm8Month = Rubber::where('farm_name', 'NÔNG TRƯỜNG 8')
+            ->where('input_status', 1)
+            ->where('latex_type', '!=', 'MỦ DÂY')
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+
+        $totalFreshWeightLatexTypeFarm8Month = Rubber::where('latex_type', 'MỦ DÂY')
+            ->where('farm_name', '=', 'NÔNG TRƯỜNG 8')
+            ->where('input_status', 1)
+            ->whereMonth('date', $month_bc)
+            ->whereYear('date', $year_bc)
+            ->sum('fresh_weight');
+        $sheet->setCellValue('C37', $totalFreshWeightFarm8Month);
+        $sheet->setCellValue('C49', $totalFreshWeightLatexTypeFarm8Month);
+
+        // Tạo file Excel mới với tên khác, không ghi đè lên file gốc
+        $fileName = 'Báo_Cáo_Trạm Cân_' . $start_date_bc . '.xlsx';
+        $writer = new Xlsx($spreadsheet);
+        $writer->save(public_path('/excelFiles' . $fileName));
+        // Trả file về cho người dùng tải xuống
+        return response()->download(public_path('/excelFiles/' . $fileName));
+    }
 }

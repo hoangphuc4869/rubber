@@ -127,7 +127,7 @@ class ContractCRCK2Controller extends Controller
      */
     public function update(Request $request, string $id)
     {
-        
+        dd($request->all());
         $contract = Contract::findOrFail($id);
         $contract->fill($request->all());
         $contract->save();

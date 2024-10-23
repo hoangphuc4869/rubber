@@ -133,47 +133,6 @@
         </div>
     </div>
 
-    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex gap-3">
-            <div class="">
-                <label for="min" class="form-label mb-0">Lọc ngày</label>
-                <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-            </div>
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
-                <div class="">
-                    <label for="lineFilter" class="form-label mb-0">Dây chuyền</label>
-                    <select id="lineFilter" class="form-control" style="width: 200px">
-                        <option value="3">3 tấn</option>
-                        <option value="6">6 tấn</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
-                <div class="">
-                    <label for="comFilter" class="form-label mb-0">Công ty</label>
-                    <select id="comFilter" class="form-control" style="width: 200px">
-                        <option value="BHCK">BHCK</option>
-                        <option value="CRCK2" selected>CRCK2</option>
-                        <option value="TNSR">TNSR</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <div class="d-none form-delete-items">
-                <button class="btn btn-dark" id="heatProcessingBtn" type="submit">Tạo lô</button>
-            </div>
-            <div class="d-none form-delete-items">
-                <button type="button" class="d-none form-delete-items btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
-                    Chỉnh sửa
-                </button>
-            </div>
-        </div>
-       
-    </div>
-
 
 
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -207,167 +166,162 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                 <button type="button" class="btn btn-primary" id="updatebale">Cập nhật</button>
+                {{-- <input type="hidden" id="selected-drums"> --}}
             </div>
             </div>
         </div>
     </div>
 
 
-        
-    
-        
-    
 
-    <table id="datatable" class="ui celled table" style="width:100%">
-        <thead>
-            <tr>
-                <th class="text-center"></th>
-                <th>Ngày thực hiện</th>
-                <th>Công ty</th>
-                <th>Thùng số</th>
-                <th>Mã thùng</th>
-                <th>Thời gian ép kiện</th>
-                <th>Dây chuyền</th>
-                <th>Trạng thái</th>
-                <th>Số bành/thùng</th>
-                <th>Số bành còn lại</th>
-                <th>Nhiệt độ ép bành (độ C)</th>
-                <th>Khối lượng bành (kg)</th>
-                <th>Kiểm tra cắt bành</th>
-                <th>Đánh giá</th>
-                {{-- <th>Tùy chỉnh</th> --}}
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($drumsWithoutBatches as $bale)
-               
-                <tr id={{$bale->id}}>
-                        <td></td>
-                        <td>{{ \Carbon\Carbon::parse($bale->created_at)->format('d/m/Y') }}</td>
-                        <td>{{ $bale->curing_house ? $bale->curing_house->curing_area->farm->company->code : $bale->curing_area->farm->company->code }}</td>
-                        <td>{{ $bale->name }}</td>
-                        <td>{{ $bale->code }}</td>
-                        <td data-sort="{{ \Carbon\Carbon::parse($bale->heated_end)->format('Y-m-d H:i') }}">{{ \Carbon\Carbon::parse($bale->heated_end)->format('H:i') }}</td>
-                        <td>{{ $bale->link }}</td>
-                        <td><span class="text-success">Đã ép kiện</span></td>
-                        <td>{{ $bale->bale?->number_of_bales }}</td>
-                        <td>{{ $bale->remaining_bales > 0 ? $bale->remaining_bales : $bale->bale?->number_of_bales }}</td>
-                        <td>{{ $bale->bale?->press_temperature }}</td>
-                        <td>{{ $bale->bale?->weight }}</td>
+
+
+    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="filter-section  d-flex align-items-end gap-2 my-2">
+                <div class="">
+                    <label for="dateFilterDongGoi" class="" style="font-size: 14px">Ngày</label>
+                    <input type="text" id="dateFilterDongGoi" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
+                </div>
+
+                <div class="">
+                    <label for="companyFilterDongGoi" style="font-size: 14px">Công ty</label>
+                    <select name="" id="companyFilterDongGoi" class="form-select">
+                        <option value="BHCK">BHCK</option>
+                        <option value="CRCK2">CRCK2</option>
+                        <option value="TNSR">TNSR</option>
+                    </select>
+                    
+                </div>
+
+                <div class="">
+                    <label for="linkFilterDongGoi" style="font-size: 14px">Dây chuyền</label>
+                    <select name="" id="linkFilterDongGoi" class="form-select" style="width: 100px">
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        @if (Gate::allows('admin')  || Gate::allows('3t'))
+                            <option value="3">3 tấn</option>
+                        @endif
                         
-                        <td>{{ $bale->bale?->cut_check }}</td>
-                        <td>{{ $bale->bale?->evaluation }}</td>
-                        {{-- <td>
-                            <div class="custom d-flex gap-1">
-                                <button class="editBtn editBaleBtn" data-id="{{$bale->id}}">
-                                    <svg height="1em" viewBox="0 0 512 512">
-                                        <path
-                                        d="M410.3 231l11.3-11.3-33.9-33.9-62.1-62.1L291.7 89.8l-11.3 11.3-22.6 22.6L58.6 322.9c-10.4 10.4-18 23.3-22.2 37.4L1 480.7c-2.5 8.4-.2 17.5 6.1 23.7s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L387.7 253.7 410.3 231zM160 399.4l-9.1 22.7c-4 3.1-8.5 5.4-13.3 6.9L59.4 452l23-78.1c1.4-4.9 3.8-9.4 6.9-13.3l22.7-9.1v32c0 8.8 7.2 16 16 16h32zM362.7 18.7L348.3 33.2 325.7 55.8 314.3 67.1l33.9 33.9 62.1 62.1 33.9 33.9 11.3-11.3 22.6-22.6 14.5-14.5c25-25 25-65.5 0-90.5L453.3 18.7c-25-25-65.5-25-90.5 0zm-47.4 168l-144 144c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6l144-144c6.2-6.2 16.4-6.2 22.6 0s6.2 16.4 0 22.6z"
-                                        ></path>
-                                    </svg>
-                                </button>
-                                <form action="{{route('producing.destroy', [$bale->id])}}" method="POST" onsubmit="return confirmDelete();">
-                                    @csrf
-                                    @method('DELETE')
-                                        <button class="bin-button">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 39 7"
-                                        class="bin-top"
-                                    >
-                                        <line stroke-width="4" stroke="white" y2="5" x2="39" y1="5"></line>
-                                        <line
-                                        stroke-width="3"
-                                        stroke="white"
-                                        y2="1.5"
-                                        x2="26.0357"
-                                        y1="1.5"
-                                        x1="12"
-                                        ></line>
-                                    </svg>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 33 39"
-                                        class="bin-bottom"
-                                    >
-                                        <mask fill="white" id="path-1-inside-1_8_19">
-                                        <path
-                                            d="M0 0H33V35C33 37.2091 31.2091 39 29 39H4C1.79086 39 0 37.2091 0 35V0Z"
-                                        ></path>
-                                        </mask>
-                                        <path
-                                        mask="url(#path-1-inside-1_8_19)"
-                                        fill="white"
-                                        d="M0 0H33H0ZM37 35C37 39.4183 33.4183 43 29 43H4C-0.418278 43 -4 39.4183 -4 35H4H29H37ZM4 43C-0.418278 43 -4 39.4183 -4 35V0H4V35V43ZM37 0V35C37 39.4183 33.4183 43 29 43V35V0H37Z"
-                                        ></path>
-                                        <path stroke-width="4" stroke="white" d="M12 6L12 29"></path>
-                                        <path stroke-width="4" stroke="white" d="M21 6V29"></path>
-                                    </svg>
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 89 80"
-                                        class="garbage"
-                                    >
-                                        <path
-                                        fill="white"
-                                        d="M20.5 10.5L37.5 15.5L42.5 11.5L51.5 12.5L68.75 0L72 11.5L79.5 12.5H88.5L87 22L68.75 31.5L75.5066 25L86 26L87 35.5L77.5 48L70.5 49.5L80 50L77.5 71.5L63.5 58.5L53.5 68.5L65.5 70.5L45.5 73L35.5 79.5L28 67L16 63L12 51.5L0 48L16 25L22.5 17L20.5 10.5Z"
-                                        ></path>
-                                    </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </td> --}}
-                    </tr>
-               
-            @endforeach
-        </tbody>
-    </table>
+                    </select>
+                </div>
+
+                <button id="btnDongGoiFilter" class="btn btn-primary">Lọc</button>
+            </div>
+        </div>
+
+
+
+            <div class="d-flex align-items-center gap-2 form-heat-items d-none">
+                <div class="">
+                    <button class="btn btn-dark" id="heatProcessingBtn" type="submit">Tạo lô</button>
+                </div>
+                <div class="">
+                    <button type="button" class=" btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        Chỉnh sửa
+                    </button>
+                </div>
+            </div>
+        
+
+    </div>
+
+
+    <style>
+        .button-group {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            width: 80%;
+        }
+
+    </style>
+
+
+    <div class="heat-wrapper position-relative my-3">
+
+        <div class="button-group">
+            <div class="d-flex align-items-center gap-2">
+                <button id="selectAllBtnDG" class="btn btn-primary">Tất Cả</button>
+                <div>
+                    <span id="selectedCount" class="text-dark fw-bold">Đã chọn: 0</span>
+                </div>
+            </div>
+        </div>
+
+        <table id="donggoiTable" class="ui celled table" style="width:100%">
+            <thead>
+                 <tr>
+                    <th>Ngày ép kiện</th>
+                    <th>Công ty</th>
+                    <th>Thùng số</th>
+                    <th>Thời gian ép kiện</th>
+                    <th>Dây chuyền</th>
+                    <th>Trạng thái</th>
+                    <th>Số bành/thùng</th>
+                    <th>Nhiệt độ ép bành (độ C)</th>
+                    <th>Khối lượng bành (kg)</th>
+                    <th>Kiểm tra cắt bành</th>
+                    <th>Đánh giá</th>
+                </tr>
+            </thead>
+        </table>
+
+    </div>
+
+
+    
 
 
     <h4 class="fw-bold py-3 mb-4">Thùng đã tạo lô</h4>
 
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex gap-3">
-            <div class="">
-                <label for="min5" class="form-label mb-0">Lọc ngày</label>
-                <input type="text" id="min5" name="min5" class="form-control" style="width: 200px">
-            </div>
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="filter-section  d-flex align-items-end gap-2 my-2">
                 <div class="">
-                    <label for="lineFilter5" class="form-label mb-0">Dây chuyền</label>
-                    <select id="lineFilter5" class="form-control" style="width: 200px">
-                        <option value="3">3 tấn</option>
-                        <option value="6">6 tấn</option>
-                    </select>
+                    <label for="dateFilterDongGoi2" class="" style="font-size: 14px">Ngày</label>
+                    <input type="text" id="dateFilterDongGoi2" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
                 </div>
-            </div>
 
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
                 <div class="">
-                    <label for="comFilter5" class="form-label mb-0">Công ty</label>
-                    <select id="comFilter5" class="form-control" style="width: 200px">
+                    <label for="companyFilterDongGoi2" style="font-size: 14px">Công ty</label>
+                    <select name="" id="companyFilterDongGoi2" class="form-select">
                         <option value="BHCK">BHCK</option>
-                        <option value="CRCK2" selected>CRCK2</option>
+                        <option value="CRCK2">CRCK2</option>
                         <option value="TNSR">TNSR</option>
                     </select>
+                    
                 </div>
+
+                <div class="">
+                    <label for="linkFilterDongGoi2" style="font-size: 14px">Dây chuyền</label>
+                    <select name="" id="linkFilterDongGoi2" class="form-select" style="width: 100px">
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        @if (Gate::allows('admin')  || Gate::allows('3t'))
+                            <option value="3">3 tấn</option>
+                        @endif
+                        
+                    </select>
+                </div>
+
+                <button id="btnDongGoiFilter" class="btn btn-primary">Lọc</button>
             </div>
         </div>
-       
     </div>
 
 
-    <div class="container">
-        <table id="datatable5" class="ui celled table" style="width:100%">
+    
+        <table id="donggoiTable2" class="hover ui celled table" style="width:100%">
         <thead>
             <tr>
                 <th>Ngày thực hiện</th>
                 <th>Công ty</th>
                 <th>Thùng số</th>
-                <th>Mã thùng</th>
                 <th>Mã lô</th>
                 <th>Số bành/thùng</th>
                 <th>Thời gian tạo lô</th>
@@ -380,7 +334,7 @@
                 <th>Đánh giá</th>
             </tr>
         </thead>
-        <tbody>
+        {{-- <tbody>
             @foreach ($drumsWithBatches as $bale)
                
                 <tr id="{{$bale->id}}">
@@ -408,12 +362,27 @@
                     </tr>
                
             @endforeach
-        </tbody>
+        </tbody> --}}
     </table>
-    </div>
+
+
+    <style>
+
+        #donggoiTable th,
+        #donggoiTable td,
+        #donggoiTable2 th,
+        #donggoiTable2 td  {
+            min-width: 90px;
+            max-width: unset;
+            text-align: center;
+        },
+       
+
+    </style>
+
 
     <script>
-        document.getElementById('heatProcessingBtn').addEventListener('click', function() {
+        document.getElementById('heatProcessingBtn')?.addEventListener('click', function() {
             document.getElementById('newOrderCard').style.display = 'block';
         });
 

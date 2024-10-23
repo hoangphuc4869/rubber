@@ -10,10 +10,13 @@ let tableNguyenLieu = new DataTable("#nguyenlieu", {
         data: function (d) {
             d.date = $("#dateFilterNguyenLieu").val();
             d.status = $("#statusFilterNguyenLieu").val();
+            d.type = $("#typeFilterNguyenLieu").val();
+            d.from = $("#fromFilterNguyenLieu").val();
         },
     },
     createdRow: function (row, data, dataIndex) {
         $(row).attr("id", data.id);
+        $(row).attr("data-status", data.input_status);
     },
     select: {
         style: "multi",
@@ -40,15 +43,21 @@ let tableNguyenLieu = new DataTable("#nguyenlieu", {
     serverSide: true,
     order: [[0, "desc"]],
     columns: [
-        { data: "time_ve_date", name: "time_ve_date" },
-        { data: "time_ve_time", name: "time_ve_time" },
+        { data: "time_ve_date", name: "time_ve" },
+        { data: "time_ve_time", name: "time_ve" },
         {
             data: "input_status",
             name: "input_status",
             render: function (data, type, row) {
-                return data === 0
-                    ? "<span class='text-danger'>Chưa xác nhận</span>"
-                    : "<span class='text-success'>Đã xác nhận</span>";
+                if (data === 0) {
+                    return "<span class='text-danger'>Chưa điền thông tin</span>";
+                } else if (data === 1) {
+                    return "<span class='text-success'>Đã xác nhận</span>";
+                } else if (data === 2) {
+                    return "<span class='text-warning'>Chờ xác nhận</span>";
+                } else if (data === 3) {
+                    return "<span class='text-danger'>Thông tin sai</span>";
+                }
             },
         },
         { data: "fresh_weight", name: "fresh_weight" }, // Khối lượng mủ tươi (kg)
@@ -64,10 +73,15 @@ let tableNguyenLieu = new DataTable("#nguyenlieu", {
         { data: "material_condition", name: "material_condition" }, // Tình trạng nguyên liệu
         { data: "impurity_type", name: "impurity_type" }, // Tạp chất
         { data: "grade", name: "grade" }, // Phân hạng nguyên liệu
+        { data: "plots", name: "plots" }, //Vung trồng
         { data: "note", name: "note" }, // Ghi chú
     ],
     scrollX: true,
     autoWidth: false,
+});
+
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip();
 });
 
 //filter date
@@ -83,28 +97,25 @@ function updateNguyenLieuButtons() {
     let allRows = tableNguyenLieu.rows().nodes();
 
     let selectedRows = Array.from(allRows).filter(
-        (row) => $(row).hasClass("selected") && !$(row).hasClass("no-select")
+        (row) =>
+            $(row).hasClass("selected") &&
+            !$(row).hasClass("no-select") &&
+            $(row).data("status") != 1
     );
 
     let values = selectedRows.map((row) => row.id);
 
     $("#selected-drums").val(values.join(","));
-    $("#selected-drums2").val(values.join(","));
-    $("#batchesToExport").val(values.join(","));
-    $("#drumsEdit").val(values.join(","));
-    $("#rubberEdit").val(values.join(","));
+
     $("#rubbersDRC").val(values.join(","));
 
     if (values.length > 0) {
         $(".form-delete-items").removeClass("d-none");
-        $(".editMat").removeClass("d-none");
-        $(".storeButton").removeClass("d-none");
-        $(".storeButton").removeClass("d-none");
+        // $(".editMat").removeClass("d-none");
         $(".editDRC").removeClass("d-none");
     } else {
         $(".form-delete-items").addClass("d-none");
-        $(".storeButton").addClass("d-none");
-        $(".editMat").addClass("d-none");
+        // $(".editMat").addClass("d-none");
         $(".editDRC").addClass("d-none");
     }
 }
@@ -112,37 +123,17 @@ function updateNguyenLieuButtons() {
 //DRC update
 
 $(document).ready(function () {
-    $("#btnDRC").on("click", function () {
+    $("#saveDRC").on("click", function () {
         updateTableWithDRC();
     });
 
     $("#nguyenlieu tbody").on("click", "tr", function () {
         var rowId = $(this).attr("id");
-
-        console.log(rowId);
-
         var editLink = "/rubber/:id/edit";
         editLink = editLink.replace(":id", rowId);
         $("#editLink").attr("href", editLink);
     });
 });
-
-function fetchDRCAndWeight(ids, drc) {
-    return fetch("/update-drc", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document
-                .querySelector('meta[name="csrf-token"]')
-                .getAttribute("content"),
-        },
-        body: JSON.stringify({ ids: ids, drc: drc }),
-    })
-        .then((response) => response.json())
-        .catch((error) =>
-            console.error("Error fetching DRC and Weight:", error)
-        );
-}
 
 function updateTableWithDRC() {
     const selectedIds = $("#rubbersDRC").val().split(",").map(Number);
@@ -150,29 +141,58 @@ function updateTableWithDRC() {
     // console.log(selectedIds);
 
     var drc = $("#drcInput").val();
+    var tuoingyenlieu = $("#tuoingyenlieuInput").val();
+    var tinhtrangnguyenlieu = $("#tinhtrangnguyenlieuInput").val();
+    var tapchat = $("#tapchatInput").val();
+    var phanhang = $("#phanhangInput").val();
+    var ghichu = $("#ghichuInput").val();
 
-    fetchDRCAndWeight(selectedIds, drc)
+    fetch("/update-drc", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+        body: JSON.stringify({
+            selectedIds: selectedIds,
+            drc: drc,
+            tuoingyenlieu: tuoingyenlieu,
+            tinhtrangnguyenlieu: tinhtrangnguyenlieu,
+            tapchat: tapchat,
+            phanhang: phanhang,
+            ghichu: ghichu,
+        }),
+    })
+        .then((response) => response.json())
         .then((data) => {
-            console.log(data.results);
+            console.log(data);
 
             if (data.success) {
                 var table = $("#tableNguyenLieu").DataTable();
+
+                console.log(data.results);
 
                 data.results.forEach((item) => {
                     const row = $(`#${item.id}`);
 
                     if (row.length) {
+                        row.find("td").eq(10).text(item.tuoingyenlieu);
                         row.find("td").eq(11).text(item.drc.toFixed(2));
                         row.find("td").eq(12).text(item.dry_weight.toFixed(2));
+                        row.find("td").eq(13).text(item.tinhtrangnguyenlieu);
+                        row.find("td").eq(14).text(item.tapchat);
+                        row.find("td").eq(15).text(item.phanhang);
+                        row.find("td").eq(17).text(item.ghichu);
+                        row.find("td").eq(2).text(item.status);
                     } else {
                         console.warn(`Row with ID ${item.id} not found`);
                     }
                 });
 
-                table.draw();
-                alert("Cập nhật thành công");
+                $("#updateDRCModal").modal("hide");
+                alert(data.message);
             } else {
-                console.error("Failed to fetch DRC and weight data");
+                alert(data.message); // Thông báo nếu có lỗi
             }
         })
         .catch((error) => {

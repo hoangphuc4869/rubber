@@ -12,4 +12,11 @@ class Plot extends Model
     public function farm() {
         return $this->belongsTo(Farm::class);
     }
+
+    public function rubbers()
+    {
+        return $this->belongsToMany(Rubber::class, 'plot_rubber')
+                    ->withPivot('to_nt', 'lat_cao')
+                    ->withTimestamps();
+    }
 }

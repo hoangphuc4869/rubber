@@ -159,6 +159,33 @@
         </div>
     </div>
 </div>
+
+<div class="d-flex justify-content-center align-items-center min-vh-1 mb-3">
+    <div class="d-flex justify-content-center align-items-center min-vh-1 mb-3">
+        <div class="card p-3 shadow-lg" style="width: 100%;">
+            <h4 style="font-weight: bold">Xuất File Báo Cáo Nhanh</h4>
+            <form action="{{ route('download-bc') }}" method="POST" onsubmit="return confirmDownload()">
+                @csrf
+                <div class="row mb-4">
+                    <div class="">
+                        <label for="start_date_bc" class="form-label">Ngày Bắt Đầu</label>
+                        <input type="date" class="form-control" id="start_date_bc" name="start_date_bc" required>
+                    </div>
+                </div>
+                <div class="">
+                    <button type="submit" class="btn btn-warning btn-lg">
+                        <i class="fas fa-file-excel"></i> Tải xuống Excel
+                    </button>
+                    <span>(Báo cáo.)</span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class=""></div>
+</div>
+
+{{-- // --}}
+
 <script>
     function confirmDownload() {
         return confirm('Bạn có chắc chắn muốn tải xuống tệp Excel?');

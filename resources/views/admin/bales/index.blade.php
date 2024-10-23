@@ -17,34 +17,34 @@
             <form action="{{ route('producing.store') }}" method="POST">
                 @csrf
                 <div class="row">
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label">Số bành/thùng</label>
                         <input type="number" min="1" required class="form-control" name="number_of_bales" value="13" >
                     </div>
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label">Nhiệt độ ép bành (độ C)</label>
                         <input type="number" required class="form-control" name="press_temperature" value="38" >
                     </div>
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label" >Khối lượng bành (kg)</label>
                         <input type="number" required class="form-control" name="weight" value="35" >
                     </div>
 
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label" >Kiểm tra cắt bành</label>
                         <input type="number" required class="form-control" name="cut_check" value="2" >
                     </div>
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label" >Đánh giá</label>
                         <input type="text" required  class="form-control" name="evaluation" value="Chín đều" >
                     </div>
 
-                    <div class="mb-3 col-lg-3">
+                    <div class="mb-3 col-lg-2 col-6">
                         <label class="form-label" >Ngày thực hiện</label>
                         <input type="date" name="date" id="dateInput" class="form-control">
                     </div>
 
-                    <div class="mb-3 col-lg-3" style="opacity: 0; pointer-events: none">
+                    <div class="mb-3 col-lg-2 col-6 position-absolute" style="opacity: 0; pointer-events: none">
                         <label class="form-label" >Giờ</label>
                         <input type="time" name="time" id="timeInput" class="form-control">
                     </div>

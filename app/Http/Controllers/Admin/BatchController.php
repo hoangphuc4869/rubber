@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Gate;
 use App\Models\Company;
 use App\Models\Rubber;
 use App\Models\Plot;
+use Yajra\DataTables\Facades\DataTables; 
+
 
 use Illuminate\Support\Facades\Http;
 
@@ -28,6 +30,8 @@ class BatchController extends Controller
 
 
         $batches = Batch::all();
+
+        // dd($drumsWithoutBatches[0]->rolling->area);
 
         $currentMonth = Carbon::now()->format('Y-m');
 
@@ -84,6 +88,268 @@ class BatchController extends Controller
         return view('admin.batch.list', compact('batches'));
     }
 
+    public function getDataDongGoi(Request $request)
+    {
+        $donggoi = Drum::with(['bale', 'batches', 'rolling'])
+            ->whereIn('status', [5])
+            ->whereHas('bale')
+            ->doesntHave('batches')
+            ->select([
+                'id',
+                'name',               
+                'date',               
+                'status',             
+                'heated_start',            
+                'heated_date',            
+                'heated_end',               
+                'temp',               
+                'temp2',               
+                'time_to_dry',             
+                'rolling_code',             
+                'link',          
+                'note',          
+                'state',          
+                'validation',          
+                'oven',
+                'curing_house_id',        
+                'curing_area_id',        
+                'supervisor',     
+                'thickness',     
+                'trang_thai_com',     
+                    
+            ]);
+
+        // dd($donggoi->get());
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+            $donggoi->whereDate('heated_date', $date);
+        }
+
+        if ($request->has('link') && $request->link) {
+            $donggoi->where('link', $request->link);
+        }
+
+        if ($request->has('company') && $request->company) {
+            $companyCode = $request->company;
+
+            $donggoi->whereHas('rolling.area.farm.company', function ($query) use ($companyCode) {
+                $query->where('code', $companyCode);
+            })
+            ->orWhereHas('curing_area.farm.company', function ($query) use ($companyCode) {
+                $query->where('code', $companyCode);
+            });
+        }
+
+        
+
+        // dd($donggoi->rolling);
+
+        return DataTables::of($donggoi)
+            ->addColumn('status', function ($donggoi) {
+                return "Đã ép kiện";
+            })
+            ->addColumn('bale_number', function ($donggoi) {
+                return $donggoi->bale->number_of_bales;
+            })
+            ->addColumn('remain', function ($donggoi) {
+                return $donggoi->remaining_bales > 0 ? $donggoi->remaining_bales : $donggoi->bale?->number_of_bales;
+            })
+            ->addColumn('press_temperature', function ($donggoi) {
+                return $donggoi->bale->press_temperature;
+            })
+            ->addColumn('weight', function ($donggoi) {
+                return $donggoi->bale->weight;
+            })
+            ->addColumn('cut_check', function ($donggoi) {
+                return $donggoi->bale->cut_check;
+            })
+            ->addColumn('evaluation', function ($donggoi) {
+                return $donggoi->bale->evaluation;
+            })
+            ->addColumn('company', function ($donggoi) {
+                return $donggoi->rolling 
+                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->farm->company->code : "") 
+                : ($donggoi->curing_area ? $donggoi->curing_area->farm->company->code : "");
+            })
+            
+            ->editColumn('heated_end', function ($donggoi) {
+                return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : ""; 
+            })
+            // ->editColumn('heated_date', function ($donggoi) {
+            //     return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d/m/Y') : ""; 
+            // })
+            ->editColumn('date', function ($donggoi) {
+                return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d-m-Y') : "";
+            })
+            ->make(true);
+    }
+
+    public function getDataDongGoi2(Request $request)
+    {
+        $donggoi = Drum::with(['bale', 'batches', 'rolling'])
+            ->whereHas('batches')
+            ->select([
+                'id',
+                'name',               
+                'date',               
+                'status',             
+                'heated_start',            
+                'heated_date',            
+                'heated_end',               
+                'temp',               
+                'temp2',               
+                'time_to_dry',             
+                'rolling_code',             
+                'link',          
+                'note',          
+                'state',          
+                'validation',          
+                'oven',
+                'curing_house_id',        
+                'curing_area_id',        
+                'supervisor',     
+                'thickness',     
+                'trang_thai_com',     
+                    
+            ]);
+
+        // dd($donggoi->get());
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+            $donggoi->whereDate('heated_date', $date);
+        }
+
+        // if ($request->has('link') && $request->link) {
+        //     $donggoi->where('link', $request->link);
+        // }
+
+        // if ($request->has('company') && $request->company) {
+        //     $companyCode = $request->company;
+
+        //     $donggoi->whereHas('rolling.area.farm.company', function ($query) use ($companyCode) {
+        //         $query->where('code', $companyCode);
+        //     })
+        //     ->orWhereHas('curing_area.farm.company', function ($query) use ($companyCode) {
+        //         $query->where('code', $companyCode);
+        //     });
+        // }
+
+        
+
+        // dd($donggoi->rolling);
+
+        return DataTables::of($donggoi)
+            ->addColumn('status', function ($donggoi) {
+                return "Đã đóng lô";
+            })
+            
+            ->addColumn('company', function ($donggoi) {
+                return $donggoi->rolling 
+                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->farm->company->code : "") 
+                : ($donggoi->curing_area ? $donggoi->curing_area->farm->company->code : "");
+            })
+            
+            ->addColumn('heated_end_time', function ($donggoi) {
+                return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : ""; 
+            })
+            
+            ->editColumn('date', function ($donggoi) {
+                return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d-m-Y') : "";
+            })
+            ->addColumn('batch_codes', function ($donggoi) {
+                // dd($donggoi->batches->pluck('batch_code')->toArray());
+                return implode(', ', $donggoi->batches->pluck('batch_code')->toArray());
+            })
+            ->addColumn('bale_counts', function ($donggoi) {
+                return implode(', ', $donggoi->batches->map(function ($batch) {
+                    return $batch->pivot->bale_count;
+                })->toArray());
+            })
+            ->addColumn('type', function ($donggoi) {
+                return $donggoi->curing_house ? 'MDC' : 'MD';
+            })
+             ->addColumn('press_temperature', function ($donggoi) {
+                return $donggoi->bale->press_temperature;
+            })
+            ->addColumn('weight', function ($donggoi) {
+                return $donggoi->bale->weight;
+            })
+            ->addColumn('cut_check', function ($donggoi) {
+                return $donggoi->bale->cut_check;
+            })
+            ->addColumn('evaluation', function ($donggoi) {
+                return $donggoi->bale->evaluation;
+            })
+            ->make(true);
+    }
+
+    public function getList(Request $request)
+    {
+        // Bắt đầu với Eloquent builder
+        $list = Batch::with(['drums', 'company', 'warehouse'])
+            ->select([
+                'id',
+                'bale_status',               
+                'bale_count',               
+                'expected_grade',               
+                'link',               
+                'batch_number',               
+                'batch_code',               
+                'checked',               
+                'exported',               
+                'sample_cut_number',               
+                'packaging_type',               
+                'time',               
+                'company_id',               
+                'warehouse_id',                                  
+                'date',                                  
+            ]);
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+
+            // Thêm điều kiện whereDate vào builder
+            $list->whereHas('drums', function ($query) use ($date) {
+                $query->whereDate('heated_date', '=', $date);
+            });
+        }
+
+        if ($request->has('link') && $request->link) {
+            $list->where('link', $request->link);
+        }
+
+        if ($request->has('company') && $request->company) {
+            $list->where('company_id', $request->company);
+        }
+
+        // Lấy danh sách kết quả
+        $result = $list->get();
+
+        return DataTables::of($result)
+            ->addColumn('company', function ($item) {
+                return $item->company->code;
+            })
+            ->addColumn('from', function ($item) {
+                return $item->drums && $item->drums->isNotEmpty() 
+                    ? ($item->drums->last()->curing_house ? $item->drums->last()->curing_house->curing_area->farm->code : "") 
+                    : "";
+            })
+            ->editColumn('date', function ($item) {
+                return $item->drums && $item->drums->isNotEmpty() 
+                    ? \Carbon\Carbon::parse($item->drums->last()->heated_date)->format('d-m-Y') 
+                    : "";
+            })
+            ->editColumn('time', function ($item) {
+                return $item->drums && $item->drums->isNotEmpty() 
+                    ? \Carbon\Carbon::parse($item->drums->last()->heated_end)->format('H:i') 
+                    : "";
+            })
+            ->make(true);
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -95,6 +361,9 @@ class BatchController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+
+
+
 
    
     public function store(Request $request)  
@@ -108,7 +377,7 @@ class BatchController extends Controller
 
         $curing_house = Drum::findOrFail($ids[0])->curing_house;
         $curing_area = Drum::findOrFail($ids[0])->curing_area;
-        // dd($curing_house);
+        dd($curing_house);
         
         $ids_copy = array_unique($requestedIds);  
 
@@ -569,15 +838,45 @@ class BatchController extends Controller
 
 
     public function viewFindBatch()
-    {
-        return view('admin.batch.find');
-    }
+{
+    // Lấy rubbers từ batch
+    // $rubbers = Batch::where('batch_code', '24130931')->first();
+    // $rubbers2 = Batch::where('batch_code', '2413106')->first();
+
+    // dd($rubbers, $rubbers2);
+
+    // // $trucksArray = [];
+
+    // foreach ($rubbers as $rubber) {
+    //     // Lấy các plots cho rubber hiện tại
+    //     $groupedPlots = DB::table('plot_rubber')
+    //         ->select('rubber_id', 'to_nt', 'lat_cao', DB::raw('GROUP_CONCAT(plot_id) as plot_ids'))
+    //         ->where('rubber_id', $rubber->id) 
+    //         ->groupBy('rubber_id', 'to_nt', 'lat_cao')
+    //         ->get();
+
+    //     $trucksArray[] = [
+    //         'rubber_id' => $rubber->id,
+    //         'truck_name' => $rubber->truck_name,
+    //         'time_di' => $rubber->time_di,
+    //         'time_ve' => $rubber->time_ve,
+    //         'plots' => $rubber->plots->pluck('tenlo')->unique()->toArray()
+    //     ];
+    // }
+
+    // dd($trucksArray);
+
+    return view('admin.batch.find'); // Trả về biến đúng cách
+}
 
 
+
+    // lô -> nhiều thùng -> thùng đầu -> mã cán -> nt
 
     public function findBatch(Request $request)
     {
         $batchCode = $request->input('batch_code');
+
         $batch = Batch::where('batch_code', $batchCode)->first();
 
         $response = [
@@ -594,9 +893,12 @@ class BatchController extends Controller
             'Số chuyến' => 'Đang cập nhật',
             'Tọa độ' => '',
             'plots' => [],
+            'plotsArray' => [],
+            'trucksArray' => [],
         ];
 
         if ($batch && isset($batch->drums[0])) {
+            
             $farm = optional($batch->drums[0]?->rolling?->area->farm);
             $area = optional($batch->drums[0]?->rolling?->area);
 
@@ -609,61 +911,62 @@ class BatchController extends Controller
                 $response['Nông trường'] = $farm->name ?? 'Đang cập nhật';
                 $response['Ngày tiếp nhận mủ'] = $batch->drums[0]?->rolling ? Carbon::parse(optional($batch->drums[0]?->rolling)->date_curing)->format('d-m-Y') : "Đang cập nhật";
                 $response['Loại mủ'] = $type;
+                $response['Ngày cán vắt'] = $batch->drums[0]?->rolling ? Carbon::parse(optional($batch->drums[0]?->rolling)->date)->format('d-m-Y') : "Đang cập nhật";
 
-                // Tìm các plots
-                $plots = $farm->plots()->get()->map(function ($plot) {
-                    return [
-                        'id' => $plot->id,
-                        'tenlo' => $plot->tenlo,
-                        'namtrong' => $plot->namtrong,
-                        'dientich' => $plot->dientich,
-                        'giong' => $plot->giong,
-                        'tongsocay' => $plot->tongsocay,
-                        'cayhuuhieu' => $plot->cayhuuhieu,
-                        'khonghuuhieu' => $plot->khonghuuhieu,
-                        'hotrong' => $plot->hotrong,
-                        'toado' => $plot->toado,
+
+                $rubbers = $batch->drums[0]?->rolling?->rubbers()->get();
+
+                $plotsArray = [];
+                $trucksArray = [];
+
+                
+                foreach ($rubbers as $rubber) {
+                    
+                    $plots = $rubber->plots; 
+
+                    $trucksArray[] = [
+                        'rubber_id' => $rubber->id,
+                        'truck_name' => $rubber->truck_name,
+                        'time_di' => $rubber->time_di,
+                        'time_ve' => $rubber->time_ve,
+                        'plots' => $rubber->plots->pluck('tenlo')->unique()->toArray(),
                     ];
-                })->toArray();
+                    
+                    
+                    foreach ($plots as $plot) {
+                        $plotsArray[] = [
+                            'rubber_id' => $rubber->id,  
+                            'plot_id'   => $plot->id,    
+                            'id_lo'   => $plot->id_lo,    
+                            'farm_id'   => $plot->farm_id,    
+                            'tenlo'   => $plot->tenlo,    
+                            'namtrong'   => $plot->namtrong,    
+                            'giong'   => $plot->giong,    
+                            'dientich'   => $plot->dientich,    
+                            'namcao' => $plot->namcao,  
+                            'to_nt' => $plot->to_nt,  
+                            'tuoicao' => $plot->tuoicao,  
+                            'lat_cao' => $plot->lat_cao,  
+                            'duAn' => $plot->duAn,  
+                            'x' => $plot->x,  
+                            'y' => $plot->y,  
+                            'y' => $plot->y,  
+                            'geojson' => $plot->geojson,
+                            'tongcaycao' => $plot->tongcaycao,  
+                            'matdocaycao' => $plot->matdocaycao,  
+                            'tong_kmc' => $plot->tong_kmc,  
+                        ];
+                    }
+                }
 
-                $response['plots'] = $plots;
+                // thùng->rolling->rubbers -> truck_name
 
-                $rubbers = Rubber::where('date', $batch->drums[0]?->rolling?->date_curing)->get();
+                $response['plotsArray'] = $plotsArray;
+                $response['trucksArray'] = $trucksArray;
+                
                 $response['Số xe'] = $rubbers->where('farm_id', $farm->id)->pluck('truck_name')->isNotEmpty() ? $rubbers->where('farm_id', $farm->id)->pluck('truck_name') : '';
                 $response['Số chuyến'] = $rubbers->where('farm_id', $farm->id)->count() > 0 ? $rubbers->where('farm_id', $farm->id)->count() : 'Đang cập nhật';
 
-                $plot_map = "";
-                if ($farm && $farm->id) {
-                    switch ($farm->id) {
-                        case 1:
-                            $plot_map = 'https://experience.arcgis.com/experience/c7fd133ed2e040c7a1a4da2d87ff97cc';
-                            break;
-                        case 2:
-                            $plot_map = 'https://experience.arcgis.com/experience/eb50e5662a3f48cfa87f084d46cd4c58';
-                            break;
-                        case 3:
-                            $plot_map = 'https://experience.arcgis.com/experience/d9f79e22f99f4c6b8cb6fec7517ca266';
-                            break;
-                        case 4:
-                            $plot_map = 'https://experience.arcgis.com/experience/38db7edf94864a1492c462a77cdaf2cd';
-                            break;
-                        case 5:
-                            $plot_map = 'https://experience.arcgis.com/experience/288fad0b651641a8a4700c4a10d5673b';
-                            break;
-                        case 6:
-                            $plot_map = 'https://experience.arcgis.com/experience/cd1da90d93594777b4047f06f0378f91';
-                            break;
-                        case 7:
-                            $plot_map = 'https://experience.arcgis.com/experience/5091e52aaf154025afa43ec994c465f2';
-                            break;
-                        case 8:
-                            $plot_map = 'https://experience.arcgis.com/experience/3600c167fe8f429caf6b7d625f57abbf';
-                            break;
-                        default:
-                            $plot_map = '';
-                    }
-                }
-                $response['Tọa độ'] = $plot_map;
             }
         }
 
@@ -699,41 +1002,83 @@ class BatchController extends Controller
 
             'avg_dirt' => isset($data['results']['testing_result_svr']['avg_dirt']) 
                 ? $data['results']['testing_result_svr']['avg_dirt'] 
-                : "Đang cập nhật",
+                : "",
 
             'avg_ash' => isset($data['results']['testing_result_svr']['avg_ash']) 
                 ? $data['results']['testing_result_svr']['avg_ash'] 
-                : "Đang cập nhật",
+                : "",
 
             'avg_volatile' => isset($data['results']['testing_result_svr']['avg_volatile']) 
                 ? $data['results']['testing_result_svr']['avg_volatile'] 
-                : "Đang cập nhật",
+                : "",
 
             'avg_nitro' => isset($data['results']['testing_result_svr']['avg_nitro']) 
                 ? $data['results']['testing_result_svr']['avg_nitro'] 
-                : "Đang cập nhật",
+                : "",
 
             'avg_po' => isset($data['results']['testing_result_svr']['avg_po']) 
                 ? $data['results']['testing_result_svr']['avg_po'] 
-                : "Đang cập nhật",
+                : "",
 
             'avg_pri' => isset($data['results']['testing_result_svr']['avg_pri']) 
                 ? $data['results']['testing_result_svr']['avg_pri'] 
-                : "Đang cập nhật",
+                : "",
                 
             'avg_viscosity' => isset($data['results']['testing_result_svr']['avg_viscosity']) 
                 ? $data['results']['testing_result_svr']['avg_viscosity'] 
-                : "Đang cập nhật",
+                : "",
         ];
+
 
         
         return response()->json($result, $response->status());
     }
 
-    
 
 
-    
+    public function updateLots()
+    {
+        ini_set('max_execution_time', 1200); 
+        $token = "30dd7d4f-bbd4-4c23-b7df-13e5a9e1055f"; 
+
+        $batches_notChecked = Batch::where('checked', 0)->get();
+        $responses = []; 
+        foreach ($batches_notChecked as $item) {
+            $response = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Content-Type' => 'application/json',
+            ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode={$item->batch_code}");
+
+            if ($response->successful()) {
+
+                $data = $response->json();
+
+                if (isset($data['results']['status']) && $data['results']['status'] == 1) {
+                    $item->checked = 1; 
+                    if (isset($data['results']['testing_result_svr'])) {
+                        $item->expected_grade = $data['results']['testing_result_svr']['rank'] == '10_VRG' ? 'CSR10' : 'CSR20';
+                    }
+
+                    $item->save();
+                }
+                $responses[] = $data; 
+            } else {
+
+                $responses[] = [
+                    'error' => $response->status(),
+                    'message' => 'Failed to fetch data for batch: ' . $item->batch_code,
+                ];
+            }
+        }
+
+        // dd($responses);
+        
+        return redirect()->back()->with('delete_success', 'Cập nhật thành công');
+    }
+
+
+
+
 
     
 }

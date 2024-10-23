@@ -18,7 +18,8 @@ class Batch extends Model
         'batch_code',
         'batch_number',
         'date',
-        'time'
+        'time',
+        'checked',
     ];
 
     // public function drums(){

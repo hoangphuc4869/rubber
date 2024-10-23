@@ -13,6 +13,8 @@ use App\Models\Customer;
 use App\Models\Company;
 use App\Models\Contract;
 use App\Models\Shipment;
+use Yajra\DataTables\Facades\DataTables; 
+
 
 class WarehouseController extends Controller
 {
@@ -26,6 +28,16 @@ class WarehouseController extends Controller
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
+
+        $waresWithCount = $wares->map(function ($items) {
+            return [
+                'items' => $items,
+                'count' => $items->whereNotNull('batch_id')->count(),
+                'total_bale_count' => $items->flatMap(function ($warehouse) {
+                    return $warehouse->batches; 
+                })->sum('bale_count'), 
+            ];
+        });
 
         
         
@@ -64,7 +76,7 @@ class WarehouseController extends Controller
 
         
         if (Gate::allows('khoBHCK') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
+            return view('admin.warehouses.index', compact('waresWithCount','company','wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -73,13 +85,25 @@ class WarehouseController extends Controller
     public function indexCRCK()
     {
         
-        $wares = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3','X3T', 'X6T'])
+        $wares = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3','X3T', 'X6T', 'BU6T'])
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
 
+        $waresWithCount = $wares->map(function ($items) {
+            return [
+                'items' => $items,
+                'count' => $items->whereNotNull('batch_id')->count(),
+                'total_bale_count' => $items->flatMap(function ($warehouse) {
+                    return $warehouse->batches; 
+                })->sum('bale_count'), 
+            ];
+        });
+
+        // dd($waresWithCount);
+
         
-        $warehouses = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'X3T', 'X6T'])
+        $warehouses = Warehouse::whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2', 'B3', 'X3T', 'X6T', 'BU6T'])
             ->whereNull('batch_id') 
             ->orderBy('id', 'asc')
             ->get();
@@ -111,8 +135,11 @@ class WarehouseController extends Controller
             $total_bales += $item->bale_count;
         }
 
+        // dd($a1);
+         
+
         if (Gate::allows('khoCRCK2') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
+            return view('admin.warehouses.index', compact('waresWithCount', 'company','wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales', 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
@@ -125,6 +152,16 @@ class WarehouseController extends Controller
             ->orderBy('id', 'asc')
             ->get()
             ->groupBy('name'); 
+
+        $waresWithCount = $wares->map(function ($items) {
+            return [
+                'items' => $items,
+                'count' => $items->whereNotNull('batch_id')->count(),
+                'total_bale_count' => $items->flatMap(function ($warehouse) {
+                    return $warehouse->batches; 
+                })->sum('bale_count'), 
+            ];
+        });
 
         
         $customers = Customer::all();
@@ -142,6 +179,7 @@ class WarehouseController extends Controller
         $count = $batches->count();
 
         $warehouses = Warehouse::whereIn('name', ['TNSR'])
+            ->whereNull('batch_id')
             ->orderBy('id', 'asc')
             ->get();
         
@@ -158,10 +196,81 @@ class WarehouseController extends Controller
 
         
         if (Gate::allows('khoCRCK2') || Gate::allows('admin') ) {
-            return view('admin.warehouses.index', compact('wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales' , 'csr10_count', 'csr20_count'));
+            return view('admin.warehouses.index', compact('waresWithCount', 'company','wares','batches', 'warehouses','customers', 'companyName', 'count', 'total_bales' , 'csr10_count', 'csr20_count'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }
+    }
+
+    public function getKhoData(Request $request)
+    {
+        $batch = Batch::with(['warehouse', 'company'])
+                ->select([
+                    'id',                  // Batch ID
+                    'date',                // Ngày (Date)
+                    'batch_code',          // Mã lô (Batch Code)
+                    'bale_count',          // Số bành (Bale Count)
+                    'checked',             // Kiểm nghiệm (Checked)
+                    'exported',            // Trạng thái xuất kho (Exported Status)
+                    'expected_grade',      // Hạng dự kiến (Expected Grade)
+                    'sample_cut_number',   // Số mẫu cắt (Sample Cut Number)
+                    'packaging_type',      // Dạng đóng gói (Packaging Type)
+                    'warehouse_id',        // Warehouse ID (to show Nơi lưu trữ)
+                    'company_id'           // Công ty (Company ID)
+                ]);
+
+        
+
+        if ($request->company) {
+            $batch->where('company_id', $request->company);
+        }
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+            $batch->where('date', $date);
+        }
+
+        if ($request->has('checked') && $request->checked !== null) {
+            if ($request->checked == 0) {
+                $batch->where('checked', 0);              
+            } else if ($request->status == 2) {
+                $batch->where('checked', 2);   
+            } else {
+                $batch->where('checked', 1);   
+   
+            }
+        }
+
+        // dd($request->kho);
+        
+        if ($request->has('kho') && $request->kho != 0) {
+                $batch->whereHas('warehouse', function($query) use ($request) {
+                    $query->where('name', $request->kho);
+                });
+            
+        }
+        else  {
+            $batch->where('warehouse_id', null);
+        }
+
+
+        return DataTables::of($batch)
+            ->addColumn('house_code', function ($batch) {
+                return $batch->house ? $batch->house->code : '';
+            })
+            // ->addColumn('area_code', function ($batch) {
+            //     return $batch->area ? $batch->area->code : '';
+            // })
+            // ->editColumn('date', function ($batch) {
+            //     return \Carbon\Carbon::parse($batch->date)->format('d-m-Y'); 
+            // })
+            // ->editColumn('time', function ($batch) {
+            //     return \Carbon\Carbon::parse($batch->time)->format('H:i'); 
+            // })
+            // ->editColumn('date_curing', function ($batch) {
+            //     return \Carbon\Carbon::parse($batch->date_curing)->format('d-m-Y'); 
+            // })
+            ->make(true);
     }
 
     /**
@@ -181,18 +290,18 @@ class WarehouseController extends Controller
     {
         // dd($request->all());
 
-        // $request->validate([
-        //    'name' => 'required|unique:warehouses,name'
-        // ],[
-        //     'name.unique' => 'Kho đã tồn tại'
-        // ]);
+        $request->validate([
+           'name' => 'required|unique:warehouses,name'
+        ],[
+            'name.unique' => 'Kho đã tồn tại'
+        ]);
 
             
             for ($row = 1; $row <= $request->rows; $row++) {
                 
                 for ($col = 1; $col <= 6; $col++) {
                     
-                    $value = 'B3-' . $row . $col;
+                    $value = $request->name . '-' . $row . $col;
 
                     Warehouse::create([
                         
@@ -299,10 +408,11 @@ class WarehouseController extends Controller
     }
 
     public function store_location(Request $request) {  
+        
         $batch_id = $request->batchId;  
         $lot_id = $request->slotId;  
 
-        
+        // dd($batch_id);
         $batch = Batch::findOrFail($batch_id);  
         
         $targetItem = Warehouse::find($lot_id);  

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Farm;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
+use Yajra\DataTables\Facades\DataTables; 
 
 class RollingController extends Controller
 {
@@ -48,6 +49,62 @@ class RollingController extends Controller
 
     }
 
+    public function getDataCanvat(Request $request)
+    {
+        $canvat = Rolling::with(['house', 'area']) 
+            ->select([
+                'id',
+                'date',               // Ngày gia công
+                'code',               // Mã cán vắt
+                'status',             // Trạng thái gia công
+                'time',               // Thời gian gia công
+                'curing_area_id',            // Mã khu vực
+                'curing_house_id',           // Mã nhà ủ
+                'weight_to_roll',      // Khối lượng cán vắt
+                'date_curing',        // Ngày gia công ủ
+                'timeRoll',       // Thời gian cán vắt
+                'remaining',       // Thời gian cán vắt
+            ]);
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+            $canvat->where('date', $date);
+        }
+
+        if ($request->has('status') && $request->status !== null) {
+            if ($request->status == 2) {
+                $canvat->where('status', 0)->where('remaining', '>', 0);              
+            } else if ($request->status == 0) {
+                $canvat->where('status', $request->status)->where('remaining', null);   
+            } else {
+                $canvat->where('status', $request->status)->where('remaining', 0);   
+            }
+        }
+
+        if ($request->has('area') && $request->area) {
+            $canvat->where('curing_area_id', $request->area);
+        }
+
+        return DataTables::of($canvat)
+            ->addColumn('house_code', function ($canvat) {
+                return $canvat->house ? $canvat->house->code : '';
+            })
+            ->addColumn('area_code', function ($canvat) {
+                return $canvat->area ? $canvat->area->code : '';
+            })
+            ->editColumn('date', function ($canvat) {
+                return \Carbon\Carbon::parse($canvat->date)->format('d-m-Y'); 
+            })
+            ->editColumn('time', function ($canvat) {
+                return \Carbon\Carbon::parse($canvat->time)->format('H:i'); 
+            })
+            ->editColumn('date_curing', function ($canvat) {
+                return \Carbon\Carbon::parse($canvat->date_curing)->format('d-m-Y'); 
+            })
+            ->make(true);
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -78,7 +135,7 @@ class RollingController extends Controller
         $command->curing_house_id = $request->curing_house_id;
         $command->curing_area_id = $request->curing_area_id;
         $command->date_curing = $request->date_curing;
-        // $command->date_curing = '2024/09/30';
+
         $command->code =  now()->timestamp;
         $command->save();
 
@@ -134,7 +191,6 @@ class RollingController extends Controller
         if($item) {
             foreach ($rubbers as $rubber) {
                 $rubber->status = 0;
-                
                 $rubber->save();
             }
             $item->area->containing += $item->weight_to_roll;

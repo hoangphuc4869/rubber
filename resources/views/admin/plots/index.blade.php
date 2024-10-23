@@ -1,6 +1,15 @@
 @extends('layouts.myapp')
 
 @section('content')
+
+
+@include('partials.errors')
+<form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
+    @csrf
+    <input type="file" name="file">
+    <button type="submit">Import</button>
+</form>
+
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Nông trường /</span> Vùng trồng</h4>
 <div class="row">
    
@@ -13,10 +22,13 @@
                     <th>Năm trồng</th>
                     <th>Diện tích</th>
                     <th>Giống</th>
+                    <th>Nông trường</th>
                     <th>Tổng số cây</th>
-                    <th>Cây hữu hiệu</th>
-                    <th>Không hữu hiệu</th>
-                    <th>Hộ trồng</th>
+                    <th>Mật độ cây cạo</th>
+                    <th>Tổng KMC</th>
+                    <th>Lát cạo</th>
+                    <th>Tổ cạo</th>
+                    <th>Tọa độ</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -29,10 +41,13 @@
                     <td>{{$plot->namtrong}}</td>
                     <td>{{$plot->dientich}}</td>
                     <td>{{$plot->giong}}</td>
-                    <td>{{$plot->tongsocay}}</td>
-                    <td>{{$plot->cayhuuhieu}}</td>
-                    <td>{{$plot->khonghuuhieu}}</td>
-                    <td>{{$plot->hotrong}}</td>
+                    <td>{{$plot->farm_id}}</td>
+                    <td>{{$plot->tongcaycao}}</td>
+                    <td>{{$plot->matdocaycao}}</td>
+                    <td>{{$plot->tong_kmc}}</td>
+                    <td>{{$plot->lat_cao}}</td>
+                    <td>{{$plot->to_nt}}</td>
+                    <td>{{$plot->x . ", " . $plot->y}}</td>
                     
                     <td>
                        <div class="custom d-flex gap-1">

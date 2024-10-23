@@ -6,64 +6,62 @@
     <h4 class="fw-bold mb-5 mt-4">Danh sách lô hàng</h4>
 
 
-    <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex gap-3 align-items-end">
-            <div class="">
-                <label for="min5" class="form-label mb-0">Lọc ngày</label>
-                <input type="text" id="min5" name="min5" class="form-control" style="width: 200px">
-            </div>
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+   <div class="filter-date d-flex align-items-end justify-content-between gap-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="filter-section  d-flex align-items-end gap-2 my-2">
                 <div class="">
-                    <label for="lineFilter5" class="form-label mb-0">Dây chuyền</label>
-                    <select id="lineFilter5" class="form-control" style="width: 200px">
-                        <option value="3">3 tấn</option>
-                        <option value="6">6 tấn</option>
+                    <label for="dateFilterList" class="" style="font-size: 14px">Ngày</label>
+                    <input type="text" id="dateFilterList" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
+                </div>
+
+                <div class="">
+                    <label for="companyFilterList" style="font-size: 14px">Công ty</label>
+                    <select name="" id="companyFilterList" class="form-select">
+                        <option value="1">BHCK</option>
+                        <option value="2">CRCK2</option>
+                        <option value="8">TNSR</option>
+                    </select>
+                    
+                </div>
+
+                <div class="">
+                    <label for="linkFilterList" style="font-size: 14px">Dây chuyền</label>
+                    <select name="" id="linkFilterList" class="form-select" style="width: 100px">
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        @if (Gate::allows('admin')  || Gate::allows('3t'))
+                            <option value="3">3 tấn</option>
+                        @endif
+                        
                     </select>
                 </div>
-            </div>
 
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
-                <div class="">
-                    <label for="comFilter5" class="form-label mb-0">Công ty</label>
-                    <select id="comFilter5" class="form-control" style="width: 200px">
-                        <option value="BHCK">BHCK</option>
-                        <option value="CRCK2" selected>CRCK2</option>
-                        <option value="TNSR">TNSR</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <form action="{{ route('batch-delete-items') }}" class="form-delete-items d-none" method="POST"
-                    onsubmit="return confirmDelete();">
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="drums" id="selected-drums">
-                    <button class="btn btn-danger" type="submit">Xóa</button>
-                </form>
+                <button id="btnListFilter" class="btn btn-primary">Lọc</button>
             </div>
         </div>
     </div>
 
 
 
-<table id="datatable5" class="ui celled table" style="width:100%">
+<table id="tableBatchList" class="hover ui celled table" style="width:100%">
     <thead>
         <tr>
             <th>Ngày thực hiện</th>
             <th>Công ty</th>
             <th>Mã lô</th>
+            <th>Thời gian tạo lô</th>
             <th>Số bành</th>
             <th>Hạng dự kiến</th>
             <th>Kiểm tra cắt bành</th>
-            <th>Thời gian tạo lô</th>
+           
             <th>Dây chuyền</th>
             <th>Nguồn nguyên liệu</th>
             <th>Kiểm nghiệm</th>
             <th>Trạng thái</th>
         </tr>
     </thead>
-    <tbody>
+    {{-- <tbody>
 
         @foreach ($batches as $index => $batch)
 
@@ -83,7 +81,7 @@
                     class='text-dark'>Đã xuất kho</span>"!!}</td>
         </tr>
         @endforeach
-    </tbody>
+    </tbody> --}}
 </table>
 
 <style>
@@ -93,3 +91,5 @@
 </style>
 
 @endsection
+
+

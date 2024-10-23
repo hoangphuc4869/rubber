@@ -68,14 +68,14 @@
     </div>
 
 
-    <div class="d-flex justify-content-end gap-2">
+    {{-- <div class="d-flex justify-content-end gap-2">
         <div class="">
-            <button class="btn btn-info fw-bold" id="nhanCaBtn" style="display: none">NHẬN CA</button>
+            <button class="btn btn-info fw-bold" id="nhanCaBtn" >NHẬN CA</button>
         </div>
         <div class="">
-            <button class="btn btn-warning fw-bold" id="doiCaBtn" style="display: none">NHẬN ĐỔi CA</button>
+            <button class="btn btn-warning fw-bold" id="doiCaBtn" >NHẬN ĐỔi CA</button>
         </div>
-    </div>
+    </div> --}}
 
 <!-- Modal form -->
 <div class="modal fade" id="nhanCaModal" tabindex="-1" role="dialog" aria-labelledby="nhanCaLabel" aria-hidden="true">
@@ -88,17 +88,8 @@
                 <p id="quantityDisplay" class="text-dark fw-bold"></p>
                 <form id="nhanCaForm" method="POST" action="{{route('nhan.ca')}}">
                     @csrf
-                    <input type="hidden" name="drum_ids" id="drumIds">
-                    {{-- <div class="d-flex align-items-center gap-2">
-                        <div class="form-group col-6">
-                            <label for="gioRaLo">Giờ ra lò:</label>
-                            <input type="time" class="form-control" id="gioRaLo" name="gio_ra_lo" required>
-                        </div>
-                        <div class="form-group mb-2 col-6">
-                            <label for="ngayRaLo">Ngày ra lò:</label>
-                            <input type="date" class="form-control" id="ngayRaLo" name="ngay_ra_lo">
-                        </div>
-                    </div> --}}
+                    <input type="hidden" name="drum_ids" id="drumIdsNhanCa">
+
                     <div class="d-flex gap-2 justify-content-center align-items-center my-2">
                         <button type="submit" class="btn btn-primary">Xác nhận</button>
                         <button type="button" class="btn btn-secondary closenhanca" data-dismiss="modal">Hủy</button>
@@ -144,99 +135,109 @@
 
 
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex gap-3">
-            <div class="">
-                <label for="min" class="form-label mb-0">Lọc ngày</label>
-                <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-            </div>
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="filter-section  d-flex align-items-end gap-2 my-2">
                 <div class="">
-                    <label for="lineFilter" class="form-label mb-0">Dây chuyền</label>
-                    <select id="lineFilter" class="form-control" style="width: 200px">
+                    <label for="dateFilterNhiet" class="" style="font-size: 14px">Ngày tạo thùng</label>
+                    <input type="text" id="dateFilterNhiet" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
+                </div>
 
-                        @if (Gate::allows('admin') || Gate::allows('6t'))
-                            <option value="6" selected>6 tấn</option>
-                        @endif
-
-                        @if (Gate::allows('admin') || Gate::allows('3t'))
-                            <option value="3" selected>3 tấn</option>
-                        @endif
-
+                <div class="">
+                    <label for="statusFilterNhiet" style="font-size: 14px">Trạng thái</label>
+                    <select name="" id="statusFilterNhiet" class="form-select">
+                        <option value="cho">Chờ xử lý nhiệt</option>
+                        <option value="giao">Chuyển ca</option>
+                        {{-- <option value="doi">Đổi ca</option> --}}
                     </select>
+                    
+                </div>
+                
 
+                <div class="">
+                    <label for="linkFilterNhiet" style="font-size: 14px">Dây chuyền</label>
+                    <select name="" id="linkFilterNhiet" class="form-select" style="width: 100px">
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        @if (Gate::allows('admin')  || Gate::allows('3t'))
+                            <option value="3">3 tấn</option>
+                        @endif
+                        
+                    </select>
+                </div>
+
+                <button id="btnNhietFilter" class="btn btn-dark">Lọc</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="heat-wrapper position-relative my-3">
+
+      
+        <div class="button-group">
+            <div class="d-flex align-items-center gap-2">
+                <button id="selectAllBtn" class="btn btn-primary">Tất Cả</button>
+                <button id="selectOddBtn" class="btn btn-warning">Chẵn</button>
+                <button id="selectEvenBtn" class="btn btn-info">Lẻ</button>
+                <div>
+                    <span id="selectedCount" class="text-dark fw-bold">Đã chọn: 0</span>
+                </div>
+                <div class="d-none form-heat-items">
+                    <button class="btn btn-danger" id="heatProcessingBtn" type="submit">Gia công nhiệt</button>
+                </div>
+
+                <div class="d-none form-heat-items">
+                    <button class="btn btn-success" id="ncaBtn" type="submit">Nhận ca</button>
                 </div>
             </div>
         </div>
+           
+      
 
-        <div class="d-none form-delete-items">
-            <button class="btn btn-danger" id="heatProcessingBtn" type="submit">Gia công nhiệt</button>
-        </div>
-       
-    </div>
-    
-    
-
-    <table id="datatable" class="ui celled table hover" style="width:100%">
-        <thead>
-            <tr>
-                <th class="text-center"></th>
-                <th>Ngày </th>
-                {{-- <th>Mã cán vắt</th> --}}
-                {{-- <th>Mã thùng</th> --}}
-                <th>Trạng thái</th>
-                <th>Tên thùng</th>
-                <th>Thời gian bắt đầu sấy</th>
-
-                {{-- <th>Bãi ủ</th> --}}
-                <th>Thời gian ra lò</th>
-                <th>Dây chuyền</th>
-                <th>Lò</th>
-                <th>Nhà ủ</th>
-                <th>Bề dày tờ mủ</th>
-                <th>Trạng thái cốm</th>
-                <th>Trưởng ca</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($drums as $index => $drum)
-                <tr id="{{ $drum->id }}" data-link="{{ $drum->link }}" class="{{$drum->status == 2 ? 'thunggiaoca' : ''}} {{$drum->status == 3 ? 'thungdoica' : ''}}">
-                    <td>
-                        @if($drum->status == 0)
-                            <input type="checkbox" class="select-row" data-row="{{ $drum->id }}">
-                        @else
-                            <input type="checkbox" class="select-row" data-row="{{ $drum->id }}" disabled>
-                        @endif
-                    </td>
-                    <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y') }}</td>
-                    
-                    <td>
-                        {!! 
-                            $drum->status === 0 
-                            ? "<span class='text-danger'>Chờ xử lý nhiệt</span>" 
-                            : ($drum->status === 2 
-                                ? "<span class='text-warning'>Giao ca</span>" 
-                                : ($drum->status === 3 
-                                    ? "<span class='text-primary'>Đổi ca</span>" 
-                                    : "<span class='text-success'>Đã xử lý nhiệt</span>"
-                                )
-                            )
-                        !!}
-                    </td>
-                    <td>{{ $drum->name }}</td>
-                    <td>{{ $drum->heated_start ? \Carbon\Carbon::parse($drum->heated_start)->format('H:i') : '' }}</td>
-                    <td>{{ $drum->heated_end }}</td>
-                    <td>{{ $drum->link }}</td>
-                    <td>{{ $drum->oven }}</td>
-                    <td>{{ $drum->curing_house ? $drum->curing_house->code : $drum->curing_area->code }}</td>
-
-                    <td>{{ $drum->thickness }}</td>
-                    <td>{{ $drum->trang_thai_com }}</td>
-                    <td>{{ $drum->supervisor }}</td>
-                   
+        <table id="giacongnhietTable" class="ui celled table" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Ngày </th>
+                    <th>Trạng thái</th>
+                    <th>Tên thùng</th>
+                    <th>Dây chuyền</th>
+                    <th>Nhà ủ</th>
+                    <th>Bề dày tờ mủ</th>
+                    <th>Trạng thái cốm</th>
+                    <th>Trưởng ca</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+        </table>
+
+    </div>
+
+    <style>
+        .button-group {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+            width: 80%;
+        }
+
+    </style>
+
+
+
+
+<style>
+
+    #giacongnhietTable th,
+    #giacongnhietTable td {
+        /* min-width: 80px; */
+        max-width: unset;
+        text-align: center;
+    }
+
+</style>
+    
 
 
     <style>
@@ -249,23 +250,7 @@
 
 
 
-<div class="d-flex align-items-end  gap-2" 
-style="
-    position: sticky;
-    top: 25px;
-    z-index: 1000;
-">
-    <form action="{{ route('heat-delete-items') }}" class="form-delete-items2 d-none" method="POST" onsubmit="return handleFormSubmit(event);">
-        @csrf
-        @method('DELETE')
-        <input type="hidden" name="drums" id="selected-drums2">
-        
-        <button class="btn btn-danger" type="submit" name="action" value="delete">Xóa</button>
-        <button type="button" class="btn btn-info" onclick="handleAdjustTimeButtonClick();">Điều chỉnh</button>
-        <button class="btn btn-success" type="submit" name="action" value="done">Hoàn tất xử lý nhiệt</button>
-    </form>
 
-</div>
 
 
 <div class="modal fade" id="adjustTimeModal" tabindex="-1" aria-labelledby="adjustTimeModalLabel" aria-hidden="true">
@@ -355,67 +340,110 @@ style="
 </div>
 
 
-{{-- tg sấy --}}
-{{-- <div class="modal fade" id="adjustDryTimeModal" tabindex="-1" aria-labelledby="adjustDryTimeModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="adjustDryTimeModalLabel">Điều chỉnh thời gian sấy</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="{{ route('adjust-dry-time') }}" method="POST" onsubmit="return handleAdjustDryTimeSubmit(event);" id="adjust-dry-time-form">
-                    @csrf
-                    <input type="hidden" name="drums" id="adjust-drums-dry">
-                    <input type="hidden" name="line" id="selected-line-dry" value="3">
-
-                    <div class="mb-3 d-flex gap-2">
-                        <div class="flex-grow-1" style="width: 100px">
-                            <label for="adjust_time_dry" class="form-label">Thời gian sấy (giờ):</label>
-                            <input type="number" min="1" name="adjust_time_dry" id="adjust_time_dry" class="form-control" placeholder="Nhập giờ sấy">
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-between">
-                        <button type="submit" class="btn btn-primary">Xác nhận điều chỉnh</button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div> --}}
-
 
     <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex gap-3">
-            <div class="filter-line d-flex align-items-end justify-content-between gap-2">
+
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="filter-section  d-flex align-items-end gap-2 my-2">
                 <div class="">
-                    <label for="lineFilter2" class="form-label mb-0">Dây chuyền</label>
-                    <select id="lineFilter2" class="form-control" style="width: 200px">
-
-                        @if (Gate::allows('admin') || Gate::allows('6t'))
-                            <option value="6" selected>6 tấn</option>
-                        @endif
-
-                        @if (Gate::allows('admin') || Gate::allows('3t'))
-                            <option value="3" selected>3 tấn</option>
-                        @endif
-
-                    </select>
-
+                    <label for="dateFilterNhiet2" class="" style="font-size: 14px">Ngày sấy</label>
+                    <input type="text" id="dateFilterNhiet2" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
                 </div>
+
+                <div class="">
+                    <label for="linkFilterNhiet2" style="font-size: 14px">Dây chuyền</label>
+                    <select name="" id="linkFilterNhiet2" class="form-select" style="width: 100px">
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        @if (Gate::allows('admin')  || Gate::allows('3t'))
+                            <option value="3">3 tấn</option>
+                        @endif
+                    </select>
+                </div>
+
+                <button id="btnNhietFilter2" class="btn btn-primary">Lọc</button>
             </div>
         </div>
     </div>
 
 
 
+    <div class="heat-wrapper position-relative my-3">
 
-    <table id="datatable2" class="ui celled table hover" style="width:100%">
+        <div class="button-group d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <button id="selectAllBtn2" class="btn btn-primary">Tất Cả</button>
+                <button class="btn btn-dark switch_within_day" id="giaoca">Chuyển ca</button>
+                {{-- <button class="btn btn-warning switch_another_day" id="doica">Đổi ca</button> --}}
+                
+
+                <div class="form-group">
+                    <input type="number" id="numberOfDrums" class="form-control" min="1" required placeholder="Nhập số thùng để giao">
+                </div>
+
+                <div>
+                    <span id="selectedCount2" class="text-dark fw-bold">Đã chọn: 0</span>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-end  gap-2" style="
+            ">
+                <form action="{{ route('heat-delete-items') }}" class="form-delete-items2 d-none" method="POST" onsubmit="return handleFormSubmit(event);">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="drums" id="selected-drums2">
+                    
+                    <button class="btn btn-danger" type="submit" name="action" value="delete">Xóa</button>
+                    <button type="button" class="btn btn-info" onclick="handleAdjustTimeButtonClick();">Điều chỉnh</button>
+                    <button class="btn btn-success" type="submit" name="action" value="done">Hoàn tất xử lý nhiệt</button>
+                </form>
+
+            </div>
+        </div>
+        
+    
+
+        <table id="giacongnhietTable2" class="ui celled table" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Ngày sấy </th>
+                    <th>Trạng thái</th>
+                    <th>Tên thùng</th>
+                    <th>Thời gian bắt đầu sấy</th>
+                    <th>Thời gian sấy(phút)</th>
+                    <th>Thời gian ra lò</th>
+                    <th>Ngày ra lò</th>
+                    <th>Ghi chú</th>
+                    <th>Nhiệt độ T1</th>
+                    <th>Nhiệt độ T2</th>
+                    <th>Lò</th>
+                    <th>Dây chuyền</th>
+                    <th>Đánh giá</th>
+                    <th>Vệ sinh thùng</th>
+                    <th>Trưởng ca</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <style>
+        #giacongnhietTable2 th,
+        #giacongnhietTable2 td {
+            min-width: 100px;
+            max-width: unset;
+            text-align: center;
+        }
+
+    </style>
+
+
+
+
+
+    {{-- <table id="datatable2" class="ui celled table hover" style="width:100%">
         <thead>
             <tr>
-                <th class="text-center"></th>
                 <th>Ngày sấy </th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
@@ -431,7 +459,6 @@ style="
                 <th>Đánh giá</th>
                 <th>Vệ sinh thùng</th>
                 <th>Trưởng ca</th>
-               
             </tr>
         </thead>
         <tbody>
@@ -458,7 +485,7 @@ style="
             </tr>
             @endforeach
         </tbody>
-    </table>
+    </table> --}}
 
     <script>
         countText = document.querySelector('.drums-count span');
@@ -480,24 +507,25 @@ style="
 
     </script>
 
-    <div class="d-flex justify-content-between my-5">
+    {{-- <div class="d-flex justify-content-between my-5">
         <div class="">
             <button class="btn btn-info switch_within_day" id="giaoca">GIAO CA</button>
         </div>
         <div class="">
             <button class="btn btn-warning switch_another_day" id="doica">ĐỔI CA</button>
         </div>
-    </div>
+    </div> --}}
 
 
-    <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    {{-- <div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="confirmModalLabel">Xác nhận</h5>
                 </div>
                 <div class="modal-body">
-                    Bạn muốn giao <span class="so-thung-giao-ca"></span> thùng cuối cho lần sau?
+                    <label for="numberOfDrums">Nhập số thùng muốn giao:</label>
+                    <input type="number" id="numberOfDrums" class="form-control" min="1" required>
                 </div>
                 <div class="modal-footer">
                     <form action="{{route('giao-ca')}}" method="POST">
@@ -510,7 +538,34 @@ style="
                 </div>
             </div>
         </div>
+    </div> --}}
+
+
+
+
+<!-- Modal xác nhận -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Xác nhận</h5>
+            </div>
+            <div class="modal-body">
+                Bạn có muốn giao <span class="so-thung-giao-ca"></span> thùng không?
+            </div>
+            <div class="modal-footer">
+                <form action="{{route('giao-ca')}}" method="POST">
+                    @csrf
+                    <input type="hidden" name="drums[]" id="drumsInput">
+                    <input type="hidden" name="type" id="typeInput">
+                    <button type="submit" class="btn btn-info">ĐỒNG Ý</button>
+                </form>
+                <button type="button" class="btn btn-danger close-modal">HỦY</button>
+            </div>
+        </div>
     </div>
+</div>
+
 
 
 <script>
@@ -559,16 +614,27 @@ style="
             if (selectedDrumElement) {  
  
                 const dryTime = selectedDrumElement.getAttribute('data-dry') || '';  
-                const date = selectedDrumElement.getAttribute('data-date') || '';  
+                const rawDate = selectedDrumElement.getAttribute('data-date') || '';  
                 const endTime = selectedDrumElement.getAttribute('data-start') || '';  
                 const line = selectedDrumElement.getAttribute('data-link') || '';  
 
-                 
-                document.getElementById('adjust-drums').value = selectedDrumId;  
-                document.getElementById('selected-line').value = line;  
+                // Function to convert date from DD/MM/YYYY to YYYY-MM-DD
+                function convertDateFormat(dateStr) {
+                    const [day, month, year] = dateStr.split('/');
+                    return `${year}-${month}-${day}`;
+                }
+
+                const formattedDate = rawDate ? convertDateFormat(rawDate) : '';
+
+                // Update the form fields
+                document.getElementById('adjust-drums').value = selectedDrumId;
+                document.getElementById('selected-line').value = line;
                 document.getElementById('adjust_time_start').value = dryTime; 
-                document.getElementById('adjust-date').value = date; 
-                document.getElementById('adjust-time').value = endTime;   
+                document.getElementById('adjust-date').value = formattedDate;  
+                document.getElementById('adjust-time').value = endTime;
+
+        
+                  
 
                 
                 const adjustTimeModal = new bootstrap.Modal(document.getElementById('adjustTimeModal'));  

@@ -39,6 +39,11 @@ class MaterialController extends Controller
 
         foreach ($rubberRecords as $item) {  
             if($item['loai_phieu'] !== 'Phiếu Xuất'){
+
+                if (empty($item['khoi_luong_mu']) || empty($item['gio_can_tong']) || empty($item['gio_can_bi'])) {
+                    $failedEntries[] = $item['so_phieu'];
+                    continue;
+                }
                 
                 $existingRecord = Rubber::where('package_code', $item['so_phieu'])->first();  
             
@@ -63,6 +68,7 @@ class MaterialController extends Controller
                             'truck_name' => $item['bien_so_xe'],  
                             'farm_name' => $item['nguon_goc'],  
                             'fresh_weight' => $item['khoi_luong_mu'],  
+                            'dry_weight' => $existingRecord->drc_percentage ? $item['khoi_luong_mu'] * $existingRecord->drc_percentage/100 : null,  
                             'latex_type' => $item['chung_loai'],   
                             'farm_id' => $farm ? $farm->id : null,  
                             'receiving_place_id' => $curingArea ? $curingArea->id : null,  
@@ -72,7 +78,9 @@ class MaterialController extends Controller
                             'time_di' => $item['gio_can_tong'],  
                             'time_ve' => $item['gio_can_bi'],
                             'kho' =>  $item['kho'],
-                            'tai_xe' =>  $item['tai_xe']
+                            'tai_xe' =>  $item['tai_xe'],
+                            'loai_phieu' =>  $item['loai_phieu'],
+                            'updated_at' => now()
                         ]);  
                     } else {  
                         
@@ -95,7 +103,10 @@ class MaterialController extends Controller
                     'time_di' => $item['gio_can_tong'],
                     'time_ve' => $item['gio_can_bi'],
                     'kho' =>  $item['kho'],
-                    'tai_xe' =>  $item['tai_xe']
+                    'tai_xe' =>  $item['tai_xe'],
+                    'loai_phieu' =>  $item['loai_phieu'],
+                    'created_at' => now(),  
+                    'updated_at' => now()
                 ];
 
             
@@ -122,14 +133,22 @@ class MaterialController extends Controller
         }  
 
     
-        Rubber::insert($rubberData);  
+        Rubber::insert($rubberData); 
 
-        
-        return response()->json([  
-            'message' => 'Dữ liệu đã được lưu thành công',  
-            'Phiếu không thể update' => $failedEntries,
-            'data' => $rubberData
-        ]);  
+
+        if(count($failedEntries) > 0){
+            return response()->json([  
+                'message' => 'Vui lòng kiểm tra lại',  
+                'Phiếu lỗi' => $failedEntries,
+            ]); 
+        }
+        else {
+            return response()->json([  
+                'message' => 'Dữ liệu đã được lưu thành công',  
+                'data' => $rubberData
+            ]); 
+        }
+         
     }
 
 

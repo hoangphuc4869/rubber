@@ -15,6 +15,9 @@ use Carbon\Carbon;
 use App\Models\ResetTime;
 use Illuminate\Support\Facades\Gate;
 
+use Yajra\DataTables\Facades\DataTables; 
+
+
 class MachineController extends Controller
 {
     /**
@@ -22,7 +25,7 @@ class MachineController extends Controller
      */
     public function index()
     {
-        $rollings = Rolling::orderBy('date', 'desc')->get();
+        $rollings = Rolling::orderBy('date', 'asc')->get();
         $houses_containing = CuringHouse::where('containing', '>' , 0)->get();
         $houses = CuringHouse::all();
         $areas = CuringArea::whereIn('code', ['NLTMMD', 'MDBH', 'MDCR'])->get();
@@ -86,6 +89,96 @@ class MachineController extends Controller
         }
 
         
+    }
+
+    public function getDataGiaconghat(Request $request)
+    {
+        $gchat = Drum::with(['bale', 'batches', 'rolling', 'curing_house']) 
+            ->select([
+                'id',
+                'name',               
+                'date',               
+                'status',             
+                'name',              
+                'heated_start',            
+                'link',          
+                'thickness',     
+                'trang_thai_com',        
+                'impurity_removing',      
+                'supervisor',       
+                'rolling_code',       
+                'curing_house_id',       
+            ]);
+
+        // dd($request->date);
+
+        if ($request->has('date') && $request->date) {
+            $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
+            $gchat->where('date', $date);
+        }
+
+        if ($request->has('area') && $request->area) {
+            $gchat->where('curing_house_id', $request->area);
+        }
+
+        if ($request->has('status') && $request->status) {
+            switch ($request->status) {
+                case 'cho':
+                    // Trạng thái Chờ xử lý nhiệt
+                    $gchat->where('status', 0);
+                    break;
+                case 'da':
+                    // Trạng thái Đã xử lý nhiệt
+                    $gchat->where('status', 5)->whereDoesntHave('bale');
+                    break;
+                case 'dang':
+                    // Trạng thái Đang xử lý nhiệt
+                    $gchat->where('status', 1);
+                    break;
+                case 'giao':
+                    // Trạng thái Giao ca
+                    $gchat->where('status', 2);
+                    break;
+                case 'doi':
+                    // Trạng thái Đổi ca
+                    $gchat->where('status', 3);
+                    break;
+                case 'ep':
+                    // Trạng thái Đã ép kiện
+                    $gchat->where('status', 5)->whereHas('bale')->whereDoesntHave('batches');
+                    break;
+                case 'lo':
+                    // Trạng thái Đã đóng lô
+                    $gchat->where('status', 5)->whereHas('bale')->whereHas('batches');
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if ($request->has('link') && $request->link) {
+            $gchat->where('link', $request->link);
+        }
+
+        // dd($gchat->rolling);
+
+        return DataTables::of($gchat)
+            ->addColumn('rolling_date', function ($gchat) {
+                return $gchat->rolling ? \Carbon\Carbon::parse($gchat->rolling->date)->format('d-m-Y') : '';
+            })
+            ->addColumn('house_code', function ($gchat) {
+                return $gchat->curing_house ? $gchat->curing_house->code : '';
+            })
+            // ->editColumn('date', function ($gchat) {
+            //     return \Carbon\Carbon::parse($gchat->date)->format('d-m-Y'); 
+            // })
+            ->editColumn('heated_start', function ($gchat) {
+                return \Carbon\Carbon::parse($gchat->heated_start)->format('H:i'); 
+            })
+            ->editColumn('date', function ($gchat) {
+                return \Carbon\Carbon::parse($gchat->date)->format('d-m-Y'); 
+            })
+            ->make(true);
     }
 
     /**
@@ -153,10 +246,22 @@ class MachineController extends Controller
 
         $weight = Rolling::findOrFail($request->rolling_code);
 
+        if($weight->remaining == null){
+            $weight->remaining = $weight->weight_to_roll - $request->weight;
+        }
+        else {
+            $weight->remaining -= $request->weight;
+        }
+
+        if($weight->remaining !== null && $weight->remaining == 0){
+            $weight->status = 1;
+        }
+
+
         $house = $weight->house;
 
-        
-        $weight->status = 1;
+        $house->containing -= $request->weight;
+
         $weight->save();
         $house->save();
 

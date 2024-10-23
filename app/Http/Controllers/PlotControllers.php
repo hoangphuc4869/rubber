@@ -4,7 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Plot;
-
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\CodeImport;
+use App\Models\Rubber;
+use App\Exports\MissingRecordsExport;
+use Illuminate\Support\Facades\Log;
+use App\Models\Batch;
+use App\Imports\BatchesImport;  
 class PlotControllers extends Controller
 {
     /**
@@ -14,6 +20,7 @@ class PlotControllers extends Controller
     {
 
         $plots = Plot::all();
+
         return view('admin.plots.index', compact('plots'));
     }
 
@@ -64,4 +71,77 @@ class PlotControllers extends Controller
     {
         //
     }
+
+    public function import(Request $request)  
+    {  
+        // Xác thực tệp được tải lên  
+        $request->validate([  
+            'file' => 'required|mimes:xlsx,csv,xls',  
+        ]);  
+
+        // Nhập dữ liệu từ tệp  
+        Excel::import(new BatchesImport, $request->file('file'));  
+
+        return redirect()->back()->with('success', 'Dữ liệu đã được nhập thành công!');  
+    }  
+
+
+
+    public function queryPlots(Request $request)
+    {
+     
+        $plots = Plot::where('to_nt', $request->to_nt)
+            ->where('farm_id', $request->farm)
+            ->where('lat_cao', 'like', '%' . $request->lat_cao . '%')
+            ->get();
+
+        if ($plots->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No plots found',
+            ]);
+        }
+
+        $rubber = Rubber::findOrFail($request->rubber_id);
+
+        $syncData = [];
+        foreach ($plots as $plot) {
+            $syncData[$plot->id] = [
+                'to_nt' => $plot->to_nt,
+                'lat_cao' => $request->lat_cao
+            ];
+        }
+
+        $rubber->plots()->attach($syncData);
+
+        return response()->json([
+            'success' => true,
+            'plots' => $plots,
+            'message' => 'Plots synced successfully!'
+        ]);
+    }
+
+    public function removePlots(Request $request)
+    {
+    
+        try {
+            
+            $rubber = Rubber::findOrFail($request->rubber_id);
+            
+            $plotIds = explode(',', $request->plot_id);
+
+            $rubber->plots()->detach($plotIds);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Plot(s) removed successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove the plot: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
 }

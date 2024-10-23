@@ -34,7 +34,7 @@
         </div>
     </div>
     
-    <div class="card mb-4 d-none">
+    {{-- <div class="card mb-4 d-none">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Thêm nguyên liệu</h5>
         </div>
@@ -195,7 +195,6 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Phân hạng</label>
                         <input type="text" required class="form-control" name="grade" value="CSR10" >
-                        
                     </div>
 
 
@@ -218,7 +217,7 @@
                 </div>
             </form>
         </div>
-    </div>
+    </div> --}}
 
     <div class="d-flex justify-content-between">
         <div class="my-3">
@@ -235,10 +234,66 @@
         </div>
     </div>
 
+
+
+    <div class="modal fade" id="updateDRCModal" tabindex="-1" aria-labelledby="updateDRCModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateDRCModalLabel">Cập nhật thông tin nguyên liệu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+    
+                    <form id="updateDRCForm">
+                       <div class="row">
+                            <div class="mb-3 col-lg-6">
+                                <label for="drc" class="form-label">DRC (%)</label>
+                                <input type="number" class="form-control" id="drcInput" placeholder="Nhập DRC" required>
+                            </div>
+                            <div class="mb-3 col-lg-6">
+                                <label for="age" class="form-label">Tuổi nguyên liệu</label>
+                                <input type="number" class="form-control" id="tuoingyenlieuInput" placeholder="Nhập tuổi nguyên liệu" required>
+                            </div>
+                            <div class="mb-3 col-lg-6">
+                                <label for="condition" class="form-label">Tình trạng nguyên liệu</label>
+                                <select name="material_condition" class="form-select" id="tinhtrangnguyenlieuInput">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4" selected>4</option>
+                                </select>
+                            </div>
+
+
+                            <div class="mb-3 col-lg-6">
+                                <label for="impurities" class="form-label">Tạp chất</label>
+                                
+                                <input type="text" class="form-control" id="tapchatInput" placeholder="Nhập tạp chất" required>
+                            </div>
+                            <div class="mb-3 col-lg-6">
+                                <label for="classification" class="form-label">Phân hạng nguyên liệu</label>
+                                <input type="text" class="form-control" name="grade" id="phanhangInput" placeholder="Phân hạng">
+                            </div>
+                            <div class="mb-3 col-lg-6">
+                                <label for="notes" class="form-label">Ghi chú</label>
+                                <textarea class="form-control" id="ghichuInput" rows="3" name="note" placeholder="Nhập ghi chú"></textarea>
+                            </div>
+                       </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="saveDRC">Lưu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @include('partials.errors')
 
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="filter-section  d-flex align-items-end gap-2 my-2">
+    <div class="d-flex justify-content-between align-items-end">
+        <div class="filter-section  d-flex align-items-end gap-2">
             <div class="">
                 <label for="dateFilterNguyenLieu" class="" style="font-size: 14px">Ngày tiếp nhận</label>
                 <input type="text" id="dateFilterNguyenLieu" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
@@ -247,33 +302,55 @@
             <div class="">
                 <label for="statusFilterNguyenLieu" style="font-size: 14px">Trạng thái</label>
                 <select name="" id="statusFilterNguyenLieu" class="form-select">
-                    <option value="0">Chưa xác nhận</option>
+                    <option value="">Không</option>
+                    <option value="0">Chưa điền thông tin</option>
+                    <option value="2">Chờ xác nhận</option>
                     <option value="1">Đã xác nhận</option>
+                    <option value="3">Thông tin sai</option>
                 </select>
                 
+            </div>
+
+            <div class="">
+                <label for="typeFilterNguyenLieu" style="font-size: 14px">Chủng loại mủ</label>
+                <select name="" id="typeFilterNguyenLieu" class="form-select">
+                    <option value="">Không</option>
+                    <option value="mdc">Mủ đông chén</option>
+                    <option value="md">Mủ dây</option>
+                </select>
+            </div>
+
+            <div class="">
+                <label for="fromFilterNguyenLieu" style="font-size: 14px">Nguồn nguyên liệu</label>
+                <select name="" id="fromFilterNguyenLieu" class="form-select">
+                   <option value="">Không</option>
+                   @foreach ($nguon_nguyen_lieu as $item)
+                       <option value="{{$item->farm_name}}">{{$item->farm_name}}</option>
+                   @endforeach
+                </select>
             </div>
 
             <button id="btnNguyenLieuFilter" class="btn btn-primary">Lọc</button>
         </div>
 
 
-        <div class="filter-date d-flex align-items-end justify-content-end gap-2">
+        <div class="function-btns d-flex align-items-end justify-content-end gap-2">
             <div class=" d-flex gap-1 align-items-center">
 
                 <div class="editDRC d-none">
                     <div class="d-flex align-items-center gap-1">
-                        <input type="number" step="0.01" placeholder="Giá trị DRC" name='drc' id="drcInput"  class="form-control" style="width: 150px">
+                        {{-- <input type="number" step="0.01" placeholder="Giá trị DRC" name='drc' id="drcInput"  class="form-control" style="width: 150px"> --}}
                         <div class="">
-                            <button class="btn btn-warning" id="btnDRC">
-                                Cập nhật DRC
+                            <button class="btn btn-warning" id="btnDRC" data-bs-toggle="modal" data-bs-target="#updateDRCModal">
+                                Cập nhật
                             </button>
                         </div>
                     </div>
                     <input type="hidden" name='rubbers' id="rubbersDRC" >
                 </div>
             
-                <div class="editMat d-none">
-                    <a href="/rubber/1/edit" id="editLink">
+                <div class="editMat">
+                    <a href="" id="editLink">
                         <button class="btn btn-info">
                             Chỉnh sửa
                         </button>
@@ -296,8 +373,8 @@
         <thead>
             <tr>              
                 <th>Ngày</th>
-                <th >Thời gian</th>
-                <th >Trạng thái tiếp nhận</th>
+                <th>Thời gian</th>
+                <th>Trạng thái tiếp nhận</th>
                 <th>Khối lượng mủ tươi (kg)</th>
                 <th>Số xe</th>
                 <th>Nguồn nguyên liệu</th>
@@ -311,6 +388,7 @@
                 <th>Tình trạng nguyên liệu</th>
                 <th>Tạp chất</th>
                 <th>Phân hạng nguyên liệu</th>
+                <th>Vùng trồng</th>
                 <th>Ghi chú</th>
             </tr>
         </thead>
@@ -323,6 +401,14 @@
             min-width: 100px;
             max-width: unset;
             text-align: center;
+        }
+
+        .plot-tooltip {
+            display: inline-block;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 

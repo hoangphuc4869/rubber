@@ -31,6 +31,10 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->remember)) {
            
             $user = Auth::user();
+
+            if (in_array('customer', $user->roles->pluck('name')->toArray())) {
+                return redirect()->route('tracibility');
+            }
            
             return redirect()->intended('/');
         }
@@ -39,6 +43,28 @@ class LoginController extends Controller
             'email' => 'The provided credentials do not match our records.',
         ])->withInput($request->only('email', 'remember'));
     }
+
+    // public function handle_login(Request $request)
+    // {
+    //     $credentials = $request->only('email', 'password');
+
+    //     if (Auth::attempt($credentials)) {
+
+    //         $user = Auth::user();
+    //         if (empty($user->remember_token)) {
+    //             $newToken = Str::random(60);
+
+    //             $user->remember_token = $newToken;
+    //             $user->save();  // Save the updated user to the database
+    //         }
+
+    //         return redirect()->intended('/');
+    //     }
+
+    //     return back()->withErrors([
+    //         'email' => 'The provided credentials do not match our records.',
+    //     ])->withInput($request->only('email'));
+    // }
 
 
     public function logout(Request $request)

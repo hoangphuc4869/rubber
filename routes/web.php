@@ -111,7 +111,7 @@ Route::middleware(['login'] )->group(function() {
     Route::get('/fill-excel', [ExportExcelController::class, 'fillExcel']);
 
     
-    Route::get('/find', [BatchController::class, 'viewFindBatch']);
+    Route::get('/find', [BatchController::class, 'viewFindBatch'])->name('tracibility');
     
     Route::get('/find-batch', [BatchController::class, 'findBatch']);
 
@@ -120,7 +120,29 @@ Route::middleware(['login'] )->group(function() {
 
 
     Route::get('/get-nguyenlieu-data', [RubberController::class, 'getNguyenLieuData']);
+    Route::get('/get-canvat-data', [RollingController::class, 'getDataCanvat']);
+    Route::get('/get-giaconghat-data', [MachineController::class, 'getDataGiaconghat']);
+    
+    Route::get('/get-giacongnhiet-data', [HeatController::class, 'getDataNhiet']);
+    Route::get('/get-giacongnhiet2-data', [HeatController::class, 'getDataNhiet2']);
+    Route::get('/get-kho-data', [WarehouseController::class, 'getKhoData']);
 
+
+    Route::get('/get-data-donggoi', [BatchController::class, 'getDataDongGoi']);
+    Route::get('/get-data-donggoi2', [BatchController::class, 'getDataDongGoi2']);
+
+    Route::get('/get-batch-list-data', [BatchController::class, 'getList']);
+
+
+    Route::post('/import', [PlotControllers::class, 'import'])->name('import');
+
+    Route::post('/query-plots', [PlotControllers::class, 'queryPlots']);
+    Route::post('/remove-plots', [PlotControllers::class, 'removePlots'])->name('remove.plot');
+
+
+    Route::get('/update-lots', [BatchController::class, 'updateLots']);
+
+    
 
 
     
@@ -162,7 +184,7 @@ Route::delete('/delete-batch-items', [BatchController::class, 'delete_items'])->
 
 Route::post('/update-reset-time', [ResetTimeController::class, 'update']);
 
-Route::get('/update-lots', [ApiController::class, 'updateLots']);
+// Route::get('/update-lots', [ApiController::class, 'updateLots']);
 
 Route::post('/update-contract-status', [ContractController::class, 'updateStatus']);
 
@@ -178,8 +200,12 @@ Route::get('/download-cvtt', [ExportExcelController::class, 'export_cvtt'])->nam
 Route::get('/download-gchtt', [ExportExcelController::class, 'export_gchtt'])->name('download-gchtt');
 Route::get('/download-gcntt', [ExportExcelController::class, 'export_gcntt'])->name('download-gcntt');
 Route::get('/download-rl', [ExportExcelController::class, 'export_rl'])->name('download-rl');
+Route::post('/download-bc', [ExportExcelController::class, 'export_bc'])->name('download-bc');
 
 Route::get('/can-vat', [ExportExcelController::class, 'canVat'])->name('download-canVat');
+
+
+Route::post('/u', [BatchController::class, 'u'])->name('u');
 
 
 

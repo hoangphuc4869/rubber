@@ -40,6 +40,7 @@ class UserController extends Controller
     {
 
         // dd($request->all());
+        // dd(in_array(17, $request->roles));
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -54,6 +55,11 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => bcrypt($request->password), 
         ]);
+
+        if (in_array(17, $request->roles)) {  //17 is role customer in roles table
+            $user->type = 1;
+            $user->save();
+        }
 
         $user->roles()->attach($request->roles);
 

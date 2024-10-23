@@ -33,28 +33,24 @@
             @endforeach
         </div>
     </div>
-
-
-
-
-    <!-- {{-- <div class="col-lg-6">
-            <div class="text-center mb-2 fw-bold">Nguyên liệu mủ dây</div>
-            <div class="grid-areas" style="direction: rtl;">
-                @foreach ($curing_areas as $item)
-                    @if ($item->latex_type == 'Mủ dây')
-                        <div class="area-item rol btn btn-{{$item->containing > 0 ? 'warning containing' : 'dark' }}"
-    style="direction: ltr;">
-    <div class="code">
-        {{$item->code}} <br>
-    </div>
-    <div class="number">
-        {{ number_format($item->containing, 0, '.', ',') }} kg
-    </div>
 </div>
-@endif
-@endforeach
-</div>
-</div> --}} -->
+
+<h4 class="fw-bold">Nguyên liệu đã cán vắt</h4>
+
+<div class="d-flex justify-content-between">
+    <div class="">
+        <div class="mb-1"> - Tổng cán vắt BHCK: <span
+                class="fw-bold fs-4 text-danger">{{ number_format($cv_bhck, 0, ',', '.') }}
+                tấn</span> </div>
+        <div class="mb-1"> - Tổng cán vắt CRCK2: <span
+                class="fw-bold fs-4 text-success">{{ number_format($cv_crck, 0, ',', '.') }}
+                tấn</span> </div>
+        <div class="mb-1"> - Tổng cán vắt Thu mua: <span
+                class="fw-bold fs-4 text-warning">{{ number_format($cv_tm, 0, ',', '.') }}
+                tấn</span> </div>
+        <div class="mb-1"> - Tổng cán vắt TNSR: <span class="fw-bold fs-4">{{ number_format($cv_tnsr, 0, ',', '.') }}
+                tấn</span> </div>
+    </div>
 </div>
 
 <div class="d-flex justify-content-end align-items-center">
@@ -66,7 +62,6 @@
         <h5 class="mb-0">Thêm lệnh</h5>
     </div>
     <div class="card-body">
-        @include('partials.errors')
 
         <form action="{{ route('rolling.store') }}" method="POST">
             @csrf
@@ -100,6 +95,12 @@
                         value="{{$areas[0]->containing ?? ''}}">
                 </div>
 
+
+                <div class="mb-3 col-lg-4">
+                    <label class="form-label">Ngày cán vắt</label>
+                    <input type="date" name="date" id="dateInput" class="form-control">
+                </div>
+
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Ngày tiếp nhận</label>
                     <input type="date" name="date_curing" require class="form-control">
@@ -111,14 +112,11 @@
                     </select>  --}}
                 </div>
 
-                <div class="mb-3 col-lg-4">
-                    <label class="form-label">Ngày cán vắt</label>
-                    <input type="date" name="date" id="dateInput" class="form-control">
-                </div>
+                
 
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Giờ</label>
-                    <input type="time" name="time" id="timeInput" class="form-control">
+                    <input type="text" name="time" id="timeInput" class="form-control">
                 </div>
 
                 <div class="mb-3 col-lg-4">
@@ -132,35 +130,25 @@
                 </div>
 
 
-                <button type="submit" class="btn btn-primary mt-2">Thực hiện</button>
+                <button type="submit" class="btn btn-primary mt-2" onclick="confirmAction()">Thực hiện</button>
             </div>
         </form>
     </div>
 </div>
 
+<script>
+    function confirmAction() {
+        return confirm("Xác nhận thực hiện");
+    }
+</script>
 
-
-<h4 class="fw-bold">Nguyên liệu đã cán vắt</h4>
-
-<div class="d-flex justify-content-between">
-    <div class="">
-        <div class="mb-1"> - Tổng cán vắt BHCK: <span
-                class="fw-bold fs-4 text-danger">{{ number_format($cv_bhck, 0, ',', '.') }}
-                tấn</span> </div>
-        <div class="mb-1"> - Tổng cán vắt CRCK2: <span
-                class="fw-bold fs-4 text-success">{{ number_format($cv_crck, 0, ',', '.') }}
-                tấn</span> </div>
-        <div class="mb-1"> - Tổng cán vắt Thu mua: <span
-                class="fw-bold fs-4 text-warning">{{ number_format($cv_tm, 0, ',', '.') }}
-                tấn</span> </div>
-        <div class="mb-1"> - Tổng cán vắt TNSR: <span class="fw-bold fs-4">{{ number_format($cv_tnsr, 0, ',', '.') }}
-                tấn</span> </div>
-    </div>
-</div>
+@include('partials.errors')
 
 
 
-<div class="filter-date d-flex align-items-end justify-content-end gap-2">
+
+
+{{-- <div class="filter-date d-flex align-items-end justify-content-end gap-2">
     <!-- <div class="">
             <label for="min" class="form-label mb-0">Lọc ngày</label>
             <input type="text" id="min" name="min" class="form-control" style="width: 200px">
@@ -174,9 +162,111 @@
         <button class="btn btn-danger" type="submit">Xóa</button>
     </form>
 
-</div>
+</div> --}}
 
-<table id="datatable" class="ui celled table" style="width:100%">
+<div class="d-flex justify-content-between align-items-center">
+        <div class="filter-section  d-flex align-items-end gap-2 my-2">
+            <div class="">
+                <label for="dateFilterCanvat" class="" style="font-size: 14px">Ngày cán vắt</label>
+                <input type="text" id="dateFilterCanvat" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
+            </div>
+
+            <div class="">
+                <label for="statusFilterCanvat" style="font-size: 14px">Trạng thái</label>
+                <select name="" id="statusFilterCanvat" class="form-select">
+                    <option value="0">Chờ gia công</option>
+                    <option value="1">Đã gia công</option>
+                    <option value="2">Gia công 1 phần</option>
+                </select>
+                
+            </div>
+
+            <div class="">
+                <label for="areaFilterCanvat" style="font-size: 14px">Bãi nguyên liệu</label>
+                <select name="" id="areaFilterCanvat" class="form-select">
+                    <option value=""></option>
+                    <option value="1">NLNT1</option>
+                    <option value="2">NLNT2</option>
+                    <option value="3">NLNT3</option>
+                    <option value="4">NLNT4</option>
+                    <option value="5">NLNT5</option>
+                    <option value="6">NLNT6</option>
+                    <option value="7">NLNT7</option>
+                    <option value="8">NLNT8</option>
+                    <option value="9">TNSR</option>
+                    <option value="10">THU MUA</option>
+                    
+                </select>
+                
+            </div>
+
+            <button id="btnCanvatFilter" class="btn btn-primary">Lọc</button>
+        </div>
+
+
+        {{-- <div class="function-btns d-flex align-items-end justify-content-end gap-2">
+            <div class=" d-flex gap-1 align-items-center">
+
+                <div class="editDRC d-none">
+                    <div class="d-flex align-items-center gap-1">
+                        <input type="number" step="0.01" placeholder="Giá trị DRC" name='drc' id="drcInput"  class="form-control" style="width: 150px">
+                        <div class="">
+                            <button class="btn btn-warning" id="btnDRC">
+                                Cập nhật DRC
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" name='rubbers' id="rubbersDRC" >
+                </div>
+            
+                <div class="editMat d-none">
+                    <a href="/rubber/1/edit" id="editLink">
+                        <button class="btn btn-info">
+                            Chỉnh sửa
+                        </button>
+                    </a>
+                </div>
+                <form action="{{ route('rubber-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="drums" id="selected-drums">
+                    <button class="btn btn-danger" type="submit">Xóa</button>
+                </form>
+            </div>
+        
+        </div> --}}
+
+    </div>
+
+
+<table id="canvatTable" class="ui celled table hover" style="width:100%">
+    <thead>
+        <tr>              
+            <th>Ngày cán vắt</th>
+            <th>Mã lệnh</th>
+            <th>Trạng thái</th>
+            <th>Thời gian</th>
+            <th>Bãi nguyên liệu</th>
+            <th>Nhà ủ</th>
+            <th>Khối lượng quy khô (kg)</th>
+            <th>Còn lại</th>
+            <th>Ngày tiếp nhận</th>
+            <th>Số lần cán</th>
+        </tr>
+    </thead>
+    
+</table>
+
+    <style>
+        #canvatTable th:not(:first-child),
+        #canvatTable td:not(:first-child) {
+            min-width: 100px;
+            max-width: unset;
+            text-align: center;
+        }
+    </style>
+
+{{-- <table id="datatable" class="ui celled table" style="width:100%">
     <thead>
         <tr>
             <th class="text-center"></th>
@@ -218,6 +308,6 @@
         </tr>
         @endforeach
     </tbody>
-</table>
+</table> --}}
 
 @endsection

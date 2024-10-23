@@ -68,6 +68,9 @@
     <!-- Helpers -->
     <script src="/sneat-1.0.0/assets/vendor/js/helpers.js"></script>
 
+    <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
+
+
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="/sneat-1.0.0/assets/js/config.js"></script>
@@ -75,6 +78,13 @@
     <script src="/assets/js_modules/chart.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.30/esri/themes/light/main.css" />
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+
 
   </head>
 
@@ -492,6 +502,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
+
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+
+
+    {{-- <script src="https://js.arcgis.com/4.30/"></script> --}}
+
+
     {{-- datatable --}}
   
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fomantic-ui/2.9.2/semantic.min.js"></script>
@@ -536,6 +554,17 @@
   </script>
     <script src="/assets/app.js"></script>
     <script src="/assets/js_modules/js/nguyenlieu.js"></script>
+    <script src="/assets/js_modules/js/canvat.js"></script>
+    <script src="/assets/js_modules/js/giaconghat.js"></script>
+    <script src="/assets/js_modules/js/nhiet.js"></script>
+    <script src="/assets/js_modules/js/kho.js"></script>
+    <script src="/assets/js_modules/js/donggoi.js"></script>
+    <script src="/assets/js_modules/js/batch_list.js"></script>
 
+
+    <script src="https://js.arcgis.com/4.30/"></script>
+
+    <script src="/assets/js_modules/js/map.js"></script>
+    
   </body>
 </html>

@@ -164,12 +164,15 @@
 
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Ngày cán vắt</label>
-                    <select name="rolling_code" class="form-select w-100">
+                    <select name="rolling_code" class="form-select w-100" id="rollingSelect">
                         <option value="">Chọn ngày</option>
                         @foreach ($rollings as $item)
-                        <option value="{{$item->id}}" data-house="{{$item->house->code}}">
-                            {{\Carbon\Carbon::parse($item->date)->format('d/m/Y')}}
-                            ({{\Carbon\Carbon::parse($item->time)->format('H:i') .' '.$item->area->code}})</option>
+                            @if ($item->status == 0)
+                                <option value="{{$item->id}}" data-maxval="{{$item->remaining ? $item->remaining : $item->weight_to_roll}}" data-house="{{$item->house->code}}">
+                                    {{\Carbon\Carbon::parse($item->date)->format('d/m/Y')}}
+                                    ( còn lại {{$item->remaining ? $item->remaining : $item->weight_to_roll}}kg {{$item->area->code}})
+                                </option>
+                            @endif
                         @endforeach
                     </select>
                 </div>
@@ -198,10 +201,10 @@
 
 
 
-                {{-- <div class="mb-3 col-lg-4">
-                        <label class="form-label" >Giờ</label>
-                        <input type="time" name="time" id="timeInput" class="form-control">
-                    </div> --}}
+                <div class="mb-3 col-lg-4">
+                    <label class="form-label" >Khối lượng cán</label>
+                    <input type="number" min="0" name="weight" id="weight" class="form-control">
+                </div>
 
                 <div class="mb-3 col-lg-4">
                     <label class="form-label" >Ngày thực hiện</label>
@@ -232,30 +235,70 @@
 </div>
 
 
+<div class="d-flex justify-content-between align-items-center">
+    <div class="filter-section  d-flex align-items-end gap-2 my-2">
+        <div class="">
+            <label for="dateFilterGiaconghat" class="" style="font-size: 14px">Ngày tạo thùng</label>
+            <input type="text" id="dateFilterGiaconghat" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
+        </div>
 
-<div class="filter-date d-flex align-items-end justify-content-between gap-2">
-    <div class="">
-        <label for="min" class="form-label mb-0">Lọc ngày</label>
-        <input type="text" id="min" name="min" class="form-control" style="width: 200px">
+        <div class="">
+            <label for="statusFilterGiaconghat" style="font-size: 14px">Trạng thái</label>
+            <select name="" id="statusFilterGiaconghat" class="form-select">
+                <option value="cho">Chờ xử lý nhiệt</option>
+                <option value="dang">Đang xử lý nhiệt</option>
+                <option value="da">Đã xử lý nhiệt</option>
+                <option value="ep">Đã ép kiện</option>
+                <option value="lo">Đã đóng lô</option>
+                <option value="giao">Chuyển ca</option>
+                {{-- <option value="doi">Đổi ca</option> --}}
+            </select>
+            
+        </div>
+
+        <div class="">
+            <label for="linkFilterGiaconghat" style="font-size: 14px">Dây chuyền</label>
+            <select name="" id="linkFilterGiaconghat" class="form-select" style="width: 100px">
+                @if (Gate::allows('admin')  || Gate::allows('3t'))
+                    <option value="3">3 tấn</option>
+                @endif
+                @if (Gate::allows('admin')  || Gate::allows('6t'))
+                    <option value="6">6 tấn</option>
+                @endif
+            </select>
+        </div>
+
+        <div class="">
+            <label for="areaFilterGiaconghat" style="font-size: 14px">Nhà ủ</label>
+            <select name="" id="areaFilterGiaconghat" class="form-select">
+                <option value=""></option>
+                <option value="1">NLCVNT1</option>
+                <option value="2">NLCVNT2</option>
+                <option value="3">NLCVNT3</option>
+                <option value="4">NLCVNT4</option>
+                <option value="5">NLCVNT5</option>
+                <option value="6">NLCVNT6</option>
+                <option value="7">NLCVNT7</option>
+                <option value="8">NLCVNT8</option>
+                <option value="9">TNSR</option>
+                <option value="10">THU MUA</option>
+
+            </select>
+
+        </div>
+
+
+
+        <button id="btnGiaconghatFilter" class="btn btn-primary">Lọc</button>
     </div>
-
-    <div class="d-flex align-items-center gap-2">
-        <form action="{{ route('machining-delete-items') }}" class="form-delete-items d-none" method="POST"
-            onsubmit="return confirmDelete();">
-            @csrf
-            @method('DELETE')
-            <input type="hidden" name="drums" id="selected-drums">
-            <button class="btn btn-danger" type="submit">Xóa</button>
-        </form>
-        <button class="btn btn-warning form-delete-items d-none editDrumBtn" type="submit">Chỉnh sửa</button>
-    </div>
-
 </div>
 
-<table id="datatable" class="ui celled table" style="width:100%">
+
+
+<table id="giaconghatTable" class="ui celled table" style="width:100%">
     <thead>
         <tr>
-            <th class="text-center"></th>
+            {{-- <th><input type="checkbox" id="selectAllCheckbox"></th> --}}
             <th>Ngày </th>
             <th>Trạng thái</th>
             <th>Tên thùng</th>
@@ -268,60 +311,18 @@
             <th>Tạp chất loại bỏ</th>
             <th>Trưởng ca</th>
         </tr>
-
     </thead>
-    <tbody>
-        @foreach ($drums as $drum)
-        <tr id="{{$drum->id}}">
-            <td>
-                <input type="checkbox" class="select-row" data-row="{{ $drum->name }}">
-            </td>
-            <td data-sort="{{ \Carbon\Carbon::parse($drum->date)->format("Y-m-d") }}">{{ \Carbon\Carbon::parse($drum->date)->format("d/m/Y") }}</td>
-            <td>
-                {!!
-                $drum->status === 0
-                ? "<span class='text-danger'>Chờ xử lý nhiệt</span>"
-                : (
-                $drum->status === 2
-                ? "<span class='text-warning'>Giao ca</span>"
-                : (
-                $drum->status === 3
-                ? "<span class='text-primary'>Đổi ca</span>"
-                : (
-                $drum->status === 5
-                ? (
-                $drum->bale
-                ? (
-                count($drum->batches) > 0
-                ? "<span class='text-info'>Đã đóng lô</span>"
-                : "<span class='text-success'>Đã ép kiện</span>"
-                )
-                : "<span class='text-success'>Đã xử lý nhiệt</span>"
-                )
-                : "<span class='text-success'>Đang xử lý nhiệt</span>"
-                )
-                )
-                )
-                !!}
-            </td>
-
-            <td>{{ $drum->name }}</td>
-            <td>{{ $drum->heated_start ? \Carbon\Carbon::parse($drum->heated_start)->format("H:i") : ''}}</td>
-            <td>{{ $drum->rolling ? \Carbon\Carbon::parse($drum->rolling->date)->format("d/m/Y") : '' }}</td>
-            <td>{{ $drum->curing_house ? $drum->curing_house->code : $drum->curing_area->code }}</td>
-            <td>{{ $drum->link }}</td>
-            <td>{{ $drum->thickness }}</td>
-            <td>{{ $drum->trang_thai_com }}</td>
-            <td>{{ $drum->impurity_removing }}</td>
-            <td>{{$drum->supervisor}}</td>
-           
-        </tr>
-        @endforeach
-    </tbody>
-
-
-
 </table>
+
+<style>
+    #giaconghatTable th:not(:first-child),
+    #giaconghatTable td:not(:first-child) {
+        min-width: 100px;
+        max-width: unset;
+        text-align: center;
+    }
+
+</style>
 
 
 <!-- Edit Modal -->

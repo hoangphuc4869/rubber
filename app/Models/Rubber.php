@@ -39,7 +39,12 @@ class Rubber extends Model
         'tai_xe',
         'kho',
         'note',
-        'loai_phieu'
+        'loai_phieu',
+        'created_at',
+        'updated_at',
+        'time_ve',
+        'time_di',
+        'location',
     ];
 
     public function truck()
@@ -60,5 +65,12 @@ class Rubber extends Model
     public function rubber_warehouse()
     {
         return $this->belongsTo(Rolling::class, 'rubber_warehouse_id');
+    }
+
+    public function plots()
+    {
+        return $this->belongsToMany(Plot::class, 'plot_rubber')
+                    ->withPivot('to_nt', 'lat_cao') 
+                    ->withTimestamps(); 
     }
 }
