@@ -186,11 +186,21 @@
                 </div>
 
                 <div class="">
-                    <label for="companyFilterDongGoi" style="font-size: 14px">Công ty</label>
-                    <select name="" id="companyFilterDongGoi" class="form-select">
-                        <option value="BHCK">BHCK</option>
-                        <option value="CRCK2">CRCK2</option>
-                        <option value="TNSR">TNSR</option>
+                    <label for="nongtruongFilterDongGoi" style="font-size: 14px">Nông trường</label>
+                    <select name="" id="nongtruongFilterDongGoi" class="form-select">
+                        <option value="NLNT1">NLNT1</option>
+                        <option value="NLNT2">NLNT2</option>
+                        <option value="NLNT3">NLNT3</option>
+                        <option value="NLNT4">NLNT4</option>
+                        <option value="NLNT5">NLNT5</option>
+                        <option value="NLNT6">NLNT6</option>
+                        <option value="NLNT7">NLNT7</option>
+                        <option value="NLNT8">NLNT8</option>
+                        <option value="NLTNSR">NLTNSR</option>
+                        <option value="NLTM">NLTM</option>
+                        <option value="MDBH">MDBH</option>
+                        <option value="MDCR">MDCR</option>
+                        <option value="NLTMMD">NLTMMD</option>
                     </select>
                     
                 </div>
@@ -198,12 +208,13 @@
                 <div class="">
                     <label for="linkFilterDongGoi" style="font-size: 14px">Dây chuyền</label>
                     <select name="" id="linkFilterDongGoi" class="form-select" style="width: 100px">
-                        @if (Gate::allows('admin')  || Gate::allows('6t'))
-                            <option value="6">6 tấn</option>
-                        @endif
                         @if (Gate::allows('admin')  || Gate::allows('3t'))
                             <option value="3">3 tấn</option>
                         @endif
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        
                         
                     </select>
                 </div>
@@ -256,7 +267,7 @@
             <thead>
                  <tr>
                     <th>Ngày ép kiện</th>
-                    <th>Công ty</th>
+                    <th>Nguồn nguyên liệu</th>
                     <th>Thùng số</th>
                     <th>Thời gian ép kiện</th>
                     <th>Dây chuyền</th>
@@ -286,30 +297,42 @@
                     <input type="text" id="dateFilterDongGoi2" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
                 </div>
 
+                
+
                 <div class="">
-                    <label for="companyFilterDongGoi2" style="font-size: 14px">Công ty</label>
-                    <select name="" id="companyFilterDongGoi2" class="form-select">
-                        <option value="BHCK">BHCK</option>
-                        <option value="CRCK2">CRCK2</option>
-                        <option value="TNSR">TNSR</option>
+                    <label for="nogtruongFilterDongGoi2" style="font-size: 14px">Nông trường</label>
+                    <select name="" id="nogtruongFilterDongGoi2" class="form-select">
+                        <option value="NLNT1">NLNT1</option>
+                        <option value="NLNT2">NLNT2</option>
+                        <option value="NLNT3">NLNT3</option>
+                        <option value="NLNT4">NLNT4</option>
+                        <option value="NLNT5">NLNT5</option>
+                        <option value="NLNT6">NLNT6</option>
+                        <option value="NLNT7">NLNT7</option>
+                        <option value="NLNT8">NLNT8</option>
+                        <option value="NLTNSR">NLTNSR</option>
+                        <option value="NLTM">NLTM</option>
+                        <option value="MDBH">MDBH</option>
+                        <option value="MDCR">MDCR</option>
+                        <option value="NLTMMD">NLTMMD</option>
                     </select>
-                    
                 </div>
 
                 <div class="">
                     <label for="linkFilterDongGoi2" style="font-size: 14px">Dây chuyền</label>
                     <select name="" id="linkFilterDongGoi2" class="form-select" style="width: 100px">
-                        @if (Gate::allows('admin')  || Gate::allows('6t'))
-                            <option value="6">6 tấn</option>
-                        @endif
                         @if (Gate::allows('admin')  || Gate::allows('3t'))
                             <option value="3">3 tấn</option>
                         @endif
+                        @if (Gate::allows('admin')  || Gate::allows('6t'))
+                            <option value="6">6 tấn</option>
+                        @endif
+                        
                         
                     </select>
                 </div>
 
-                <button id="btnDongGoiFilter" class="btn btn-primary">Lọc</button>
+                <button id="btnDongGoiFilter2" class="btn btn-primary">Lọc</button>
             </div>
         </div>
     </div>
@@ -320,13 +343,13 @@
         <thead>
             <tr>
                 <th>Ngày thực hiện</th>
-                <th>Công ty</th>
+                <th>Nguồn nguyên liệu</th>
                 <th>Thùng số</th>
                 <th>Mã lô</th>
                 <th>Số bành/thùng</th>
                 <th>Thời gian tạo lô</th>
                 <th>Dây chuyền</th>
-                <th>Chủng loại</th>
+                {{-- <th>Chủng loại</th> --}}
                 <th>Trạng thái</th>
                 <th>Nhiệt độ ép bành (độ C)</th>
                 <th>Khối lượng bành (kg)</th>

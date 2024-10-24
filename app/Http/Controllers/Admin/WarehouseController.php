@@ -219,59 +219,45 @@ class WarehouseController extends Controller
                     'company_id'           // Công ty (Company ID)
                 ]);
 
-        
-
-        if ($request->company) {
+        // Lọc theo công ty
+        if ($request->filled('company')) {
             $batch->where('company_id', $request->company);
         }
 
-        if ($request->has('date') && $request->date) {
+        // Lọc theo ngày
+        if ($request->filled('date')) {
             $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
             $batch->where('date', $date);
         }
 
-        if ($request->has('checked') && $request->checked !== null) {
-            if ($request->checked == 0) {
+        // Lọc theo trạng thái 'checked'
+        if ($request->filled('checked')) {
+            $checked = (int) $request->checked;
+            if ($checked === 0) {
                 $batch->where('checked', 0);              
-            } else if ($request->status == 2) {
+            } elseif ($checked === 2) {
                 $batch->where('checked', 2);   
             } else {
                 $batch->where('checked', 1);   
-   
             }
         }
 
-        // dd($request->kho);
-        
-        if ($request->has('kho') && $request->kho != 0) {
-                $batch->whereHas('warehouse', function($query) use ($request) {
-                    $query->where('name', $request->kho);
-                });
-            
-        }
-        else  {
+        // Lọc theo kho
+        if ($request->filled('kho') && $request->kho != 0) {
+            $batch->whereHas('warehouse', function($query) use ($request) {
+                $query->where('name', $request->kho);
+            });
+        } elseif ($request->kho == 0) {
             $batch->where('warehouse_id', null);
         }
 
-
         return DataTables::of($batch)
             ->addColumn('house_code', function ($batch) {
-                return $batch->house ? $batch->house->code : '';
+                return $batch->warehouse ? $batch->warehouse->code : 'Không có';
             })
-            // ->addColumn('area_code', function ($batch) {
-            //     return $batch->area ? $batch->area->code : '';
-            // })
-            // ->editColumn('date', function ($batch) {
-            //     return \Carbon\Carbon::parse($batch->date)->format('d-m-Y'); 
-            // })
-            // ->editColumn('time', function ($batch) {
-            //     return \Carbon\Carbon::parse($batch->time)->format('H:i'); 
-            // })
-            // ->editColumn('date_curing', function ($batch) {
-            //     return \Carbon\Carbon::parse($batch->date_curing)->format('d-m-Y'); 
-            // })
             ->make(true);
     }
+
 
     /**
      * Show the form for creating a new resource.

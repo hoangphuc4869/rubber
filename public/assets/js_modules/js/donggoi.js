@@ -10,7 +10,7 @@ let tableDongGoi = new DataTable("#donggoiTable", {
         data: function (d) {
             d.date = $("#dateFilterDongGoi").val();
             d.link = $("#linkFilterDongGoi").val();
-            d.company = $("#companyFilterDongGoi").val();
+            d.nongtruong = $("#nongtruongFilterDongGoi").val();
         },
     },
     createdRow: function (row, data, dataIndex) {
@@ -184,7 +184,7 @@ let tableDongGoi2 = new DataTable("#donggoiTable2", {
         data: function (d) {
             d.date = $("#dateFilterDongGoi2").val();
             d.link = $("#linkFilterDongGoi2").val();
-            d.company = $("#companyFilterDongGoi2").val();
+            d.nongtruong = $("#nogtruongFilterDongGoi2").val();
         },
     },
     paging: true,
@@ -224,7 +224,7 @@ let tableDongGoi2 = new DataTable("#donggoiTable2", {
         { data: "bale_counts", name: "bale_counts" },
         { data: "heated_end_time", name: "heated_end" },
         { data: "link", name: "link" },
-        { data: "type", name: "type" },
+        // { data: "type", name: "type" },
         {
             data: "status",
             name: "status",
@@ -239,4 +239,8 @@ let tableDongGoi2 = new DataTable("#donggoiTable2", {
     ],
     scrollX: true,
     autoWidth: false,
+});
+
+$("#btnDongGoiFilter2").on("click", function () {
+    tableDongGoi2.ajax.reload();
 });

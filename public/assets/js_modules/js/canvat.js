@@ -75,32 +75,19 @@ $("#btnCanvatFilter").on("click", function () {
     tableCanvat.ajax.reload();
 });
 
-// tableCanvat.on("select", updateNguyenLieuButtons);
-// tableCanvat.on("deselect", updateNguyenLieuButtons);
+$("#receivingPlaceSelect").on("change", function () {
+    var selectedHouse = $("#receivingPlaceSelect option:selected").text();
+    // console.log(selectedHouse);
 
-// function updateNguyenLieuButtons() {
-//     let allRows = tableCanvat.rows().nodes();
+    var locationOptions = $("#location option");
 
-//     let selectedRows = Array.from(allRows).filter(
-//         (row) =>
-//             $(row).hasClass("selected") &&
-//             !$(row).hasClass("no-select") &&
-//             $(row).data("status") != 1
-//     );
+    locationOptions.each(function () {
+        if ($(this).data("house") === selectedHouse) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
 
-//     let values = selectedRows.map((row) => row.id);
-
-//     $("#selected-drums").val(values.join(","));
-
-//     $("#rubbersDRC").val(values.join(","));
-
-//     if (values.length > 0) {
-//         $(".form-delete-items").removeClass("d-none");
-//         $(".editMat").removeClass("d-none");
-//         $(".editDRC").removeClass("d-none");
-//     } else {
-//         $(".form-delete-items").addClass("d-none");
-//         $(".editMat").addClass("d-none");
-//         $(".editDRC").addClass("d-none");
-//     }
-// }
+    $("#location").val(null);
+});

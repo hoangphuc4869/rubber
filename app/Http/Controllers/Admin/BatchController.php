@@ -111,6 +111,7 @@ class BatchController extends Controller
                 'state',          
                 'validation',          
                 'oven',
+                'bale_id',
                 'curing_house_id',        
                 'curing_area_id',        
                 'supervisor',     
@@ -130,20 +131,20 @@ class BatchController extends Controller
             $donggoi->where('link', $request->link);
         }
 
-        if ($request->has('company') && $request->company) {
-            $companyCode = $request->company;
+        if ($request->has('nongtruong') && $request->nongtruong) {
 
-            $donggoi->whereHas('rolling.area.farm.company', function ($query) use ($companyCode) {
-                $query->where('code', $companyCode);
-            })
-            ->orWhereHas('curing_area.farm.company', function ($query) use ($companyCode) {
-                $query->where('code', $companyCode);
+            $nt = $request->nongtruong;
+    
+            $donggoi->where(function ($query) use ($nt) {
+                $query->whereHas('curing_house.curing_area', function ($query) use ($nt) {
+                    $query->where('code', $nt);
+                })
+                ->orWhereHas('curing_area', function ($query) use ($nt) {
+                    $query->where('code', $nt);
+                });
             });
         }
 
-        
-
-        // dd($donggoi->rolling);
 
         return DataTables::of($donggoi)
             ->addColumn('status', function ($donggoi) {
@@ -169,16 +170,14 @@ class BatchController extends Controller
             })
             ->addColumn('company', function ($donggoi) {
                 return $donggoi->rolling 
-                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->farm->company->code : "") 
-                : ($donggoi->curing_area ? $donggoi->curing_area->farm->company->code : "");
+                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->code : "") 
+                : ($donggoi->curing_area ? $donggoi->curing_area->code : "");
             })
             
             ->editColumn('heated_end', function ($donggoi) {
                 return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : ""; 
             })
-            // ->editColumn('heated_date', function ($donggoi) {
-            //     return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d/m/Y') : ""; 
-            // })
+           
             ->editColumn('date', function ($donggoi) {
                 return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d-m-Y') : "";
             })
@@ -221,20 +220,19 @@ class BatchController extends Controller
             $donggoi->whereDate('heated_date', $date);
         }
 
-        // if ($request->has('link') && $request->link) {
-        //     $donggoi->where('link', $request->link);
-        // }
+        if ($request->has('nongtruong') && $request->nongtruong) {
 
-        // if ($request->has('company') && $request->company) {
-        //     $companyCode = $request->company;
-
-        //     $donggoi->whereHas('rolling.area.farm.company', function ($query) use ($companyCode) {
-        //         $query->where('code', $companyCode);
-        //     })
-        //     ->orWhereHas('curing_area.farm.company', function ($query) use ($companyCode) {
-        //         $query->where('code', $companyCode);
-        //     });
-        // }
+            $nt = $request->nongtruong;
+    
+            $donggoi->where(function ($query) use ($nt) {
+                $query->whereHas('curing_house.curing_area', function ($query) use ($nt) {
+                    $query->where('code', $nt);
+                })
+                ->orWhereHas('curing_area', function ($query) use ($nt) {
+                    $query->where('code', $nt);
+                });
+            });
+        }
 
         
 
@@ -247,8 +245,8 @@ class BatchController extends Controller
             
             ->addColumn('company', function ($donggoi) {
                 return $donggoi->rolling 
-                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->farm->company->code : "") 
-                : ($donggoi->curing_area ? $donggoi->curing_area->farm->company->code : "");
+                ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->code : "") 
+                : ($donggoi->curing_area ? $donggoi->curing_area->code : "");
             })
             
             ->addColumn('heated_end_time', function ($donggoi) {
@@ -303,7 +301,8 @@ class BatchController extends Controller
                 'packaging_type',               
                 'time',               
                 'company_id',               
-                'warehouse_id',                                  
+                'warehouse_id',   
+                'from_farm',                            
                 'date',                                  
             ]);
 
@@ -320,22 +319,14 @@ class BatchController extends Controller
             $list->where('link', $request->link);
         }
 
-        if ($request->has('company') && $request->company) {
-            $list->where('company_id', $request->company);
+        if ($request->has('nongtruong') && $request->nongtruong) {
+            $list->where('from_farm', $request->nongtruong);
         }
 
         // Lấy danh sách kết quả
         $result = $list->get();
 
         return DataTables::of($result)
-            ->addColumn('company', function ($item) {
-                return $item->company->code;
-            })
-            ->addColumn('from', function ($item) {
-                return $item->drums && $item->drums->isNotEmpty() 
-                    ? ($item->drums->last()->curing_house ? $item->drums->last()->curing_house->curing_area->farm->code : "") 
-                    : "";
-            })
             ->editColumn('date', function ($item) {
                 return $item->drums && $item->drums->isNotEmpty() 
                     ? \Carbon\Carbon::parse($item->drums->last()->heated_date)->format('d-m-Y') 
@@ -362,403 +353,139 @@ class BatchController extends Controller
      * Store a newly created resource in storage.
      */
 
-
-
-
-   
-    public function store(Request $request)  
+    public function store(Request $request)
     {
-
-        // dd($request);
         $requestedIds = explode(',', $request->drums[0]); 
         $ids = array_unique($requestedIds);
 
-        // dd($ids); 
+        $farm_codes = [
+            "NLNT1" => 'A',
+            "NLNT2" => 'B',
+            "NLNT3" => 'C',
+            "NLNT6" => 'D',
+            "NLNT4" => 'E',
+            "NLNT5" => 'F',
+            "NLNT7" => 'G',
+            "NLNT8" => 'H',
+            "NLTM" => 'I',
+            "NLTNSR" => 'J',
+            "MDBH" => 'EH',
+            "MDCR" => 'AD',
+            "NLTMMD" => 'II',
+        ];
 
-        $curing_house = Drum::findOrFail($ids[0])->curing_house;
-        $curing_area = Drum::findOrFail($ids[0])->curing_area;
-        dd($curing_house);
-        
-        $ids_copy = array_unique($requestedIds);  
+        $types = [
+            "NLNT1" => 'Mủ đông chén',
+            "NLNT2" => 'Mủ đông chén',
+            "NLNT3" => 'Mủ đông chén',
+            "NLNT6" => 'Mủ đông chén',
+            "NLNT4" => 'Mủ đông chén',
+            "NLNT5" => 'Mủ đông chén',
+            "NLNT7" => 'Mủ đông chén',
+            "NLNT8" => 'Mủ đông chén',
+            "NLTM" => 'Mủ đông chén',
+            "NLTNSR" => 'Mủ đông chén',
+            "MDBH" => 'Mủ dây',
+            "MDCR" => 'Mủ dây',
+            "NLTMMD" => 'Mủ dây',
+        ];
 
-        $companyId = Company::where('code', $request->company)->first()->id;
+        $companies = [
+            "NLNT1" => 2,
+            "NLNT2" => 2,
+            "NLNT3" => 2,
+            "NLNT6" => 2,
+            "NLNT4" => 1,
+            "NLNT5" => 1,
+            "NLNT7" => 1,
+            "NLNT8" => 1,
+            "NLTM" => 2,
+            "NLTNSR" => 3,
+            "MDBH" => 1,
+            "MDCR" => 2,
+            "NLTMMD" => 2,
+        ];
 
-        //  $incompleteBatch = Batch::where('company_id', $companyId)
-        //         ->where('bale_count', '<', 144)
-        //         ->whereMonth('created_at', Carbon::now()->month) 
-        //         ->whereYear('created_at', Carbon::now()->year)  
-        //         ->first();
-
-        if($request->link == 3 ){
-
-            $incompleteBatch = Batch::where('company_id', $companyId)
-                ->where('bale_count', '<', 144)->where('link', 3)
-                ->whereMonth('created_at', Carbon::now()->month) 
-                ->whereYear('created_at', Carbon::now()->year)  
-                ->first();
-                
-        }
-        else {
-
-            $incompleteBatch = Batch::where('company_id', $companyId)
-                ->where('bale_count', '<', 144)->where('link', 6)
-                ->whereMonth('created_at', Carbon::now()->month) 
-                ->whereYear('created_at', Carbon::now()->year)  
-                ->first();
-                
-        }
-
-        // dd($incompleteBatch);
-
-        if ($incompleteBatch) {
-            $needed = 144 - $incompleteBatch->bale_count;
-            $newDrums = [];  
-
-            foreach ($ids as $key => $id) {  
-                $drum = Drum::findOrFail($id);
-                
-                $incompleteBatch->bale_count += $drum->bale->number_of_bales;
-
-                if ($incompleteBatch->bale_count > 144) {
-                    $drum->remaining_bales = $incompleteBatch->bale_count - 144;
-                } else {
-                    $drum->remaining_bales = 0;
-                    unset($ids[$key]); 
-                }
-
-                $drum->save();
-
-                DB::table('batch_drum')->updateOrInsert(
-                    [
-                        'drum_id' => $drum->id, 
-                        'batch_id' => $incompleteBatch->id,
-                    ],
-                    [
-                        'bale_remaining' => $drum->remaining_bales,
-                        'bale_count' => $drum->bale->number_of_bales - $drum->remaining_bales
-                    ]
-                );
-
-                // dd($drum, $ids);
-
-
-                if ($incompleteBatch->bale_count >= 144) {
-                    $incompleteBatch->bale_status = 1; 
-                    $incompleteBatch->bale_count = 144; 
-                    break;
-                }
-            }
-
-            $incompleteBatch->save();
-        }
-
-        // dd($incompleteBatch, $ids, $ids_copy);
-
-        $currentMonth = Carbon::now()->format('Y-m');
-
-        if($request->link == 3){
-            
-            $CRCK_batches = Batch::with('company')
-            ->selectRaw('company_id, COUNT(*) as total_batches')
-            ->where('company_id', 2)->where('link', 3)
-            ->where('date', 'like', $currentMonth . '%')
-            ->groupBy('company_id')
-            ->first();
-
-            $BHCK_batches = Batch::with('company')
-                ->selectRaw('company_id, COUNT(*) as total_batches')
-                ->where('company_id', 1)->where('link', 3)
-                ->where('date', 'like', $currentMonth . '%')
-                ->groupBy('company_id')
-                ->first();   
-
-            $TNSR_batches = Batch::with('company')
-                ->selectRaw('company_id, COUNT(*) as total_batches')
-                ->where('company_id', 8)->where('link', 3)
-                ->where('date', 'like', $currentMonth . '%')
-                ->groupBy('company_id')
-                ->first();  
-                
-        } 
-
-        if($request->link == 6){
-
-             $CRCK_batches = Batch::with('company')
-            ->selectRaw('company_id, COUNT(*) as total_batches')
-            ->where('company_id', 2)->where('link', 6)
-            ->where('date', 'like', $currentMonth . '%')
-            ->groupBy('company_id')
-            ->first();
-
-            $BHCK_batches = Batch::with('company')
-                ->selectRaw('company_id, COUNT(*) as total_batches')
-                ->where('company_id', 1)->where('link', 6)
-                ->where('date', 'like', $currentMonth . '%')
-                ->groupBy('company_id')
-                ->first();   
-
-            $TNSR_batches = Batch::with('company')
-                ->selectRaw('company_id, COUNT(*) as total_batches')
-                ->where('company_id', 8)->where('link', 6)
-                ->where('date', 'like', $currentMonth . '%')
-                ->groupBy('company_id')
-                ->first();
-        }   
-
-        $batch_number = 1;
-        
-        // $requestedIds = explode(',', $request->drums[0]);  
-        $requiredRolls = 144;  
-        if ($request->company == 'BHCK') {
-            $batch_number = $BHCK_batches ? $BHCK_batches->total_batches + 1 : 1;
-        } elseif ($request->company == 'CRCK2') {
-            $batch_number = $CRCK_batches ? $CRCK_batches->total_batches + 1 : 1;
-        } elseif ($request->company == 'TNSR') {
-            $batch_number = $TNSR_batches ? $TNSR_batches->total_batches + 1 : 1;
-        }
-        
-        $boxBatchData = []; 
-        $remainingRolls = [];   
-        
-        $drums_with_company_and_largest_batch = Drum::whereHas('curing_house.curing_area.farm.company', function ($query) use ($request) {
-            $query->where('code', $request->company);
-        })
-        ->where('link', $request->link) 
-        ->with(['batches' => function ($query) {
-            $query->orderByDesc('id');
-        }])
-        ->get();
-        
-        $drumIds = $drums_with_company_and_largest_batch->pluck('id');
-
-        
-        $batchDrumRecords = DB::table('batch_drum')
-                            ->whereIn('drum_id', $drumIds)->where('bale_remaining', '>', 0)
-                            ->get();
-
-        $latestEntries = $batchDrumRecords->last();
-
-        // dd($latestEntries);
-
-        if($latestEntries){
-            array_unshift($ids, $latestEntries->drum_id);
-            $left_drum = Drum::findOrFail($latestEntries->drum_id);
-            $left_drum->remaining_bales = $latestEntries->bale_remaining;
-            $left_drum->save();
-        }
-
-        $remainData = [];
-
-        // dd($ids,$ids_copy);
-
-        foreach ($ids as $id) {  
+        foreach ($ids as $id) {
             $drum = Drum::findOrFail($id);
-            
-            if ($drum->remaining_bales == 0) {
-                $remaining = $drum->bale->number_of_bales;
-            }
-            else {
-                $remaining = $drum->remaining_bales;
-            }
+            $nongtruong = $drum->curing_house ? $drum->curing_house->curing_area->code : $drum->curing_area->code;
 
-            $remainingRolls[$id] = $remaining;
-        }
+            $farm_code = $farm_codes[$nongtruong] ?? null;
+            $type = $types[$nongtruong] ?? null;
+            $company_id = $companies[$nongtruong] ?? null;
 
-        // dd($remainingRolls);
+            if ($farm_code) {
+                $currentBatch = Batch::where('from_farm', $nongtruong)
+                                    ->orderBy('id', 'desc')
+                                    ->first();
+                $batch_number = 1;
+                $remaining_bales = $drum->bale->number_of_bales;
 
+                if ($currentBatch && $currentBatch->bale_count < 144) {
+                    $needed_bales = 144 - $currentBatch->bale_count;
 
-        $unprocessedIds = []; 
-        $bale_count = 0; 
-
-        while (true) {  
-            $currentBatchRolls = 0;   
-            $batchDrumData = [];
-            $newBatchCreated = false;
-
-            foreach ($ids as $id) {  
-                $rollsAvailable = $remainingRolls[$id] ?? 0;   
-
-                if ($rollsAvailable > 0) {  
-                    if ($currentBatchRolls + $rollsAvailable >= $requiredRolls) {  
-                        $neededRolls = $requiredRolls - $currentBatchRolls;  
-                        $currentBatchRolls += $neededRolls;
-                        $remainingRolls[$id] -= $neededRolls;
-
-                        $batchDrumData[] = [  
-                            'drum_id' => $id,
-                            'bale_count' => $neededRolls,
-                            'bale_remaining' => $remainingRolls[$id] ?? 0,
-                        ];
-
-                        $remainData[] = [  
-                            'drum_id' => $id,
-                            'bale_remaining' => $remainingRolls[$id] ?? 0,
-                        ]; 
-
-                        $newBatchCreated = true;
-
-                        if ($currentBatchRolls >= $requiredRolls) { 
-                            $currentBatch = new Batch;
-                            $currentBatch->batch_code = date('y') . ($request->company == 'BHCK' ? '2' : ($request->company == 'TNSR' ? '3' : '1')) . $request->link . date('n') . $batch_number;
-                            $currentBatch->expected_grade = $request->expected_grade;
-                            $currentBatch->sample_cut_number = $request->sample_cut_number;
-                            $currentBatch->packaging_type = $request->packaging_type;
-                            $currentBatch->date = $request->date;
-                            $currentBatch->link = $request->link;
-                            $currentBatch->batch_number = $batch_number;  
-                            $currentBatch->time = $request->time;
-                            $currentBatch->company_id = Company::where('code', $request->company)->first()->id;  
-                            $currentBatch->bale_count = $currentBatchRolls; 
-                            $currentBatch->bale_status = $currentBatchRolls == $requiredRolls ? 1 : 0;
-                            $currentBatch->save(); 
-
-                            $bale_count += 144;
-
-                            foreach ($batchDrumData as $data) {  
-                                $boxBatchData[] = [  
-                                    'batch_id' => $currentBatch->id,
-                                    'drum_id' => $data['drum_id'],
-                                    'bale_count' => $data['bale_count'],
-                                    'bale_remaining' => $data['bale_remaining'],
-                                ];
-                            }  
-
-                            $batch_number++; 
-                            break 1;   
-                        }  
-                    } else {  
-                        $currentBatchRolls += $rollsAvailable; 
-                        // $remainData[] = [  
-                        //     'drum_id' => $id,
-                        //     'bale_remaining' => $remainingRolls[$id] ?? 0,
-                        // ]; 
-                        $remainingRolls[$id] = 0;
-
-                        $batchDrumData[] = [  
-                            'drum_id' => $id,  
-                            'bale_count' => $rollsAvailable,  
-                            'bale_remaining' => 0,
-                        ];  
-                    }  
-                } else {
                 
-                    $unprocessedIds[] = $id;
+                    if ($remaining_bales <= $needed_bales) {
+                        $currentBatch->bale_count += $remaining_bales;
+                        $currentBatch->save();
+
+                    
+                        $currentBatch->drums()->attach($drum->id, ['bale_count' => $remaining_bales]);
+                        $remaining_bales = 0;
+                    } else {
+                    
+                        $currentBatch->bale_count = 144;
+                        $currentBatch->bale_status = 1;
+                        $currentBatch->save();
+
+                    
+                        $currentBatch->drums()->attach($drum->id, ['bale_count' => $needed_bales]);
+                        $remaining_bales -= $needed_bales;
+                    }
                 }
-            }  
 
-            if (!$newBatchCreated && $currentBatchRolls == 0) {  
-                break;
+                while ($remaining_bales > 0) {
+                    $batch_number = $currentBatch ? $currentBatch->batch_number + 1 : 1;
+                    
+                    $newBatch = new Batch();
+                    $newBatch->batch_code = date('y') . $farm_code . $request->link . date('n') . $batch_number;
+                    $newBatch->expected_grade = $request->expected_grade;
+                    $newBatch->sample_cut_number = $request->sample_cut_number;
+                    $newBatch->packaging_type = $request->packaging_type;
+                    $newBatch->from_farm = $nongtruong;
+                    $newBatch->type = $type;
+                    $newBatch->date = $request->date;
+                    $newBatch->batch_number = $batch_number;
+                    $newBatch->time = $request->time;
+                    $newBatch->link = $request->link;
+                    $newBatch->company_id = $company_id;
+
+
+                    if ($remaining_bales >= 144) {
+                        $newBatch->bale_count = 144;
+                        $newBatch->bale_status = 1;
+                        $newBatch->save();
+                        $newBatch->drums()->attach($drum->id, ['bale_count' => 144]);
+                        $remaining_bales -= 144;
+                    } else {
+
+                        $newBatch->bale_count = $remaining_bales;
+                        $newBatch->bale_status = 0;
+                        $newBatch->save();
+
+
+                        $newBatch->drums()->attach($drum->id, ['bale_count' => $remaining_bales]);
+                        $remaining_bales = 0;
+                    }
+
+                    $currentBatch = $newBatch;
+                }
             }
-        }  
-        
-        if (!empty($boxBatchData)) {  
-            DB::table('batch_drum')->insert($boxBatchData);  
         }
+        return redirect()->back()->with('success', 'Tạo thành công');
 
-        foreach ($batchDrumData as $data) {
-            DB::table('batch_drum')
-                ->updateOrInsert(
-                    [
-                        'drum_id' => $data['drum_id'], 
-                        'batch_id' => $data['batch_id']],
-                    ['bale_remaining' => $data['bale_remaining']]
-                );
-        }
-
-
-        $lastD = end($remainData);
-        // dd($remainData);
-        $drumsWithBatches = Drum::has('batches')->pluck('id')->toArray();
-        $notInDrumsWithBatches = array_diff($unprocessedIds, $drumsWithBatches);
-
-        if ($lastD && is_array($lastD)) {
-            Drum::where('id', $lastD['drum_id'])->update(['remaining_bales' => $lastD['bale_remaining']]);
-            if ($lastD['bale_remaining'] > 0) {      
-                $notInDrumsWithBatches[] = $lastD['drum_id'];
-            }
-        }
-        
-
-        sort($notInDrumsWithBatches);
-
-        // dd($notInDrumsWithBatches);
-
-        $totalBales = 0;
-
-        foreach ($notInDrumsWithBatches as $item) {
-            $drum = Drum::findOrFail($item);
-
-            
-            $totalBales += $drum->remaining_bales > 0 ? $drum->remaining_bales : $drum->bale->number_of_bales;
-            
-            // $drum->remaining_bales = 0;
-            $drum->save();
-
-
-        }
-
-        $newBatch = new Batch();
-        $newBatch->batch_code = date('y') . ($request->company == 'BHCK' ? '2' : ($request->company == 'TNSR' ? '3' : '1')) . $request->link . date('n') . $batch_number;
-        $newBatch->expected_grade = $request->expected_grade; 
-        $newBatch->sample_cut_number = $request->sample_cut_number; 
-        $newBatch->packaging_type = $request->packaging_type; 
-        $newBatch->date = $request->date; 
-        $newBatch->batch_number = $batch_number; 
-        $newBatch->time = $request->time;
-        $newBatch->link = $request->link;
-        $newBatch->company_id = Company::where('code', $request->company)->first()->id;  
-        $newBatch->bale_count = $totalBales; 
-        $newBatch->bale_status = 0; 
-        $newBatch->save();
-
-        $bale_count += $newBatch->bale_count;
-
-        
-        foreach ($notInDrumsWithBatches as $item) {
-            $drum = Drum::findOrFail($item);
-            DB::table('batch_drum')->updateOrInsert(
-                [
-                    'drum_id' => $item,
-                    'batch_id' => $newBatch->id 
-                ],
-                [
-                    'bale_remaining' => 0, 
-                    'bale_count' => $drum->remaining_bales > 0 ? $drum->remaining_bales : $drum->bale->number_of_bales
-                ]
-            );
-            $drum->remaining_bales = 0;
-        }
-
-        
-        if($curing_house){
-            $remain = $curing_house->containing - ($bale_count * 35);
-
-            $curing_house->containing -= $bale_count * 35;
-
-            if ($curing_house->containing < 0) {
-                $curing_house->containing = 0;
-                $curing_house->exceed += abs($remain); 
-            }
-
-            $curing_house->save();
-        }
-        
-        if($curing_area){
-            $remain = $curing_area->containing - ($bale_count * 35);
-
-            $curing_area->containing -= $bale_count * 35;
-
-            if ($curing_area->containing < 0) {
-                $curing_area->containing = 0;
-                $curing_area->exceed += abs($remain);
-            }
-
-            $curing_area->save();
-        }
-
-
-        return redirect()->back()->with('success', 'Lô đã được tạo thành công ' . $bale_count);  
     }
+
 
 
 
@@ -808,28 +535,14 @@ class BatchController extends Controller
     {
         $items = explode(',', $request->drums);
 
-        
-
         foreach ($items as $item) {
             $batch = Batch::findOrFail($item);
-
-            // $curing_house = $batch->drums[0]->curing_house;
-            // $curing_area = $batch->drums[0]->curing_area;
             
             foreach ($batch->drums as $drum) {
                 $drum->remaining_bales = 0;
                 $drum->save(); 
             }
 
-            // if($curing_house){
-            //     $curing_house->containing += $batch->bale_count * 35;
-            //     $curing_house->save();
-            // }
-
-            // if($curing_area){
-            //     $curing_area->containing += $batch->bale_count * 35;
-            //     $curing_area->save();
-            // }
             $batch->delete();
         }
         
@@ -838,40 +551,10 @@ class BatchController extends Controller
 
 
     public function viewFindBatch()
-{
-    // Lấy rubbers từ batch
-    // $rubbers = Batch::where('batch_code', '24130931')->first();
-    // $rubbers2 = Batch::where('batch_code', '2413106')->first();
+    {
+        return view('admin.batch.find');
+    }
 
-    // dd($rubbers, $rubbers2);
-
-    // // $trucksArray = [];
-
-    // foreach ($rubbers as $rubber) {
-    //     // Lấy các plots cho rubber hiện tại
-    //     $groupedPlots = DB::table('plot_rubber')
-    //         ->select('rubber_id', 'to_nt', 'lat_cao', DB::raw('GROUP_CONCAT(plot_id) as plot_ids'))
-    //         ->where('rubber_id', $rubber->id) 
-    //         ->groupBy('rubber_id', 'to_nt', 'lat_cao')
-    //         ->get();
-
-    //     $trucksArray[] = [
-    //         'rubber_id' => $rubber->id,
-    //         'truck_name' => $rubber->truck_name,
-    //         'time_di' => $rubber->time_di,
-    //         'time_ve' => $rubber->time_ve,
-    //         'plots' => $rubber->plots->pluck('tenlo')->unique()->toArray()
-    //     ];
-    // }
-
-    // dd($trucksArray);
-
-    return view('admin.batch.find'); // Trả về biến đúng cách
-}
-
-
-
-    // lô -> nhiều thùng -> thùng đầu -> mã cán -> nt
 
     public function findBatch(Request $request)
     {

@@ -126,7 +126,7 @@ class ContractController extends Controller
                 $shipment->ma_xuat = $delivery['shipping_order']; 
                 $shipment->loai_hang = $delivery['type']; 
                 $shipment->so_luong = $delivery['amount']; 
-                // $shipment->so_hop_dong = $delivery['so_hop_dong'];
+                $shipment->so_hop_dong = $delivery['so_hop_dong'];
                 $shipment->contract_id = $contract->id;
 
                 

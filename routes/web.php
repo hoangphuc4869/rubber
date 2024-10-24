@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BaleController;
 use App\Http\Controllers\Admin\BatchController;
+use App\Http\Controllers\Admin\CertificatesController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\ContractController;
 use App\Http\Controllers\Admin\ContractTypeController;
@@ -63,6 +64,7 @@ Route::middleware(['login'] )->group(function() {
         'shipmentsTNSR' =>  ShipmentTNSRController::class,
         'plots' =>  PlotControllers::class,
         'sub-con' =>  SubContractController::class,
+        'certificates' =>  CertificatesController::class,
     ]);
     
 

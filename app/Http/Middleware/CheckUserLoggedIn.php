@@ -17,7 +17,7 @@ class CheckUserLoggedIn
      */
     public function handle(Request $request, Closure $next)
     {
-        $token = $request->remember_token;
+        $token = $request->header('Authorization');
         if (!$token) {
             return response()->json(['error' => 'Bạn chưa đăng nhập, vui lòng đăng nhập.'], 401);
         }

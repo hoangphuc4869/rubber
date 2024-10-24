@@ -64,6 +64,7 @@ class RollingController extends Controller
                 'date_curing',        // Ngày gia công ủ
                 'timeRoll',       // Thời gian cán vắt
                 'remaining',       // Thời gian cán vắt
+                'location',       // Thời gian cán vắt
             ]);
 
         if ($request->has('date') && $request->date) {
@@ -87,7 +88,7 @@ class RollingController extends Controller
 
         return DataTables::of($canvat)
             ->addColumn('house_code', function ($canvat) {
-                return $canvat->house ? $canvat->house->code : '';
+                return $canvat->house ? $canvat->house->code . ($canvat->location ? '-'.$canvat->location : "") : '';
             })
             ->addColumn('area_code', function ($canvat) {
                 return $canvat->area ? $canvat->area->code : '';
@@ -101,6 +102,8 @@ class RollingController extends Controller
             ->editColumn('date_curing', function ($canvat) {
                 return \Carbon\Carbon::parse($canvat->date_curing)->format('d-m-Y'); 
             })
+
+            
             ->make(true);
     }
 
@@ -135,6 +138,7 @@ class RollingController extends Controller
         $command->curing_house_id = $request->curing_house_id;
         $command->curing_area_id = $request->curing_area_id;
         $command->date_curing = $request->date_curing;
+        $command->location = $request->location;
 
         $command->code =  now()->timestamp;
         $command->save();

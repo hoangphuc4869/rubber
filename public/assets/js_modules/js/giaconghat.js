@@ -91,3 +91,19 @@ $("#btnGiaconghatFilter").on("click", function () {
     console.log($("#dateFilterGiaconghat").val());
     tableGiaconghat.ajax.reload();
 });
+
+$("#curing_house").on("change", function () {
+    var selectedHouse = $("#curing_house option:selected").text();
+
+    var locationOptions = $("#location option");
+
+    locationOptions.each(function () {
+        if ($(this).data("house") === selectedHouse) {
+            $(this).show();
+        } else {
+            $(this).hide();
+        }
+    });
+
+    $("#location").val(null);
+});

@@ -87,14 +87,83 @@
                     </select>
                 </div>
 
-
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Trọng lượng quy khô (kg)</label>
+                    <label class="form-label">Vị trí</label>
+                    <select name="location" id="location" required class="form-select w-100">
+                        <option value="A1" data-house="NLCVNT1">A1</option>
+                        <option value="A2" data-house="NLCVNT1">A2</option>
+                        <option value="A3" data-house="NLCVNT1">A3</option>
+                        <option value="A4" data-house="NLCVNT1">A4</option>
+                        <option value="A5" data-house="NLCVNT1">A5</option>
+                        <option value="A6" data-house="NLCVNT1">A6</option>
 
-                    <input type="number" min="1" name="weight_to_roll" class="form-control" id="weight_to_roll"
-                        value="{{$areas[0]->containing ?? ''}}">
+                        <option value="B1" data-house="NLCVNT2">B1</option>
+                        <option value="B2" data-house="NLCVNT2">B2</option>
+                        <option value="B3" data-house="NLCVNT2">B3</option>
+                        <option value="B4" data-house="NLCVNT2">B4</option>
+                        <option value="B5" data-house="NLCVNT2">B5</option>
+                        <option value="B6" data-house="NLCVNT2">B6</option>
+
+                        <option value="C1" data-house="NLCVNT3">C1</option>
+                        <option value="C2" data-house="NLCVNT3">C2</option>
+                        <option value="C3" data-house="NLCVNT3">C3</option>
+                        <option value="C4" data-house="NLCVNT3">C4</option>
+                        <option value="C5" data-house="NLCVNT3">C5</option>
+                        <option value="C6" data-house="NLCVNT3">C6</option>
+
+                        <option value="D1" data-house="NLCVNT6">D1</option>
+                        <option value="D2" data-house="NLCVNT6">D2</option>
+                        <option value="D3" data-house="NLCVNT6">D3</option>
+                        <option value="D4" data-house="NLCVNT6">D4</option>
+                        <option value="D5" data-house="NLCVNT6">D5</option>
+                        <option value="D6" data-house="NLCVNT6">D6</option>
+
+
+
+                        <option value="E1" data-house="NLCVNT4">E1</option>
+                        <option value="E2" data-house="NLCVNT4">E2</option>
+                        <option value="E3" data-house="NLCVNT4">E3</option>
+                        <option value="E4" data-house="NLCVNT4">E4</option>
+                        <option value="E5" data-house="NLCVNT4">E5</option>
+                        <option value="E6" data-house="NLCVNT4">E6</option>
+
+                        <option value="F1" data-house="NLCVNT5">F1</option>
+                        <option value="F2" data-house="NLCVNT5">F2</option>
+                        <option value="F3" data-house="NLCVNT5">F3</option>
+                        <option value="F4" data-house="NLCVNT5">F4</option>
+                        <option value="F5" data-house="NLCVNT5">F5</option>
+                        <option value="F6" data-house="NLCVNT5">F6</option>
+
+                        <option value="G1" data-house="NLCVNT7">G1</option>
+                        <option value="G2" data-house="NLCVNT7">G2</option>
+                        <option value="G3" data-house="NLCVNT7">G3</option>
+                        <option value="G4" data-house="NLCVNT7">G4</option>
+                        <option value="G5" data-house="NLCVNT7">G5</option>
+                        <option value="G6" data-house="NLCVNT7">G6</option>
+
+                        <option value="H1" data-house="NLCVNT8">H1</option>
+                        <option value="H2" data-house="NLCVNT8">H2</option>
+                        <option value="H3" data-house="NLCVNT8">H3</option>
+                        <option value="H4" data-house="NLCVNT8">H4</option>
+                        <option value="H5" data-house="NLCVNT8">H5</option>
+                        <option value="H6" data-house="NLCVNT8">H6</option>
+
+                        <option value="I1" data-house="NLCVTM">I1</option>
+                        <option value="I2" data-house="NLCVTM">I2</option>
+                        <option value="I3" data-house="NLCVTM">I3</option>
+                        <option value="I4" data-house="NLCVTM">I4</option>
+                        <option value="I5" data-house="NLCVTM">I5</option>
+                        <option value="I6" data-house="NLCVTM">I6</option>
+
+                        <option value="J1" data-house="NLCVTNSR">J1</option>
+                        <option value="J2" data-house="NLCVTNSR">J2</option>
+                        <option value="J3" data-house="NLCVTNSR">J3</option>
+                        <option value="J4" data-house="NLCVTNSR">J4</option>
+                        <option value="J5" data-house="NLCVTNSR">J5</option>
+                        <option value="J6" data-house="NLCVTNSR">J6</option>
+
+                    </select>
                 </div>
-
 
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Ngày cán vắt</label>
@@ -112,11 +181,11 @@
                     </select>  --}}
                 </div>
 
-                
-
                 <div class="mb-3 col-lg-4">
-                    <label class="form-label">Giờ</label>
-                    <input type="text" name="time" id="timeInput" class="form-control">
+                    <label class="form-label">Trọng lượng quy khô (kg)</label>
+
+                    <input type="number" min="1" name="weight_to_roll" class="form-control" id="weight_to_roll"
+                        value="{{$areas[0]->containing ?? ''}}">
                 </div>
 
                 <div class="mb-3 col-lg-4">
@@ -127,6 +196,11 @@
                 <div class="mb-3 col-lg-4">
                     <label class="form-label">Số lần cán</label>
                     <input type="number" name="timeRoll" required class="form-control" value="2">
+                </div>
+
+                <div class="mb-3 col-lg-4">
+                    <label class="form-label">Giờ</label>
+                    <input type="text" name="time" id="timeInput" class="form-control">
                 </div>
 
 
@@ -145,24 +219,6 @@
 @include('partials.errors')
 
 
-
-
-
-{{-- <div class="filter-date d-flex align-items-end justify-content-end gap-2">
-    <!-- <div class="">
-            <label for="min" class="form-label mb-0">Lọc ngày</label>
-            <input type="text" id="min" name="min" class="form-control" style="width: 200px">
-        </div> -->
-
-    <form action="{{ route('rolling-delete-items') }}" class="form-delete-items d-none" method="POST"
-        onsubmit="return confirmDelete();">
-        @csrf
-        @method('DELETE')
-        <input type="hidden" name="drums" id="selected-drums">
-        <button class="btn btn-danger" type="submit">Xóa</button>
-    </form>
-
-</div> --}}
 
 <div class="d-flex justify-content-between align-items-center">
         <div class="filter-section  d-flex align-items-end gap-2 my-2">
@@ -202,39 +258,6 @@
 
             <button id="btnCanvatFilter" class="btn btn-primary">Lọc</button>
         </div>
-
-
-        {{-- <div class="function-btns d-flex align-items-end justify-content-end gap-2">
-            <div class=" d-flex gap-1 align-items-center">
-
-                <div class="editDRC d-none">
-                    <div class="d-flex align-items-center gap-1">
-                        <input type="number" step="0.01" placeholder="Giá trị DRC" name='drc' id="drcInput"  class="form-control" style="width: 150px">
-                        <div class="">
-                            <button class="btn btn-warning" id="btnDRC">
-                                Cập nhật DRC
-                            </button>
-                        </div>
-                    </div>
-                    <input type="hidden" name='rubbers' id="rubbersDRC" >
-                </div>
-            
-                <div class="editMat d-none">
-                    <a href="/rubber/1/edit" id="editLink">
-                        <button class="btn btn-info">
-                            Chỉnh sửa
-                        </button>
-                    </a>
-                </div>
-                <form action="{{ route('rubber-delete-items') }}" class="form-delete-items d-none" method="POST" onsubmit="return confirmDelete();">
-                    @csrf
-                    @method('DELETE')
-                    <input type="hidden" name="drums" id="selected-drums">
-                    <button class="btn btn-danger" type="submit">Xóa</button>
-                </form>
-            </div>
-        
-        </div> --}}
 
     </div>
 

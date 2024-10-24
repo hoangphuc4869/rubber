@@ -107,7 +107,9 @@ class MachineController extends Controller
                 'impurity_removing',      
                 'supervisor',       
                 'rolling_code',       
-                'curing_house_id',       
+                'curing_house_id',   
+                'curing_area_id',   
+                'location'    
             ]);
 
         // dd($request->date);
@@ -167,13 +169,18 @@ class MachineController extends Controller
                 return $gchat->rolling ? \Carbon\Carbon::parse($gchat->rolling->date)->format('d-m-Y') : '';
             })
             ->addColumn('house_code', function ($gchat) {
-                return $gchat->curing_house ? $gchat->curing_house->code : '';
+                if($gchat->curing_house){
+                    return $gchat->curing_house->code . ($gchat->location ? "-" . $gchat->location : "");
+                }
+                else {
+                    return $gchat->curing_area->code . ($gchat->curing_area->location ? "-" . $gchat->location : "");
+                }
             })
             // ->editColumn('date', function ($gchat) {
             //     return \Carbon\Carbon::parse($gchat->date)->format('d-m-Y'); 
             // })
             ->editColumn('heated_start', function ($gchat) {
-                return \Carbon\Carbon::parse($gchat->heated_start)->format('H:i'); 
+                return $gchat->heated_start ? \Carbon\Carbon::parse($gchat->heated_start)->format('H:i') : ""; 
             })
             ->editColumn('date', function ($gchat) {
                 return \Carbon\Carbon::parse($gchat->date)->format('d-m-Y'); 
@@ -216,11 +223,20 @@ class MachineController extends Controller
         $startNumber = $existingDrumsCount + 1;
 
         $drumsCount = $request->input('drums');
-
         
-        
+        if($request->curing_house == 11 || $request->curing_house == 21 || $request->curing_house == 22){
+            $area = CuringArea::where('id', $request->curing_house )->first();
+            // dd($area);
+            if($area){
+                if($request->weight > $area->containing) {
+                    return redirect()->back()->with('roll_fail', 'Khối lượng gia công lớn hơn khối lượng hiện có');
+                }
+                $area->containing -= $request->weight;
+                $area->save();
 
-    
+            }
+        }
+
         for ($i = $startNumber; $i < $startNumber + $drumsCount; $i++) {
 
             $drum = new Drum();
@@ -239,31 +255,36 @@ class MachineController extends Controller
             $drum->trang_thai_com = $request->input('trang_thai_com');
             $drum->code = now()->timestamp . '_' . $request->input('link') . $i; 
             $drum->name = $i;
+            $drum->location = $request->location;
             $drum->rolling_code = $request->rolling_code;
             $drum->supervisor = Auth::user()->name;
             $drum->save();
         }
 
-        $weight = Rolling::findOrFail($request->rolling_code);
+        if($request->rolling_code){
+            $weight = Rolling::findOrFail($request->rolling_code);
 
-        if($weight->remaining == null){
-            $weight->remaining = $weight->weight_to_roll - $request->weight;
+            if($weight->remaining == null){
+                $weight->remaining = $weight->weight_to_roll - $request->weight;
+            }
+            else {
+                $weight->remaining -= $request->weight;
+            }
+
+            if($weight->remaining !== null && $weight->remaining == 0){
+                $weight->status = 1;
+            }
+            
+            $weight->save();
+
+            $house = $weight->house;
+
+            $house->containing -= $request->weight;
+            
+            $house->save();
+
+
         }
-        else {
-            $weight->remaining -= $request->weight;
-        }
-
-        if($weight->remaining !== null && $weight->remaining == 0){
-            $weight->status = 1;
-        }
-
-
-        $house = $weight->house;
-
-        $house->containing -= $request->weight;
-
-        $weight->save();
-        $house->save();
 
         return redirect()->back()->with('success', 'Thành công');
     }
@@ -351,9 +372,9 @@ class MachineController extends Controller
                     $drum->link = $request->link;
                 }
 
-                if ($request->filled('curing_house')) {
-                    $drum->curing_house_id = $request->curing_house;
-                }
+                // if ($request->filled('curing_house')) {
+                //     $drum->curing_house_id = $request->curing_house;
+                // }
 
                 if ($request->filled('impurity_removing')) {
                     $drum->impurity_removing = $request->impurity_removing;

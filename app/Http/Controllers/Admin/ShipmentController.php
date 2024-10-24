@@ -10,6 +10,7 @@ use App\Models\Contract;
 use App\Models\Shipment;
 use App\Models\Batch;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Warehouse;
 
 
 class ShipmentController extends Controller
@@ -99,13 +100,21 @@ class ShipmentController extends Controller
         $company = Company::where('code', $companyName)->first();
 
         if ($company) {
-            $batches = $company->batches;
+            $batches = $company->batches->filter(function($batch) {
+                return $batch->checked == 1 && $batch->exported == 0;
+            });
         } else {
             $batches = collect();
         }
 
+        $wares = Warehouse::whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK', 'B3-BHCK','X3T-BHCK', 'X6T-BHCK'])
+        ->orderBy('id', 'asc')
+        ->get()
+        ->groupBy('name'); 
+
+
         if (Gate::allows('khoBHCK') || Gate::allows('admin') ) {
-            return view('admin.shipments.BHCK.edit' , compact('order', 'batches'));
+            return view('admin.shipments.BHCK.edit' , compact('order', 'batches', 'wares', 'company'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }

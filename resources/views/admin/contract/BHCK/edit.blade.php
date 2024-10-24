@@ -391,6 +391,8 @@
                 @if ($contract->shipments->count() == 0)
                     <div class="text-danger">Chưa có dữ liệu.</div>
                 @else
+
+                    {{$contract->shipments}}
                     @foreach ($contract->shipments as $index => $item)
                         <div class="row shipment my-3">
                             <div class="col-lg-3 mb-3">
@@ -399,7 +401,7 @@
                                     <ul class="mb-0 p-0" style="list-style: none">
                                         <li>
                                             Số hợp đồng
-                                            <input type="text" class="form-control" data-id="{{$item->id}}" data-field="so_hop_dong" value="{{$item->so_hop_dong}}" onchange="updateShipmentFields(this)">
+                                            <input type="text" class="form-control" data-id="{{$item->id}}" data-field="so_hop_dong" value="{{$item->contract->contract_number}}" onchange="updateShipmentFields(this)">
                                         </li>
                                         <li>
                                             Lệnh xuất hàng: 

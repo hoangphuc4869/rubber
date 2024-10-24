@@ -15,13 +15,22 @@
                 </div>
 
                 <div class="">
-                    <label for="companyFilterList" style="font-size: 14px">Công ty</label>
-                    <select name="" id="companyFilterList" class="form-select">
-                        <option value="1">BHCK</option>
-                        <option value="2">CRCK2</option>
-                        <option value="8">TNSR</option>
+                    <label for="nongtruongFilterList" style="font-size: 14px">Nguồn</label>
+                    <select name="" id="nongtruongFilterList" class="form-select">
+                        <option value="NLNT1">NLNT1</option>
+                        <option value="NLNT2">NLNT2</option>
+                        <option value="NLNT3">NLNT3</option>
+                        <option value="NLNT4">NLNT4</option>
+                        <option value="NLNT5">NLNT5</option>
+                        <option value="NLNT6">NLNT6</option>
+                        <option value="NLNT7">NLNT7</option>
+                        <option value="NLNT8">NLNT8</option>
+                        <option value="NLTNSR">NLTNSR</option>
+                        <option value="NLTM">NLTM</option>
+                        <option value="MDBH">MDBH</option>
+                        <option value="MDCR">MDCR</option>
+                        <option value="NLTMMD">NLTMMD</option>
                     </select>
-                    
                 </div>
 
                 <div class="">
@@ -48,7 +57,7 @@
     <thead>
         <tr>
             <th>Ngày thực hiện</th>
-            <th>Công ty</th>
+            <th>nguồn nguyên liệu</th>
             <th>Mã lô</th>
             <th>Thời gian tạo lô</th>
             <th>Số bành</th>
@@ -56,7 +65,6 @@
             <th>Kiểm tra cắt bành</th>
            
             <th>Dây chuyền</th>
-            <th>Nguồn nguyên liệu</th>
             <th>Kiểm nghiệm</th>
             <th>Trạng thái</th>
         </tr>

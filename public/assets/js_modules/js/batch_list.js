@@ -10,7 +10,7 @@ let tableBatchList = new DataTable("#tableBatchList", {
         data: function (d) {
             d.date = $("#dateFilterList").val();
             d.link = $("#linkFilterList").val();
-            d.company = $("#companyFilterList").val();
+            d.nongtruong = $("#nongtruongFilterList").val();
         },
     },
     paging: true,
@@ -37,7 +37,7 @@ let tableBatchList = new DataTable("#tableBatchList", {
     order: [[0, "desc"]],
     columns: [
         { data: "date", name: "date" },
-        { data: "company", name: "company" },
+        { data: "from_farm", name: "from_farm" },
         {
             data: "batch_code",
             name: "batch_code",
@@ -50,7 +50,6 @@ let tableBatchList = new DataTable("#tableBatchList", {
         { data: "expected_grade", name: "expected_grade" },
         { data: "sample_cut_number", name: "sample_cut_number" },
         { data: "link", name: "link" },
-        { data: "from", name: "from" },
         {
             data: "checked",
             name: "checked",

@@ -123,10 +123,9 @@
             <!-- Components -->
             <li class="menu-header small text-uppercase"><span class="menu-header-text">Quản lý cao su</span></li>
 
-
             @if (Gate::allows('nguyenlieu') || Gate::allows('admin') || Gate::allows('DRC'))
                 
-            <li class="menu-item {{Route::is('farms.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') || Route::is('companies.*') ? "active open" : ""}}" style="">
+            <li class="menu-item {{Route::is('farms.*') || Route::is('certificates.*') || Route::is('trucks.*') || Route::is('curing_areas.*') || Route::is('curing_houses.*') || Route::is('companies.*') ? "active open" : ""}}" style="">
               <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons fa-solid fa-tractor"></i>
                 <div data-i18n="Layouts">Nông trường</div>
@@ -162,6 +161,12 @@
                 <li class="menu-item {{Route::is('companies.*') ? "active" : ""}}">
                   <a href="{{route('companies.index')}}" class="menu-link">
                     <div data-i18n="Fluid">Công ty</div>
+                  </a>
+                </li>
+
+                <li class="menu-item {{Route::is('certificates.*') ? "active" : ""}}">
+                  <a href="{{route('certificates.index')}}" class="menu-link">
+                    <div data-i18n="Fluid">Chứng chỉ</div>
                   </a>
                 </li>
         
