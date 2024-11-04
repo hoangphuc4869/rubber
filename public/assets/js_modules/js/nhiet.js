@@ -166,7 +166,7 @@ function updateButtonsNhiet() {
 $("#dateFilterNhiet2").datepicker({
     dateFormat: "dd-mm-yy",
 });
-$("#dateFilterNhiet2").datepicker("setDate", new Date());
+// $("#dateFilterNhiet2").datepicker("setDate", new Date());
 
 let tableNhiet2 = new DataTable("#giacongnhietTable2", {
     ajax: {
@@ -225,7 +225,7 @@ let tableNhiet2 = new DataTable("#giacongnhietTable2", {
         { data: "name", name: "name" },
         { data: "heated_start", name: "heated_start" },
         { data: "time_to_dry", name: "time_to_dry" },
-        { data: "heated_end", name: "heated_end" },
+        { data: "end_time", name: "heated_end" },
         { data: "heated_date", name: "heated_date" },
         { data: "note", name: "note" },
         { data: "temp", name: "temp" },
@@ -244,8 +244,14 @@ $("#btnNhietFilter2").on("click", function () {
     tableNhiet2.ajax.reload();
 });
 
+$("#linkFilterNhiet2").on("change", function () {
+    $("#doneLink").val($("#linkFilterNhiet2").val());
+});
+
 $(document).ready(function () {
     var tableNhiet2 = $("#giacongnhietTable2").DataTable();
+
+    $("#doneLink").val($("#linkFilterNhiet2").val());
 
     $("#selectAllBtn2").on("click", function () {
         var rows = tableNhiet2.rows().nodes();
@@ -322,7 +328,7 @@ $(document).ready(function () {
                 oven1Data.push({ row: row, id: drumId });
             } else if (dataOven == 2 && dataLink == 6) {
                 oven2Data.push({ row: row, id: drumId });
-            } else if (dataOven == 1 && dataLink == 3) {
+            } else if (dataOven == 3 && dataLink == 3) {
                 oven3Data.push({ row: row, id: drumId });
             }
         }
@@ -394,172 +400,6 @@ $(document).ready(function () {
     });
 });
 
-// đổi ca
-// $(document).ready(function () {
-//     var table = $("#giacongnhietTable2").DataTable();
-//     var selectedDrums = [];
-
-//     $(".switch_another_day").on("click", function () {
-//         var lineFilter = $("#linkFilterNhiet2").val();
-
-//         console.log(lineFilter);
-
-//         var totalRows = table.data().length;
-
-//         var buttonId = $(this).attr("id");
-//         $("#typeInput").val(buttonId);
-
-//         var oven1Data = [];
-//         var oven2Data = [];
-//         var oven3Data = [];
-
-//         for (var i = 0; i < totalRows; i++) {
-//             var row = table.row(i).node();
-//             var drumId = parseInt($(row).attr("id"), 10);
-//             var dataOven = $(row).data("oven");
-
-//             var dataLink = $(row).data("link");
-
-//             if (dataOven == 1 && dataLink == 6) {
-//                 oven1Data.push({ row: row, id: drumId });
-//             } else if (dataOven == 2 && dataLink == 6) {
-//                 oven2Data.push({ row: row, id: drumId });
-//             } else if (dataOven == 1 && dataLink == 3) {
-//                 oven3Data.push({ row: row, id: drumId });
-//             }
-//         }
-
-//         if (lineFilter == 3) {
-//             var rowsData = oven3Data;
-
-//             if (rowsData.length < 27) {
-//                 alert(
-//                     `Không đủ thùng: Cần 27 thùng nhưng chỉ có ${rowsData.length}`
-//                 );
-//             } else {
-//                 rowsData.sort(function (a, b) {
-//                     return b.id - a.id;
-//                 });
-//                 selectedDrums = [];
-
-//                 rowsData.slice(0, 27).forEach(function (data) {
-//                     $(data.row).addClass("selected");
-//                     selectedDrums.push(data.id);
-//                 });
-
-//                 $("#drumsInput").val(selectedDrums.join(","));
-//                 $(".so-thung-giao-ca").text(selectedDrums.length);
-//                 $("#confirmModal").modal("show");
-//             }
-//         } else {
-//             if (oven1Data.length < 28 || oven2Data.length < 28) {
-//                 var missingOven1 = Math.max(28 - oven1Data.length, 0);
-//                 var missingOven2 = Math.max(28 - oven2Data.length, 0);
-//                 alert(
-//                     `Không đủ thùng: Thiếu ${missingOven1} từ lò 1, và ${missingOven2} từ lò 2.`
-//                 );
-//             } else {
-//                 oven1Data.sort(function (a, b) {
-//                     return b.id - a.id;
-//                 });
-//                 oven2Data.sort(function (a, b) {
-//                     return b.id - a.id;
-//                 });
-
-//                 var selectedOven1 = oven1Data.slice(0, 28);
-//                 var selectedOven2 = oven2Data.slice(0, 28);
-
-//                 selectedDrums = [];
-
-//                 selectedOven1.forEach(function (data) {
-//                     $(data.row).addClass("selected");
-//                     selectedDrums.push(data.id);
-//                 });
-
-//                 selectedOven2.forEach(function (data) {
-//                     $(data.row).addClass("selected");
-//                     selectedDrums.push(data.id);
-//                 });
-
-//                 $("#drumsInput").val(selectedDrums.join(","));
-//                 $(".so-thung-giao-ca").text(selectedDrums.length);
-//                 $("#confirmModal").modal("show");
-//             }
-//         }
-//     });
-
-//     $(".close-modal").on("click", function () {
-//         $("#confirmModal").modal("hide");
-//         table.$("tr.selected").removeClass("selected");
-//         selectedDrums = [];
-//         $("#drumsInput").val("");
-//     });
-// });
-
-// nhan doi ca
-
-// $(document).ready(function () {
-//     var hasThungGiaoCa = tableNhiet2.rows(".thungdoica").count() > 0;
-
-//     // if (hasThungGiaoCa) {
-//     //     $("#doiCaBtn").show();
-//     // }
-
-//     $("#doiCaBtn").on("click", function () {
-//         var selectedDrumIds = [];
-
-//         var lineFilter = $("#linkFilterNhiet").val();
-
-//         tableNhiet2
-//             .rows(".thungdoica")
-//             .every(function (rowIdx, tableLoop, rowLoop) {
-//                 var row = this.node();
-//                 $(row).addClass("selected");
-//                 var drumId = $(row).attr("id");
-//                 var dataLink = $(row).data("link");
-
-//                 if (lineFilter == 3 && dataLink == 3) {
-//                     $(row).addClass("selected");
-//                     selectedDrumIds.push(drumId);
-//                 } else if (lineFilter == 6 && dataLink == 6) {
-//                     selectedDrumIds.push(drumId);
-//                 }
-//             });
-
-//         console.log(selectedDrumIds);
-
-//         if (selectedDrumIds.length === 0) {
-//             alert("Không có thùng nào được chọn để đổi ca.");
-//             return;
-//         } else {
-//             $("#num3t").text(selectedDrumIds.length);
-//         }
-
-//         $("#drumIdsDoiCa").val(selectedDrumIds.join(","));
-
-//         $("#doiCaModal").modal("show");
-//     });
-
-//     $("#gioDoiCa").on("change", function () {
-//         var gioDoiCa = $(this).val();
-//         var gio = parseInt(gioDoiCa.split(":")[0]);
-//         var phut = parseInt(gioDoiCa.split(":")[1]);
-
-//         if (gio < 6 || (gio === 6 && phut < 30)) {
-//             alert("Giờ đổi ca phải lớn hơn 6h30 sáng.");
-//             $(this).val("");
-//         }
-//     });
-
-//     $(".close, .closedoica").on("click", function () {
-//         $("#doiCaModal").modal("hide");
-//         $("#drumIdsDoiCa").val("");
-//         table.rows(".thungdoica").every(function () {
-//             $(this.node()).removeClass("selected");
-//         });
-//     });
-// });
-
 $(document).ready(function () {
     $("#ncaBtn").on("click", function () {
         $("#nhanCaModal").modal("show");
@@ -576,8 +416,6 @@ $(document).ready(function () {
     $('select[name="oven"]').on("change", function () {
         var selectedOven = $(this).val();
 
-        console.log("change");
-
         var rows = tableNhiet2.rows().nodes();
         var filteredRows = [];
         $(rows).each(function () {
@@ -588,7 +426,6 @@ $(document).ready(function () {
                 filteredRows.push(this);
             }
         });
-        console.log(filteredRows);
 
         if (filteredRows.length > 0) {
             var lastRow = filteredRows[filteredRows.length - 1];

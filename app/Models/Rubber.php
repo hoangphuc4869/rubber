@@ -45,6 +45,8 @@ class Rubber extends Model
         'time_ve',
         'time_di',
         'location',
+        'lat_cao',
+        'ten_lo',
     ];
 
     public function truck()

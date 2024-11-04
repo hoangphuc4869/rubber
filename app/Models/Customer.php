@@ -18,5 +18,16 @@ class Customer extends Model
         'description',
         'type',
         'account',
+        'company'
     ];
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
+
+    public function contracts()
+    {
+        return $this->hasMany(Contract::class);
+    }
 }

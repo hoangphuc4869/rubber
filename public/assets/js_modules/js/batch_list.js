@@ -1,7 +1,7 @@
 $("#dateFilterList").datepicker({
     dateFormat: "dd-mm-yy",
 });
-$("#dateFilterList").datepicker("setDate", new Date());
+// $("#dateFilterList").datepicker("setDate", new Date());
 
 let tableBatchList = new DataTable("#tableBatchList", {
     ajax: {
@@ -12,6 +12,9 @@ let tableBatchList = new DataTable("#tableBatchList", {
             d.link = $("#linkFilterList").val();
             d.nongtruong = $("#nongtruongFilterList").val();
         },
+    },
+    createdRow: function (row, data, dataIndex) {
+        $(row).attr("id", data.id);
     },
     paging: true,
     language: {
@@ -34,7 +37,7 @@ let tableBatchList = new DataTable("#tableBatchList", {
     scrollCollapse: true,
     processing: true,
     serverSide: true,
-    order: [[0, "desc"]],
+    order: [[2, "asc"]],
     columns: [
         { data: "date", name: "date" },
         { data: "from_farm", name: "from_farm" },
@@ -45,7 +48,7 @@ let tableBatchList = new DataTable("#tableBatchList", {
                 return `<span class='fw-bold text-dark'>${data}</span>`;
             },
         },
-        { data: "time", name: "time" },
+        { data: "time", name: "heated_end" },
         { data: "bale_count", name: "bale_count" },
         { data: "expected_grade", name: "expected_grade" },
         { data: "sample_cut_number", name: "sample_cut_number" },
@@ -79,8 +82,50 @@ let tableBatchList = new DataTable("#tableBatchList", {
     ],
     scrollX: true,
     autoWidth: false,
+    select: {
+        style: "multi",
+    },
 });
 
 $("#btnListFilter").on("click", function () {
     tableBatchList.ajax.reload();
 });
+
+$(document).ready(function () {
+    $("#selectAllBtnList").on("click", function () {
+        var rows = tableBatchList.rows().nodes();
+        var isAllSelected =
+            tableBatchList.rows({ selected: true }).count() === rows.length;
+
+        if (isAllSelected) {
+            tableBatchList.rows().deselect();
+        } else {
+            tableBatchList.rows().select();
+        }
+
+        updateButtonsList();
+    });
+
+    $("#tableBatchList tbody").on("click", "tr", function () {
+        $(this).toggleClass("selected");
+        updateButtonsList();
+    });
+});
+
+function updateButtonsList() {
+    let allRows = tableBatchList.rows().nodes();
+
+    let selectedRows = Array.from(allRows).filter(
+        (row) => $(row).hasClass("selected") && !$(row).hasClass("no-select")
+    );
+
+    let values = selectedRows.map((row) => row.id);
+
+    $("#selectedBatch").val(values.join(","));
+
+    if (values.length > 0) {
+        $("#labelBtn").removeClass("d-none");
+    } else {
+        $("#labelBtn").addClass("d-none");
+    }
+}

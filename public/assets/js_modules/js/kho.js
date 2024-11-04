@@ -1,7 +1,7 @@
 $("#dateFilterKho").datepicker({
     dateFormat: "dd-mm-yy",
 });
-$("#dateFilterKho").datepicker("setDate", new Date());
+// $("#dateFilterKho").datepicker("setDate", new Date());
 
 var onShipmentPage = window.location.pathname.includes("shipments");
 
@@ -102,6 +102,10 @@ let tableKho = new DataTable("#tableKho", {
             d.grade = $("#gradeFilterKho").val();
             d.kho = $("#FilterKho").val();
             d.company = $("#company_id").val();
+            if (onShipmentPage) {
+                d.checked = 1;
+                d.exported = 0;
+            }
         },
     },
     createdRow: function (row, data, dataIndex) {
@@ -126,6 +130,7 @@ let tableKho = new DataTable("#tableKho", {
             sLast: "Cuối cùng",
         },
     },
+    paging: false,
     processing: true,
     serverSide: true,
     order: [[0, "desc"]],
@@ -155,11 +160,7 @@ $(document).ready(function () {
 
     $("#tableKho tbody").on("click", "tr", function () {
         var batchId = $(this).attr("id");
-        // console.log("Row clicked, id:", batchId);
-
         $batch.val(batchId);
-
-        // $('#modalCenter').modal('show');
     });
 
     if ($update.length) {
@@ -193,3 +194,125 @@ $(document).ready(function () {
         });
     }
 });
+
+$(document).ready(function () {
+    var table = $("#tableKho").DataTable();
+    var selectedCount = 0;
+    var totalWeight = 0;
+    var maxWeight = +$("#maxWeight").text();
+
+    function updateBatchAndBale() {
+        var batchData = [];
+
+        $(".box-batch > div").each(function () {
+            var batchId = $(this).attr("id");
+            var baleCount =
+                parseInt($(this).find(".bale-input").val(), 10) || 0;
+
+            batchData.push({
+                batch_id: batchId,
+                bale_count: baleCount,
+            });
+        });
+
+        $("#batch_and_bale").val(JSON.stringify(batchData));
+    }
+
+    function updateTotals() {
+        selectedCount = $(".box-batch").children().length;
+        totalWeight = 0;
+        $(".box-batch .bale-input").each(function () {
+            var baleCount = parseInt($(this).val(), 10) || 0;
+            totalWeight += baleCount * 35;
+        });
+        $(".card-header .fw-bold span").eq(0).text(selectedCount);
+        $(".card-header .fw-bold span").eq(1).text(totalWeight);
+
+        // Cập nhật giá trị vào `batch_and_bale`
+        updateBatchAndBale();
+    }
+
+    $("#tableKho tbody").on("click", "tr", function () {
+        var col2 = $(this).find("td").eq(2).text();
+        var col3 = $(this).find("td").eq(3).text();
+        var baleCount = parseInt(col3, 10);
+
+        var batchId = col2.replace(/\s+/g, "-");
+
+        var existingBatchInfo = $(".box-batch").find("#" + batchId);
+
+        if (existingBatchInfo.length) {
+            existingBatchInfo.remove();
+        } else {
+            var batchInfo = $("<div>")
+                .attr("id", batchId)
+                .css({
+                    "max-width": "200px",
+                    display: "inline-block",
+                    marginBottom: "15px",
+                    position: "relative",
+                })
+                .append(
+                    $("<div class='bg-dark text-white p-3 rounded'>")
+                        .append(
+                            $(
+                                "<button class='close-btn text-danger'>&times;</button>"
+                            ).css({
+                                position: "absolute",
+                                top: "-7px",
+                                right: "12px",
+                                background: "none",
+                                border: "none",
+                                fontSize: "25px",
+                                cursor: "pointer",
+                            })
+                        )
+                        .append(
+                            "<div class='text-center mb-1 fw-bold text-warning'>" +
+                                col2 +
+                                "</div>"
+                        )
+                        .append(
+                            $("<div class='d-flex align-items-center gap-2'>")
+                                .append(
+                                    "<label><strong class='text-nowrap'>Số bành:</strong> </label> "
+                                )
+                                .append(
+                                    '<input type="number" min="1" max="144" class="form-control d-inline w-100 bale-input" value="' +
+                                        col3 +
+                                        '" oninput="this.value = Math.min(this.value, 144);">'
+                                )
+                        )
+                );
+
+            $(".box-batch").append(batchInfo);
+        }
+
+        updateTotals();
+    });
+
+    $(".box-batch").on("input", ".bale-input", function () {
+        updateTotals();
+    });
+
+    $(".box-batch").on("click", ".close-btn", function () {
+        $(this).closest("div[id]").remove();
+        updateTotals();
+    });
+
+    $("#exportFormB").on("submit", function (e) {
+        if (totalWeight !== maxWeight) {
+            e.preventDefault();
+            console.log(totalWeight, maxWeight);
+            alert("Vui lòng kiểm tra lại khối lượng.");
+        } else {
+            if (!confirm("Xác nhận xuất hàng?")) {
+                e.preventDefault();
+            }
+        }
+    });
+});
+
+// $(document).ready(function () {
+//     $('[data-bs-toggle="tooltip"]').tooltip();
+// });

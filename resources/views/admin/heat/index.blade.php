@@ -29,8 +29,16 @@
                         <label class="form-label">Lò sấy</label> <br>
                         <select name="oven" class="form-select w-100" required>
                             <option value="" selected disabled>Chọn lò</option>
-                            <option value="1">Lò 1</option>
-                            <option value="2">Lò 2</option>
+
+                            @if (Gate::allows('admin')  || Gate::allows('6t'))
+                               <option value="1">Lò 1</option>
+                                <option value="2">Lò 2</option>
+                            @endif
+
+                            @if (Gate::allows('admin')  || Gate::allows('3t'))
+                                <option value="3">Lò 3 tấn</option>
+                            @endif
+                            
                         </select>
                     </div>
 
@@ -188,9 +196,9 @@
                     <button class="btn btn-danger" id="heatProcessingBtn" type="submit">Gia công nhiệt</button>
                 </div>
 
-                <div class="d-none form-heat-items">
+                {{-- <div class="d-none form-heat-items">
                     <button class="btn btn-success" id="ncaBtn" type="submit">Nhận ca</button>
-                </div>
+                </div> --}}
             </div>
         </div>
            
@@ -246,11 +254,7 @@
         }
     </style>
 
-    <h4 class="fw-bold py-3 mb-0 mt-3">Thùng đã xử lý nhiệt</h4>
-
-
-
-
+    <h4 class="fw-bold py-3 mb-0 mt-3">Thùng đang xử lý nhiệt</h4>
 
 
 <div class="modal fade" id="adjustTimeModal" tabindex="-1" aria-labelledby="adjustTimeModalLabel" aria-hidden="true">
@@ -393,6 +397,8 @@
                     @csrf
                     @method('DELETE')
                     <input type="hidden" name="drums" id="selected-drums2">
+
+                    <input type="hidden" name="link" id="doneLink" >
                     
                     <button class="btn btn-danger" type="submit" name="action" value="delete">Xóa</button>
                     <button type="button" class="btn btn-info" onclick="handleAdjustTimeButtonClick();">Điều chỉnh</button>
@@ -438,55 +444,6 @@
     </style>
 
 
-
-
-
-    {{-- <table id="datatable2" class="ui celled table hover" style="width:100%">
-        <thead>
-            <tr>
-                <th>Ngày sấy </th>
-                <th>Trạng thái</th>
-                <th>Tên thùng</th>
-                <th>Thời gian bắt đầu sấy</th>
-                <th>Thời gian sấy(phút)</th>
-                <th>Thời gian ra lò</th>
-                <th>Ghi chú</th>
-                <th>Ngày ra lò</th>
-                <th>Nhiệt độ T1</th>
-                <th>Nhiệt độ T2</th>
-                <th>Lò</th>
-                <th>Dây chuyền</th>
-                <th>Đánh giá</th>
-                <th>Vệ sinh thùng</th>
-                <th>Trưởng ca</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($drums_handled as $index => $drum)
-            <tr id="{{$drum->id}}" data-status="{{$drum->status}}" data-oven="{{$drum->oven}}" data-link="{{$drum->link}}" data-start="{{\Carbon\Carbon::parse($drum->heated_start)->format('H:i')}}" data-date="{{\Carbon\Carbon::parse($drum->heated_date)->format('Y-m-d')}}" data-dry="{{$drum->time_to_dry}}">
-                <td></td>
-                <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
-                <td>{!! $drum->status !== 0 ? "<span class='text-success'>Đang xử lý nhiệt</span>" : "<span class='text-danger'>Chờ xử lý nhiệt</span>"  !!}</td>
-                <td>{{ $drum->name }}</td>
-                <td>{{ \Carbon\Carbon::parse($drum->heated_start)->format('H:i') }}</td>
-                <td>{{ $drum->time_to_dry }}</td>
-                <td data-sort="{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('Y-m-d H:i') : '' }}">{{ $drum->heated_end ? \Carbon\Carbon::parse($drum->heated_end)->format('H:i') : '' }}</td>
-                <td><span class="text-danger">{{$drum->note}}</span></td>
-                <td>{{ $drum->heated_date ? \Carbon\Carbon::parse($drum->heated_date)->format('d/m/Y') : '' }}</td>
-                
-                <td>{{ $drum->temp }}</td>
-                <td>{{ $drum->temp2 }}</td>
-                <td>Lò {{ $drum->oven }}</td>
-                
-                <td>{{ $drum->link }}</td>
-                <td>{{ $drum->validation }}</td>
-                <td>{{ $drum->state }}</td>
-                <td>{{ $drum->supervisor }}</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table> --}}
-
     <script>
         countText = document.querySelector('.drums-count span');
         drumvalue = document.querySelector('.drumdate-select option:first-child');
@@ -499,11 +456,11 @@
             document.getElementById('newOrderCard').style.display = 'block';
         });
 
-        document.addEventListener('click', function(event) {
-            if (!newOrderCard.contains(event.target) && !heatProcessingBtn.contains(event.target)) {
-                newOrderCard.style.display = 'none';
-            }
-        });
+        // document.addEventListener('click', function(event) {
+        //     if (!newOrderCard.contains(event.target) && !heatProcessingBtn.contains(event.target)) {
+        //         newOrderCard.style.display = 'none';
+        //     }
+        // });
 
     </script>
 

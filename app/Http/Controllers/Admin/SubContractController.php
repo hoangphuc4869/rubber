@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Contract;
 use Illuminate\Http\Request;
 use App\Models\SubContract;
 
@@ -31,20 +32,12 @@ class SubContractController extends Controller
 
     public function store(Request $request)
     {
-        // dd($request->all());
-        $subContract = new SubContract();
-        $subContract->contract_type_id = $request->contract_type_id;
-        $subContract->customer_id = $request->customer_id;
-        $subContract->contract_number = $request->contract_number;
-        $subContract->contract_date = $request->contract_date;
-        $subContract->thang_giao_hang = $request->thang_giao_hang;
-        $subContract->san_pham = $request->san_pham;
-        $subContract->loai_pallet = $request->loai_pallet;
-        $subContract->thi_truong = $request->thi_truong;
-        $subContract->don_vi_xuat_thuong_mai = $request->don_vi_xuat_thuong_mai;
-        $subContract->ban_cho_ben_thu_3 = $request->ban_cho_ben_thu_3;
-        $subContract->count_contract = $request->count_contract;
-        $subContract->contract_id = $request->contract_id;
+        // dd();
+        $subContract = new Contract();
+
+        $subContract->fill($request->all());
+        $subContract->sub = 1;
+        $subContract->save();
 
         if ($request->hasFile('file_scan_pdf')) {
             $file = $request->file('file_scan_pdf');

@@ -48,25 +48,6 @@
                                 @endforeach
                             </div>
                         </div>
-
-                        {{-- <div class="mb-3">
-                            <label class="form-label" for="basic-default-fullname">Mã nhà ủ</label>
-                            <input type="text" id="code" class="form-control @error('code') is-invalid @enderror" name="code" value="{{ old('code') }}" placeholder="Nx NUx">
-                            @error('code')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="basic-default-company">Tên nhà ủ</label>
-                            <input type="text" id="name" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" placeholder="Nhà ủ 1">
-                            @error('name')
-                                <div class="invalid-feedback">
-                                    {{ $message }}
-                                </div>
-                            @enderror
-                        </div> --}}
                         
                         <button type="submit" class="btn btn-primary mt-3">Thêm</button>
                     </form>

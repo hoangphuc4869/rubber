@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="row">
-        <h4 class="fw-bold py-3 mb-4">Thêm hợp đồng mới</h4>
+        <h4 class="fw-bold py-3 mb-4">Thêm hợp đồng mớiiiii</h4>
 
         <div class="card-body">
             @include('partials.errors')

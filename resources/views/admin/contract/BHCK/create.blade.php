@@ -7,7 +7,7 @@
         <div class="card-body">
             @include('partials.errors')
             
-            <form action="{{ route('contract.store') }}" method="POST">
+            <form action="{{ route('contract.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row">
 
@@ -48,7 +48,7 @@
                         <input type="text" name="hd_goc_so" class="form-control" required value="123">
                     </div> --}}
 
-                    <div class="mb-3 col-lg-3">
+                    {{-- <div class="mb-3 col-lg-3">
                         <label class="form-label" >Tháng giao hàng</label>
                         <select name="thang_giao_hang[]" class="form-select w-100" id="thang_giao_hang" multiple="multiple" >
 
@@ -74,7 +74,7 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Năm giao hàng</label>
                         <input type="number" name="nam_giao_hang" class="form-control" required>
-                    </div>
+                    </div> --}}
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Sản phẩm/ Lot</label>
@@ -104,6 +104,11 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Khối lượng theo hợp đồng (tấn)</label>
                         <input type="number" name="count_contract" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label">File hợp đồng đính kèm</label>
+                        <input type="file" name="file_scan_pdf" class="form-control" >
                     </div>
 
                    

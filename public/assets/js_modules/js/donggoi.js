@@ -1,7 +1,7 @@
 $("#dateFilterDongGoi").datepicker({
     dateFormat: "dd-mm-yy",
 });
-$("#dateFilterDongGoi").datepicker("setDate", new Date());
+// $("#dateFilterDongGoi").datepicker("setDate", new Date());
 
 let tableDongGoi = new DataTable("#donggoiTable", {
     ajax: {
@@ -40,7 +40,7 @@ let tableDongGoi = new DataTable("#donggoiTable", {
     scrollCollapse: true,
     processing: true,
     serverSide: true,
-    order: [[0, "desc"]],
+    order: [[3, "asc"]],
     columns: [
         { data: "date", name: "date" },
         { data: "company", name: "company" },
@@ -51,7 +51,7 @@ let tableDongGoi = new DataTable("#donggoiTable", {
                 return `<span class='fw-bold'>${data}</span>`;
             },
         },
-        { data: "heated_end", name: "heated_end" },
+        { data: "end_time", name: "heated_end" },
         { data: "link", name: "link" },
 
         {
@@ -175,7 +175,7 @@ $("#updatebale").on("click", function () {
 $("#dateFilterDongGoi2").datepicker({
     dateFormat: "dd-mm-yy",
 });
-$("#dateFilterDongGoi2").datepicker("setDate", new Date());
+// $("#dateFilterDongGoi2").datepicker("setDate", new Date());
 
 let tableDongGoi2 = new DataTable("#donggoiTable2", {
     ajax: {
@@ -208,7 +208,7 @@ let tableDongGoi2 = new DataTable("#donggoiTable2", {
     scrollCollapse: true,
     processing: true,
     serverSide: true,
-    order: [[0, "desc"]],
+    order: [[5, "asc"]],
     columns: [
         { data: "date", name: "date" },
         { data: "company", name: "company" },

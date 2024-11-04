@@ -298,6 +298,15 @@ flatpickr("#timeInput2", {
     dateFormat: "H:i",
 });
 
+flatpickr("#adjust-time", {
+    enableTime: true,
+    noCalendar: true,
+    time_24hr: true,
+    minuteIncrement: 1,
+    dateFormat: "H:i",
+    allowInput: true,
+});
+
 // const now = new Date();
 // let hours = now.getHours();
 // let minutes = now.getMinutes();
@@ -554,41 +563,52 @@ $(document).ready(function () {
     let counter = 0;
 
     $(".add-more").click(function () {
+        const contractId = $(this).data("id");
+
         let newDeliveryDate = `
         <div class="delivery_dates mb-3 row" id="delivery_dates_${counter}">
             <div class="mb-3 fw-bold">Xuất hàng đi</div>
 
-            <div class="mb-3 col-lg-4">
+            <div class="mb-3 col-lg-3">
                 <label class="form-label">Số Hợp đồng</label>
-                <input type="text" name="delivery_date[${counter}][so_hop_dong]" class="form-control" required placeholder="Số hợp đồng">
+                <select name="delivery_date[${counter}][so_hop_dong]" class="form-control contract-select" required>
+                    <option value="">Loading...</option>
+                </select>
             </div>
 
-            <div class="mb-3 col-lg-4">
+            <div class="mb-3 col-lg-3">
                 <label class="form-label">Loại hàng</label>
                 <input type="text" name="delivery_date[${counter}][type]" class="form-control" required value="CSR10" placeholder="Nhập loại hàng">
             </div>
 
-            <div class="mb-3 col-lg-4">
+            <div class="mb-3 col-lg-3">
                 <label class="form-label">Khối lượng (tấn)</label>
                 <input type="number" name="delivery_date[${counter}][amount]" class="form-control" required placeholder="Nhập khối lượng">
             </div>
 
-            <div class="mb-3 col-lg-4">
-                <label class="form-label">Ngày đóng cont</label>
-                <input type="date" name="delivery_date[${counter}][closing_date]" class="form-control" placeholder="Chọn ngày đóng cont">
-            </div>
-
-            <div class="mb-3 col-lg-4">
-                <label class="form-label">Ngày nhận hàng</label>
-                <input type="date" name="delivery_date[${counter}][receiving_date]" class="form-control" placeholder="Chọn ngày nhận hàng">
-            </div>
-
-            <div class="mb-3 col-lg-4">
+            <div class="mb-3 col-lg-3">
                 <label class="form-label">Lệnh xuất hàng</label>
                 <input type="text" name="delivery_date[${counter}][shipping_order]" class="form-control" placeholder="Nhập lệnh xuất hàng">
             </div>
 
-            <div class="mb-3 col-lg-4">
+            <div class="mb-3 col-lg-3">
+                <label class="form-label">Ngày đóng cont</label>
+                <input type="date" name="delivery_date[${counter}][closing_date]" class="form-control" placeholder="Chọn ngày đóng cont">
+            </div>
+
+            <div class="mb-3 col-lg-3">
+                <label class="form-label">Ngày xuất hàng</label>
+                <input type="date" name="delivery_date[${counter}][shipment_date]" class="form-control" placeholder="Chọn ngày xuất hàng">
+            </div>
+
+            <div class="mb-3 col-lg-3">
+                <label class="form-label">Ngày nhận hàng</label>
+                <input type="date" name="delivery_date[${counter}][receiving_date]" class="form-control" placeholder="Chọn ngày nhận hàng">
+            </div>
+
+            
+
+            <div class="mb-3 col-lg-3">
                 <label class="form-label">File đính kèm (PDF)</label>
                 <input type="file" name="delivery_date[${counter}][file]" class="form-control" accept="application/pdf">
             </div>
@@ -600,6 +620,43 @@ $(document).ready(function () {
     `;
 
         $(".delivery_dates_container").append(newDeliveryDate);
+
+        fetch(`/get-contracts?code=${contractId}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data);
+
+                if (data && data.contract) {
+                    let contractOptions =
+                        '<option value="" disabled>Chọn số hợp đồng</option>';
+
+                    contractOptions += `<option value="${data.contract.contract_number}">${data.contract.contract_number} (HD gốc)</option>`;
+
+                    data.contract_list.forEach((subContract) => {
+                        contractOptions += `<option value="${subContract.contract_number}">${subContract.contract_number}</option>`;
+                    });
+
+                    $(`.contract-select`).each(function () {
+                        $(this).html(contractOptions);
+                    });
+                } else {
+                    $(`#delivery_dates_${counter} .contract-select`).html(
+                        '<option value="">Không có hợp đồng</option>'
+                    );
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching contracts:", error);
+                $(`#delivery_dates_${counter} .contract-select`).html(
+                    '<option value="">Lỗi khi tải hợp đồng</option>'
+                );
+            });
+
         counter++;
     });
 
@@ -624,15 +681,20 @@ function updateShipmentFields(element) {
     var ngay_nhan_hang = $(
         `input[data-id="${shipmentId}"][data-field="ngay_nhan_hang"]`
     ).val();
+    var ngay_dong_cont = $(
+        `input[data-id="${shipmentId}"][data-field="ngay_dong_cont"]`
+    ).val();
     var so_hop_dong = $(
         `input[data-id="${shipmentId}"][data-field="so_hop_dong"]`
     ).val(); // Get value of so_hop_dong
+
     var fileInput = $(`input[data-id="${shipmentId}"].shipment-file`)[0];
 
     var formData = new FormData();
     formData.append("ma_xuat", ma_xuat);
     formData.append("ngay_xuat", ngay_xuat);
     formData.append("ngay_nhan_hang", ngay_nhan_hang);
+    formData.append("ngay_dong_cont", ngay_dong_cont);
     formData.append("so_hop_dong", so_hop_dong);
 
     if (fileInput.files.length > 0) {
@@ -657,10 +719,10 @@ function updateShipmentFields(element) {
     });
 }
 
-// $(".shipment-field").on("change", function () {
-//     var shipmentId = $(this).data("id");
-//     updateShipmentFields(this);
-// });
+$(".shipment-field").on("change", function () {
+    var shipmentId = $(this).data("id");
+    updateShipmentFields(this);
+});
 
 // $(".shipment-file").on("change", function () {
 //     var shipmentId = $(this).data("id");

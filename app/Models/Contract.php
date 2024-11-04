@@ -48,7 +48,8 @@ class Contract extends Model
 		'contract_number',
 		'contract_date',
 		'count_contract',
-		'supplier'
+		'supplier',
+		'nam_giao_hang',
     ];
 
 

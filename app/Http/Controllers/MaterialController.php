@@ -9,6 +9,7 @@ use App\Models\Truck;
 use App\Models\CuringArea;
 use App\Models\CuringHouse;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Plot;
 
 class MaterialController extends Controller
 {
@@ -31,11 +32,23 @@ class MaterialController extends Controller
 
     public function insert(Request $request)  
     {  
-        $apiToken = session('api_token');  
-
+ 
         $rubberRecords = $request->json()->all();  
         $rubberData = [];   
         $failedEntries = []; 
+
+
+        $farm_map = [
+            'N1' => 'NÔNG TRƯỜNG 1',
+            'N2' => 'NÔNG TRƯỜNG 2',
+            'N3' => 'NÔNG TRƯỜNG 3',
+            'N4' => 'NÔNG TRƯỜNG 4',
+            'N5' => 'NÔNG TRƯỜNG 5',
+            'N6' => 'NÔNG TRƯỜNG 6',
+            'N7' => 'NÔNG TRƯỜNG 7',
+            'N8' => 'NÔNG TRƯỜNG 8',
+            "TÂY NINH SR" => 'TNSR'
+        ];
 
         foreach ($rubberRecords as $item) {  
             if($item['loai_phieu'] !== 'Phiếu Xuất'){
@@ -66,7 +79,7 @@ class MaterialController extends Controller
                         $existingRecord->update([  
                             'or_time' => $item['thoi_gian'],   
                             'truck_name' => $item['bien_so_xe'],  
-                            'farm_name' => $item['nguon_goc'],  
+                            'farm_name' => isset($farm_map[$item['nguon_goc']]) ? $farm_map[$item['nguon_goc']] : $item['nguon_goc'],  
                             'fresh_weight' => $item['khoi_luong_mu'],  
                             'dry_weight' => $existingRecord->drc_percentage ? $item['khoi_luong_mu'] * $existingRecord->drc_percentage/100 : null,  
                             'latex_type' => $item['chung_loai'],   
@@ -80,8 +93,51 @@ class MaterialController extends Controller
                             'kho' =>  $item['kho'],
                             'tai_xe' =>  $item['tai_xe'],
                             'loai_phieu' =>  $item['loai_phieu'],
+                            'lat_cao' =>  $item['lat_cao'],
+                            'ten_lo' =>  $item['ten_lo'],
                             'updated_at' => now()
                         ]);  
+
+                        if (in_array($existingRecord->farm_id, [1, 2, 3, 4, 5, 6, 7, 8]) && $existingRecord->lat_cao && $existingRecord->ten_lo) {
+
+                            $latCaoItems = array_filter(explode(";", $existingRecord->lat_cao));
+
+                            $tenLoItems = array_filter(explode("-", $existingRecord->ten_lo));
+
+                            $syncData = [];
+
+                            foreach ($latCaoItems as $index => $latCaoItem) {
+
+                                [$key, $value] = explode("-", $latCaoItem);
+                                
+                                $key = str_replace("T", "", $key);
+
+                                $plots = Plot::where('farm_id', $existingRecord['farm_id'])
+                                    ->where('to_nt', $key)
+                                    ->where(function($query) use ($value) {
+                                        foreach (explode(',', $value) as $val) {
+                                            $query->orWhere('lat_cao', 'like', '%' . trim($val) . '%');
+                                        }
+                                    })
+                                    ->get();
+
+                                if($plots){
+                                    
+                                    foreach ($plots as $lo) {
+                                        
+                                        $syncData[$lo->id] = [
+                                            'to_nt' => $key,
+                                            'lat_cao' => $value, 
+                                        ];
+                                        
+                                    }
+                                }
+                            }
+
+                            $existingRecord->plots()->sync($syncData);
+  
+                        }
+
                     } else {  
                         
                         $failedEntries[] = $item['so_phieu'];  
@@ -89,11 +145,13 @@ class MaterialController extends Controller
                     continue; 
                 }  
 
+                
+
                 $data = [  
                     'status' => 0,  
                     'or_time' => $item['thoi_gian'],   
                     'truck_name' => $item['bien_so_xe'],  
-                    'farm_name' => $item['nguon_goc'],  
+                    'farm_name' => isset($farm_map[$item['nguon_goc']]) ? $farm_map[$item['nguon_goc']] : $item['nguon_goc'] ,  
                     'fresh_weight' => $item['khoi_luong_mu'],  
                     'latex_type' => $item['chung_loai'],   
                     'package_code' => $item['so_phieu'], 
@@ -105,6 +163,8 @@ class MaterialController extends Controller
                     'kho' =>  $item['kho'],
                     'tai_xe' =>  $item['tai_xe'],
                     'loai_phieu' =>  $item['loai_phieu'],
+                    'lat_cao' =>  $item['lat_cao'],
+                    'ten_lo' =>  $item['ten_lo'],
                     'created_at' => now(),  
                     'updated_at' => now()
                 ];
@@ -120,9 +180,9 @@ class MaterialController extends Controller
                     $curingArea = $this->getCuringAreaForMDC($item['nguon_goc']);  
                 } elseif (in_array($item['chung_loai'], ["MỦ DÂY", "THU MUA MD"])) {  
                     $curingArea = $this->getCuringAreaForMuday($item['nguon_goc']);  
-                } elseif ($item['chung_loai'] === "THU MUA MĐC") {  
+                } elseif ($item['chung_loai'] === "THU MUA MĐC") {
                     $curingArea = CuringArea::where('code', 'NLTM')->first();  
-                }  
+                }
 
                 if (isset($curingArea)) {  
                     $data['receiving_place_id'] = $curingArea ? $curingArea->id : null;  
@@ -134,6 +194,47 @@ class MaterialController extends Controller
 
     
         Rubber::insert($rubberData); 
+
+        $insertedRubberIds = Rubber::whereIn('package_code', collect($rubberData)->pluck('package_code'))->get();
+
+        if($insertedRubberIds){
+            foreach ($insertedRubberIds as $rubber) {
+                if (in_array($rubber->farm_id, [1, 2, 3, 4, 5, 6, 7, 8]) && $rubber->lat_cao && $rubber->ten_lo) {
+
+                    $latCaoItems = array_filter(explode(";", $rubber->lat_cao));
+
+                    $tenLoItems = array_filter(explode(" - ", $rubber->ten_lo));
+
+                    $syncData = [];
+
+                    foreach ($latCaoItems as $index => $latCaoItem) {
+
+                        [$key, $value] = explode("-", $latCaoItem);
+                        
+                        $key = str_replace("T", "", $key);
+
+                        $plots = Plot::where('farm_id', $rubber['farm_id'])
+                            ->where('to_nt', $key)
+                            ->where(function($query) use ($value) {
+                                foreach (explode(',', $value) as $val) {
+                                    $query->orWhere('lat_cao', 'like', '%' . trim($val) . '%');
+                                }
+                            })
+                            ->get();
+                        
+                        if($plots){
+                            foreach ($plots as $lo) {
+                                $syncData[$lo->id] = [
+                                    'to_nt' => $key,
+                                    'lat_cao' => $value, 
+                                ];
+                            }
+                        }
+                    }
+                    $rubber->plots()->attach($syncData);  
+                }
+            }
+        }
 
 
         if(count($failedEntries) > 0){
@@ -155,14 +256,14 @@ class MaterialController extends Controller
     private function getCuringAreaForMDC($nguon_goc)
     {
         $codes = [
-            "NÔNG TRƯỜNG 1" => 'NLNT1',
-            "NÔNG TRƯỜNG 2" => 'NLNT2',
-            "NÔNG TRƯỜNG 3" => 'NLNT3',
-            "NÔNG TRƯỜNG 4" => 'NLNT4',
-            "NÔNG TRƯỜNG 5" => 'NLNT5',
-            "NÔNG TRƯỜNG 6" => 'NLNT6',
-            "NÔNG TRƯỜNG 7" => 'NLNT7',
-            "NÔNG TRƯỜNG 8" => 'NLNT8',
+            "N1" => 'NLNT1',
+            "N2" => 'NLNT2',
+            "N3" => 'NLNT3',
+            "N4" => 'NLNT4',
+            "N5" => 'NLNT5',
+            "N6" => 'NLNT6',
+            "N7" => 'NLNT7',
+            "N8" => 'NLNT8',
             "TÂY NINH SR" => 'NLTNSR',
         ];
 
@@ -176,14 +277,14 @@ class MaterialController extends Controller
     private function getCuringAreaForMuday($nguon_goc)
     {
         $codes = [
-            "NÔNG TRƯỜNG 1" => 'MDCR',
-            "NÔNG TRƯỜNG 2" => 'MDCR',
-            "NÔNG TRƯỜNG 3" => 'MDCR',
-            "NÔNG TRƯỜNG 4" => 'MDBH',
-            "NÔNG TRƯỜNG 5" => 'MDBH',
-            "NÔNG TRƯỜNG 6" => 'MDCR',
-            "NÔNG TRƯỜNG 7" => 'MDBH',
-            "NÔNG TRƯỜNG 8" => 'MDBH',
+            "N1" => 'MDCR',
+            "N2" => 'MDCR',
+            "N3" => 'MDCR',
+            "N4" => 'MDBH',
+            "N5" => 'MDBH',
+            "N6" => 'MDCR',
+            "N7" => 'MDBH',
+            "N8" => 'MDBH',
         ];
 
         if (isset($codes[$nguon_goc])) {
@@ -197,14 +298,14 @@ class MaterialController extends Controller
     private function getFarmByNguonGoc($nguon_goc)
     {
         $farmCodes = [
-            "NÔNG TRƯỜNG 1" => 'NT1',
-            "NÔNG TRƯỜNG 2" => 'NT2',
-            "NÔNG TRƯỜNG 3" => 'NT3',
-            "NÔNG TRƯỜNG 4" => 'NT4',
-            "NÔNG TRƯỜNG 5" => 'NT5',
-            "NÔNG TRƯỜNG 6" => 'NT6',
-            "NÔNG TRƯỜNG 7" => 'NT7',
-            "NÔNG TRƯỜNG 8" => 'NT8',
+            "N1" => 'NT1',
+            "N2" => 'NT2',
+            "N3" => 'NT3',
+            "N4" => 'NT4',
+            "N5" => 'NT5',
+            "N6" => 'NT6',
+            "N7" => 'NT7',
+            "N8" => 'NT8',
             "TÂY NINH SR" => 'TNSR',
         ];
 
@@ -215,12 +316,5 @@ class MaterialController extends Controller
             return Farm::where('code', 'TM')->first();
         }
     }
-
-
-
-
-
-
-
 
 }

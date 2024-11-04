@@ -32,8 +32,11 @@
                     </div>
 
                      <div class="mb-3 col-lg-4">
-                        <label class="form-label" >Tài khoản</label>
-                        <input type="text" name="account" class="form-control" required>
+                        <label class="form-label" >Công ty</label>
+                        <select name="company" class="form-select custom-select w-100 drumdate-select" >
+                            <option value="BHCK">BHCK</option>
+                            <option value="CRCK2">CRCK2</option>
+                        </select>
                     </div>
 
                     <div class="mb-3 col-lg-4">

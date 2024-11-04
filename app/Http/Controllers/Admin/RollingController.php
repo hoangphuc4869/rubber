@@ -189,40 +189,36 @@ class RollingController extends Controller
      */
     public function destroy(string $id)
     {
-        $item = Rolling::findOrFail($id);
-        $rubbers = Rubber::where('status', $item->id)->get();
-
-        if($item) {
-            foreach ($rubbers as $rubber) {
-                $rubber->status = 0;
-                $rubber->save();
-            }
-            $item->area->containing += $item->weight_to_roll;
-            $item->house->containing = max(0, $item->house->containing - $item->weight_to_roll);
-            $item->area->save();
-            $item->house->save();
-            $item->delete();
-        }
-        return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công');
+      
+        // return redirect()->route('rolling.index')->with('delete_success', 'Xóa thành công');
     }
 
     public function delete_items(Request $request)
     {
         
-        $items = explode( ',', $request->drums);
+        $items = explode(',', $request->drums);
 
         foreach ($items as $item) {
-            $rubbers = Rubber::where('status', $item)->get();
+            $rubbers = Rubber::where('rubber_warehouse_id', $item)->get();
             foreach ($rubbers as $rubber) {
-                $rubber->status = 0;
+
+                $rubber->rubber_warehouse_id = null;
                 $rubber->save();
             }
             $rolling = Rolling::findOrFail($item);
-            $rolling->area->containing = $rolling->area->containing + $rolling->weight_to_roll;
-            $rolling->house->containing = max(0, $rolling->house->containing - $rolling->weight_to_roll);
-            $rolling->area->save();
-            $rolling->house->save();
-            $rolling->delete();
+            
+            if($rolling->status == 1 || $rolling->remaining > 0){
+
+                return redirect()->back()->with('roll_fail', 'Nguyên liệu đã được sử dụng, không thể xóa!' );
+               
+            }
+            else {
+                $rolling->area->containing = $rolling->area->containing + $rolling->weight_to_roll;
+                $rolling->house->containing = max(0, $rolling->house->containing - $rolling->weight_to_roll);
+                $rolling->area->save();
+                $rolling->house->save();
+                $rolling->delete();
+            }
 
 
         }

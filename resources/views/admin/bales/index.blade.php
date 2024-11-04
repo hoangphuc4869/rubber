@@ -70,9 +70,16 @@
                     <div class="">
                         <label for="lineFilter" class="form-label mb-0">Dây chuyền</label>
                         <select id="lineFilter" class="form-control" style="width: 200px">
-                            <option value="">Tất cả</option>
-                            <option value="3">3 tấn</option>
-                            <option value="6">6 tấn</option>
+                            @if (Gate::allows('admin'))
+                                <option value="">Tất cả</option>
+                            @endif
+                            @if (Gate::allows('admin')  || Gate::allows('3t'))
+                                <option value="3">3 tấn</option>
+                            @endif
+
+                            @if (Gate::allows('admin')  || Gate::allows('6t'))
+                                <option value="6">6 tấn</option>
+                            @endif
                         </select>
                     </div>
                 </div>
@@ -100,7 +107,7 @@
             <tr>
                 <th class="text-center"></th>
                 <th>Ngày sấy </th>
-                <th>Mã thùng</th>
+                <th>Nguồn nguyên liệu</th>
                 <th>Trạng thái</th>
                 <th>Tên thùng</th>
                 <th>Lò</th>
@@ -120,7 +127,7 @@
             <tr id="{{$drum->id}}">
                 <td></td>
                 <td>{{ \Carbon\Carbon::parse($drum->date)->format('d/m/Y')}}</td>
-                <td>{{ $drum->code }}</td>
+                <td>{{ $drum->curing_house ? $drum->curing_house->code : $drum->curing_area->code  }}</td>
                 <td><span class='text-success'>Đã xử lý nhiệt</span></td>
                 <td>{{ $drum->name }}</td>
                 <td>Lò {{ $drum->oven }}</td>
@@ -129,15 +136,15 @@
                 <td>{{ $drum->temp2 }}</td>
                 <td>{{ $drum->time_to_dry }}</td>
                 <td>{{ \Carbon\Carbon::parse($drum->heated_start)->format('H:i') }}</td>
-                <td data-sort="{{ \Carbon\Carbon::parse($drum->heated_end)->format('Y-m-d H:i') }}">{{ \Carbon\Carbon::parse($drum->heated_end)->format('H:i') }}</td>
+
+                <td data-sort="{{ \Carbon\Carbon::parse($drum->heated_end)->format('Y-m-d H:i') }}">
+                    {{ \Carbon\Carbon::parse($drum->heated_end)->format('H:i') }}</td>
                 <td>{{ $drum->validation }}</td>
                 <td>{{ $drum->state }}</td>
                 <td>{{ $drum->supervisor }}</td>
-                
+
             </tr>
             @endforeach
         </tbody>
     </table>
-
-   
 @endsection

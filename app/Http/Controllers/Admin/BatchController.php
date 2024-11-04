@@ -16,6 +16,7 @@ use App\Models\Company;
 use App\Models\Rubber;
 use App\Models\Plot;
 use Yajra\DataTables\Facades\DataTables; 
+use Illuminate\Support\Facades\Auth;
 
 
 use Illuminate\Support\Facades\Http;
@@ -173,10 +174,14 @@ class BatchController extends Controller
                 ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->code : "") 
                 : ($donggoi->curing_area ? $donggoi->curing_area->code : "");
             })
-            
-            ->editColumn('heated_end', function ($donggoi) {
-                return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : ""; 
+
+            ->addColumn('end_time', function ($donggoi) {
+                return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : "";
             })
+            
+            // ->editColumn('heated_end', function ($donggoi) {
+            //     return $donggoi->heated_end ? \Carbon\Carbon::parse($donggoi->heated_end)->format('H:i') : ""; 
+            // })
            
             ->editColumn('date', function ($donggoi) {
                 return $donggoi->heated_date ? \Carbon\Carbon::parse($donggoi->heated_date)->format('d-m-Y') : "";
@@ -218,6 +223,10 @@ class BatchController extends Controller
         if ($request->has('date') && $request->date) {
             $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
             $donggoi->whereDate('heated_date', $date);
+        }
+
+        if ($request->has('link') && $request->link) {
+            $donggoi->where('link', $request->link);
         }
 
         if ($request->has('nongtruong') && $request->nongtruong) {
@@ -337,6 +346,11 @@ class BatchController extends Controller
                     ? \Carbon\Carbon::parse($item->drums->last()->heated_end)->format('H:i') 
                     : "";
             })
+            ->addColumn('heated_end', function ($item) {
+                 return $item->drums && $item->drums->isNotEmpty() 
+                    ? $item->drums->last()->heated_end 
+                    : "";
+            })
             ->make(true);
     }
 
@@ -408,6 +422,7 @@ class BatchController extends Controller
 
         foreach ($ids as $id) {
             $drum = Drum::findOrFail($id);
+            $current_time = \Carbon\Carbon::parse($drum->heated_date)->month;
             $nongtruong = $drum->curing_house ? $drum->curing_house->curing_area->code : $drum->curing_area->code;
 
             $farm_code = $farm_codes[$nongtruong] ?? null;
@@ -415,18 +430,20 @@ class BatchController extends Controller
             $company_id = $companies[$nongtruong] ?? null;
 
             if ($farm_code) {
-                $currentBatch = Batch::where('from_farm', $nongtruong)
+                $currentBatch = Batch::where('from_farm', $nongtruong)->where('link', $drum->link)
                                     ->orderBy('id', 'desc')
                                     ->first();
                 $batch_number = 1;
                 $remaining_bales = $drum->bale->number_of_bales;
 
-                if ($currentBatch && $currentBatch->bale_count < 144) {
+                if ($currentBatch && $currentBatch->bale_count < 144 && $currentBatch->batch_month == $current_time) {
                     $needed_bales = 144 - $currentBatch->bale_count;
 
                 
                     if ($remaining_bales <= $needed_bales) {
                         $currentBatch->bale_count += $remaining_bales;
+                        $currentBatch->batch_month = \Carbon\Carbon::parse($drum->heated_date)->month;
+
                         $currentBatch->save();
 
                     
@@ -445,19 +462,21 @@ class BatchController extends Controller
                 }
 
                 while ($remaining_bales > 0) {
-                    $batch_number = $currentBatch ? $currentBatch->batch_number + 1 : 1;
+                    
+                    $batch_number = $currentBatch && $currentBatch->batch_month == $current_time ? $currentBatch->batch_number + 1 : 1;
                     
                     $newBatch = new Batch();
-                    $newBatch->batch_code = date('y') . $farm_code . $request->link . date('n') . $batch_number;
+                    $newBatch->batch_code = date('y') . $farm_code . $drum->link . \Carbon\Carbon::parse($drum->heated_date)->format('m') . $batch_number;
                     $newBatch->expected_grade = $request->expected_grade;
                     $newBatch->sample_cut_number = $request->sample_cut_number;
                     $newBatch->packaging_type = $request->packaging_type;
                     $newBatch->from_farm = $nongtruong;
                     $newBatch->type = $type;
                     $newBatch->date = $request->date;
+                    $newBatch->batch_month = \Carbon\Carbon::parse($drum->heated_date)->month;
                     $newBatch->batch_number = $batch_number;
                     $newBatch->time = $request->time;
-                    $newBatch->link = $request->link;
+                    $newBatch->link = $drum->link;
                     $newBatch->company_id = $company_id;
 
 
@@ -552,6 +571,9 @@ class BatchController extends Controller
 
     public function viewFindBatch()
     {
+        $user= auth::user();
+        dd($user->customer->contracts);
+
         return view('admin.batch.find');
     }
 

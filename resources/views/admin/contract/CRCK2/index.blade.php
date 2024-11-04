@@ -20,9 +20,8 @@
                 <th>Loại hợp đồng</th>
                 <th>Trạng thái</th>
                 <th>Tên khách hàng</th>
-               
-                <th>Tháng giao hàng</th>
-                <th>Số lượng (tấn)</th>
+
+                <th>Số tấn</th>
                 <th>Lệnh xuất hàng</th>
                 <th>Tùy chỉnh</th>
             </tr>
@@ -37,7 +36,6 @@
                 <td>{!! $item->trang_thai == "Chưa thanh toán" ? '<span class="text-danger">Chưa thanh toán</span>' : ($item->trang_thai == "Hoàn tất" ? '<span class="text-success">Hoàn tất</span>' : '<span class="text-warning">Một phần</span>') !!}</td>
                 <td>{{ $item->customer ? $item->customer->name : '' }}</td>
                
-                <td>{{ $item->thang_giao_hang }}</td>
                 <td>
                    {{ implode(', ', $item->shipments->map(function ($shipment) {
                             return $shipment->so_luong;

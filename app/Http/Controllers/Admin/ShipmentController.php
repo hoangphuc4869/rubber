@@ -158,7 +158,8 @@ class ShipmentController extends Controller
             'ma_xuat' => 'string|nullable',
             'ngay_xuat' => 'date|nullable',
             'ngay_nhan_hang' => 'date|nullable',
-            'pdf' => 'file|mimes:pdf|max:2048|nullable',
+            'ngay_dong_cont' => 'date|nullable',
+            'pdf' => 'file|mimes:pdf|nullable',
         ]);
 
         
@@ -170,6 +171,10 @@ class ShipmentController extends Controller
         }
         if ($request->has('ngay_nhan_hang')) {
             $shipment->ngay_nhan_hang = $request->input('ngay_nhan_hang');
+        }
+
+        if ($request->has('ngay_dong_cont')) {
+            $shipment->ngay_dong_cont = $request->input('ngay_dong_cont');
         }
 
         if ($request->has('so_hop_dong')) {  
@@ -195,5 +200,56 @@ class ShipmentController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function exportBatches(Request $request)
+    {
+        // dd($request->all());
 
+
+      
+        $shipmentId = $request->input('shipment_id');
+        $batchAndBale = $request->input('batch_and_bale'); 
+
+        $batchAndBaleArray = json_decode($batchAndBale, true);
+
+        // dd($batchAndBaleArray);
+
+        foreach ($batchAndBaleArray as $item) {
+            $batch = Batch::where('batch_code', $item['batch_id'])->first();
+            if($batch){
+                $batch->banh_con_lai = $batch->bale_count - $item['bale_count'];
+                $batch->user_id = $request->customer_id;
+
+                $batch->exported = $batch->banh_con_lai == 0 ? 1 : 0;
+                $batch->storage_location = $batch->warehouse ? $batch->warehouse->code : "";
+
+                $warehouse = $batch->warehouse;
+
+                if($warehouse){
+                    $warehouse->batch_id = null;
+                    $warehouse->save();
+                }
+
+                $batch->warehouse_id = null;
+
+                $batch->save();
+
+                // dd($batch->warehouse, $batch);
+            }
+        }
+
+        $shipment = Shipment::findOrFail($shipmentId);
+
+        $shipment->lo_hang = $batchAndBaleArray;
+        $shipment->status = 1;
+        $shipment->save();
+
+
+        if($request->com == 'BHCK'){
+            return redirect()->route('shipments.index')->with('success', 'Xuất hàng thành công');
+        }
+
+        return redirect()->route('shipmentsCRCK2.index')->with('success', 'Xuất hàng thành công');
+
+        
+    }
 }

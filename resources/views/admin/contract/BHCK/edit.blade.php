@@ -87,10 +87,10 @@
                         <input type="date" name="contract_date" class="form-control" required value="{{$contract->contract_date}}">
                     </div>
 
-                    <div class="mb-3 col-lg-3">
+                    {{-- <div class="mb-3 col-lg-3">
                         <label class="form-label" >Tháng giao hàng</label>
                         @php
-                            $selectedMonths = json_decode($contract->thang_giao_hang, true);
+                            $selectedMonths = explode(',', $contract->thang_giao_hang);
                         @endphp
 
                         <select name="thang_giao_hang[]" class="form-select w-100" id="thang_giao_hang" multiple="multiple">
@@ -113,7 +113,7 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Năm giao hàng</label>
                         <input type="text" name="san_pham" class="form-control" required value="{{$contract->nam_giao_hang}}">
-                    </div>
+                    </div> --}}
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Sản phẩm/ Lot</label>
@@ -141,8 +141,26 @@
                     </div>
 
                     <div class="mb-3 col-lg-3">
-                        <label class="form-label" >Số lượng hợp đồng (tấn)</label>
+                        <label class="form-label" >Số lượng tấn</label>
                         <input type="number" name="count_contract" class="form-control" required value="{{$contract->count_contract}}">
+                    </div>
+
+                    <div class="mb-3 col-lg-3">
+                        <label class="form-label">File hợp đồng đính kèm</label>
+                      
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            <input type="file" name="file_scan_pdf" class="form-control hidden" >
+
+                            @if($contract->file_scan_pdf)
+                                <a href="{{ asset($contract->file_scan_pdf) }}" target="blank">
+                                    <div class="btn btn-primary  text-nowrap">Xem file</div>
+                                </a>
+                            @else
+                                <div class="text-danger fw-bold  text-nowrap">
+                                    Chưa có file đính kèm
+                                </div>
+                            @endif
+                        </div>
                     </div>
 
 
@@ -156,7 +174,7 @@
 
                     </div>
 
-                    <button type="submit" class="btn btn-primary mt-2">Cập nhật</button>
+                    <button type="submit" class="btn btn-success mt-2">Cập nhật</button>
                 </div>
             </form>
         </div>
@@ -171,7 +189,7 @@
                     <th>Khách hàng</th>
                     <th>Ngày hợp đồng</th>
                     <th>Số hợp đồng</th>
-                    <th>Tháng giao hàng</th>
+                    {{-- <th>Tháng giao hàng</th> --}}
                     <th>Sản phẩm</th>
                     <th>Loại Pallet</th>
                     <th>Thị trường</th>
@@ -183,13 +201,13 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($contract->subContracts as $subContract)
+                @foreach ($subContracts as $subContract)
                 <tr>
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->contract_type->name ?? 'N/A' }}</td>
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->customer->name ?? 'N/A' }}</td>
                     <td style="text-align: center; vertical-align: middle;">{{ \Carbon\Carbon::parse($subContract->contract_date)->format('d/m/Y') }}</td>
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->contract_number }}</td>
-                    <td style="text-align: center; vertical-align: middle;">{{ $subContract->thang_giao_hang }}</td>
+                    {{-- <td style="text-align: center; vertical-align: middle;">{{ $subContract->thang_giao_hang }}</td> --}}
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->san_pham }}</td>
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->loai_pallet }}</td>
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->thi_truong }}</td>
@@ -198,13 +216,13 @@
                     <td style="text-align: center; vertical-align: middle;">{{ $subContract->count_contract }}</td>
                     <td style="text-align: center; vertical-align: middle;">
                         @if($subContract->file_scan_pdf)
-                            <a href="{{ asset($subContract->file_scan_pdf) }}" target="_blank">Tải về</a>
+                            <a href="{{ asset($subContract->file_scan_pdf) }}" target="_blank">Xem file</a>
                         @else
                             Không có file
                         @endif
                     </td>
                     <td style="text-align: center; vertical-align: middle;">
-                        <form action="{{route('sub-con.destroy', [$subContract->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        <form action="{{route('contract.destroy', [$subContract->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                             <button class="bin-button">
@@ -287,6 +305,7 @@
                         <form action="{{ route('sub-con.store') }}" method="POST" enctype="multipart/form-data">
                             @csrf
                             <div class="row">
+                                <input type="hidden" name="hd_goc_so" value="{{$contract->contract_number}}">
                                 <div class="mb-3 col-lg-6">
 
                                     <label class="form-label">Loại hợp đồng</label>
@@ -317,7 +336,7 @@
                                     <input type="date" name="contract_date" class="form-control" required>
                                 </div>
 
-                                <div class="mb-3 col-lg-6">
+                                {{-- <div class="mb-3 col-lg-6">
                                     <label class="form-label">Tháng giao hàng</label>
                                     <select name="thang_giao_hang" class="form-select w-100">
                                         <option value="01">Tháng 1</option>
@@ -334,6 +353,11 @@
                                         <option value="12">Tháng 12</option>
                                     </select>
                                 </div>
+
+                                <div class="mb-3 col-lg-6">
+                                    <label class="form-label" >Năm giao hàng</label>
+                                    <input type="text" name="san_pham" class="form-control" required value="{{$contract->nam_giao_hang}}">
+                                </div> --}}
 
                                 <div class="mb-3 col-lg-6">
                                     <label class="form-label">Sản phẩm/ Lot</label>
@@ -392,7 +416,7 @@
                     <div class="text-danger">Chưa có dữ liệu.</div>
                 @else
 
-                    {{$contract->shipments}}
+                    {{-- {{$contract->shipments}} --}}
                     @foreach ($contract->shipments as $index => $item)
                         <div class="row shipment my-3">
                             <div class="col-lg-3 mb-3">
@@ -401,38 +425,54 @@
                                     <ul class="mb-0 p-0" style="list-style: none">
                                         <li>
                                             Số hợp đồng
-                                            <input type="text" class="form-control" data-id="{{$item->id}}" data-field="so_hop_dong" value="{{$item->contract->contract_number}}" onchange="updateShipmentFields(this)">
+                                            <input type="text" class="form-control" data-id="{{$item->id}}" readonly data-field="so_hop_dong" value="{{$item->contract->contract_number}}" onchange="updateShipmentFields(this)">
                                         </li>
-                                        <li>
-                                            Lệnh xuất hàng: 
-                                            <input type="text" class="form-control" data-id="{{$item->id}}" data-field="ma_xuat" value="{{$item->ma_xuat}}" onchange="updateShipmentFields(this)">
-                                        </li>
+
+                                        <div class="row">
+                                            <div class="col-lg-6">
+                                                 <li>
+                                                    Số tấn
+                                                    <input type="number" class="form-control" readonly data-id="{{$item->id}}" data-field="so_luong" value="{{$item->so_luong}}" onchange="updateShipmentFields(this)">
+                                                </li>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <li>
+                                                    Ngày đóng cont: 
+                                                    <input type="date" class="form-control" data-id="{{$item->id}}" data-field="ngay_dong_cont" value="{{$item->ngay_dong_cont}}" onchange="updateShipmentFields(this)">
+                                                </li>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="row">
                                             <div class="col-lg-6">
                                                 <li>
-                                                    Ngày xuất: 
+                                                    Ngày xuất hàng: 
                                                     <input type="date" class="form-control" data-id="{{$item->id}}" data-field="ngay_xuat" value="{{$item->ngay_xuat}}" onchange="updateShipmentFields(this)">
                                                 </li>
                                             </div>
                                             <div class="col-lg-6">
-                                                <li>
+                                                 <li>
                                                     Ngày nhận hàng: 
                                                     <input type="date" class="form-control" data-id="{{$item->id}}" data-field="ngay_nhan_hang" value="{{$item->ngay_nhan_hang}}" onchange="updateShipmentFields(this)">
                                                 </li>
                                             </div>
+                                           
                                         </div>
+
+                                        <li>
+                                            Lệnh xuất hàng: 
+                                            <input type="text" class="form-control" data-id="{{$item->id}}" data-field="ma_xuat" value="{{$item->ma_xuat}}" onchange="updateShipmentFields(this)">
+                                        </li>
+
                                         <li>
                                             File đính kèm: 
                                             <input type="file" class="form-control shipment-file" accept="application/pdf" data-id="{{$item->id}}" onchange="updateShipmentFields(this)">
                                             @if ($item->pdf)
-                                                <a href="/contract_orders/{{$item->pdf}}" target="_blank" class="btn btn-dark my-2">Xem file đính kèm</a>
+                                                <a href="/contract_orders/{{$item->pdf}}" target="_blank" class="btn btn-success my-2">Xem file đính kèm</a>
                                             @else
-                                                <span class="text-danger">Không có file</span>
+                                                <span class="text-danger">Chưa có file</span>
                                             @endif
                                         </li>
-
-                                        <li>Trạng thái: {!!$item->status == 0 ? '<span class="text-danger">Đang cập nhật</span>' : '<span class="text-success">Đã xuất hàng</span>'!!}</li>
-
                                     </ul>
                                 </div>
                             </div>
@@ -441,9 +481,12 @@
                                 <div class="">
                                     <div class="mb-2 fw-bold text-dark fs-5">Lô hàng</div>
                                     <div class="batches">
-                                        @foreach ($item->batches as $batch)
-                                            <button class="btn btn-dark mb-1">{{$batch->batch_code}}</button>
-                                        @endforeach
+                                        @if($item->lo_hang)
+                                            @foreach (array_column(json_decode($item->lo_hang, true), 'batch_id') as $batch)
+                                                <button class="btn btn-dark mb-2">{{ $batch }}</button>
+                                               
+                                            @endforeach
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -451,7 +494,7 @@
                             <div class="col-lg-3 mb-3">
                                 <div>
                                     <div class="fw-bold">Trạng thái:</div>
-                                    <select class="form-select w-100" data-id="{{$item->id}}" onchange="saveStatus(this)">
+                                    <select class="form-select w-100" data-id="{{$item->id}}" onchange="saveNote(this)">
                                         <option value="0" {{$item->customer_status == 0 ? 'selected' : ''}}>Chưa xuất kho</option>
                                         <option value="1" {{$item->customer_status == 1 ? 'selected' : ''}}>Đã xuất kho</option>
                                         <option value="2" {{$item->customer_status == 2 ? 'selected' : ''}}>Đã thông quan</option>
@@ -482,6 +525,10 @@
                         background: rgb(181, 234, 245);
                         border-radius: 15px;
                         padding: 15px;
+                    }
+
+                    .shipment input:read-only{
+                        background: white !important;
                     }
 
                     .shipment ul li {

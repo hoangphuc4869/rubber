@@ -1,4 +1,9 @@
-{
-    "message": "",
-    "retry": ""
-}
+SELECT * 
+FROM drums 
+JOIN bales ON drums.id = bales.drum_id 
+WHERE drums.date = "2024-10-05" 
+  AND drums.link = 6 
+  AND bales.number_of_bales = 14;
+
+
+

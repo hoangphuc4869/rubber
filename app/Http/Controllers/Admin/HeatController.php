@@ -196,7 +196,7 @@ class HeatController extends Controller
             ->editColumn('heated_start', function ($gchat) {
                 return $gchat->heated_start ? \Carbon\Carbon::parse($gchat->heated_start)->format('H:i') : ""; 
             })
-            ->editColumn('heated_end', function ($gchat) {
+            ->addColumn('end_time', function ($gchat) {
                 return $gchat->heated_end ? \Carbon\Carbon::parse($gchat->heated_end)->format('H:i') : ""; 
             })
             ->editColumn('heated_date', function ($gchat) {
@@ -225,17 +225,20 @@ class HeatController extends Controller
     public function store(Request $request)
     {
         $data = $request->all();
-        // dd($request->all());
         $ids = explode(',', $data['drums']);
 
+        $drums_giao_6tan_oven1 = Drum::where('giao_ca', 1)->where('status', 2)->orderBy('id', 'asc')->get();
+        $drums_giao_6tan_oven2 = Drum::where('giao_ca', 2)->where('status', 2)->orderBy('id', 'asc')->get();
+        $drums_giao_3tan_oven3 = Drum::where('giao_ca', 3)->where('status', 2)->orderBy('id', 'asc')->get();
+
+        // dd($drums_giao_3tan_oven3);
         
         $lastHeatedStart = Carbon::createFromFormat('H:i Y-m-d', $request->time_start . ' ' . $request->date);
 
         foreach ($ids as $id) {
             $drum = Drum::findOrFail($id);
-            
+
             if ($drum->status == 0) {
-                
                 $drum->status = 1;
                 $drum->temp = $data['temp'];
                 $drum->temp2 = $data['temp2'];
@@ -244,30 +247,42 @@ class HeatController extends Controller
                 $drum->validation = $data['validation'];
                 $drum->time_to_dry = $data['time_to_dry'];
 
+                // Đặt heated_start
                 $drum->heated_start = $lastHeatedStart;
 
-                
-                if($drum->link == 3){
-                    $heatedEnd = $lastHeatedStart->copy()->addMinutes($data['time_to_dry'] * 30);
+                // Chọn thùng drum_out theo oven và chuyển `giao_ca` về null
+                if ($drum->oven == 1 && $drums_giao_6tan_oven1->isNotEmpty()) {
+                    $drum_out = $drums_giao_6tan_oven1->shift();
+                } elseif ($drum->oven == 2 && $drums_giao_6tan_oven2->isNotEmpty()) {
+                    $drum_out = $drums_giao_6tan_oven2->shift();
+                } elseif ($drum->oven == 3 && $drums_giao_3tan_oven3->isNotEmpty()) {
+                    $drum_out = $drums_giao_3tan_oven3->shift();
                 }
-                else {
-                    $heatedEnd = $lastHeatedStart->copy()->addMinutes($data['time_to_dry'] * 32);
+
+                if (isset($drum_out)) {
+                    $drum_out->heated_end = $lastHeatedStart;
+                    $drum_out->heated_date = $lastHeatedStart;
+                    $drum_out->status = 1;
+                    $drum_out->giao_ca = null;
+                    $drum_out->note = 'nhận ca';
+                    $drum_out->save();
+                }
+
+                // Xác định heated_end dựa trên link
+                if($drum->link == 3) {
+                    $heatedEnd = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 30);
+                } else {
+                    $heatedEnd = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 32);
                 }
 
                 $drum->heated_end = $heatedEnd;
+                $drum->heated_date = $heatedEnd->copy();
 
-                
-                $drum->heated_date = $drum->heated_end->copy();
-
-
+                // Lưu thùng
                 $drum->save();
 
-               
-                $lastHeatedStart = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry']);
-                // dd($lastHeatedStart, $heatedEnd);
-
-                // $this->updateBeforeDrum($drum, $drum->link);
-
+                // Cập nhật lastHeatedStart cho thùng tiếp theo
+                $lastHeatedStart->addMinutes(+$data['time_to_dry']);
             }
         }
 
@@ -386,10 +401,23 @@ class HeatController extends Controller
                     $drum->heating_supervisor = null;
                     $drum->status = 0; 
                 } elseif ($action === 'done') {
+
+                    // dd($request->all());
+                    $drums_giao_6tan_oven1 = Drum::where('giao_ca', 1)->where('status', 2)->orderBy('id', 'asc')->get();
+                    $drums_giao_6tan_oven2 = Drum::where('giao_ca', 2)->where('status', 2)->orderBy('id', 'asc')->get();
+                    $drums_giao_3tan_oven3 = Drum::where('giao_ca', 3)->where('status', 2)->orderBy('id', 'asc')->get();
+
+                    if($request->link == 3 && $drums_giao_3tan_oven3->isEmpty() ){
+                        return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
+                    }
+                    elseif($request->link == 6 && ($drums_giao_6tan_oven1->isEmpty() || $drums_giao_6tan_oven2->isEmpty())){
+                        return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
+                    }
+
+                    
                     $drum->status = 5; 
                 }
 
-                
                 $drum->save();
             }
         }
@@ -397,13 +425,14 @@ class HeatController extends Controller
         if ($action === 'delete') {
             return redirect()->back()->with('delete_success', 'Xóa thành công');
         } elseif ($action === 'done') {
-            return redirect()->back()->with('done_success', 'Xử lý nhiệt hoàn tất');
+            return redirect()->back()->with('success', 'Xử lý nhiệt hoàn tất');
         }
     }
 
 
     public function adjustTime(Request $request)
     {
+
         if ($request->has('multi')) {
             $drum = Drum::findOrFail($request->drums);
 
@@ -412,22 +441,32 @@ class HeatController extends Controller
                 $adjustDateTime = Carbon::parse($request->adjust_date)
                                     ->setTimeFrom(Carbon::parse($request->adjust_time));
 
+                $heatedStart = Carbon::parse($drum->heated_start);
+                $differenceInMinutes = $heatedStart->diffInMinutes($adjustDateTime);
+
+
                 $drum->heated_start = $adjustDateTime;
+                $drum->heated_end = Carbon::parse($drum->heated_end)->addMinutes($differenceInMinutes);
+                if($request->reason != ""){
+                    $drum->note = $request->reason;
+                }
+
+                $drum->save();
+
                 $this->updateNextDrums($drum, $request->line);
                 $this->updateBeforeDrum($drum, $request->line);
             }
 
             if ($request->has('adjust_time_dry')) {
                 $drum->time_to_dry = $request->adjust_time_dry;
+                $drum->note = $request->reason;
                 $drum->save();
                 // dd($drum);
 
-                // $this->updateBeforeDrum($drum, $request->line);
+                $this->updateBeforeDrum($drum, $request->line);
                 $this->updateNextDrums($drum, $request->line);
             }
 
-            $drum->note = $request->reason;
-            $drum->save();
         }
 
         $drums = Drum::all();
@@ -455,6 +494,7 @@ class HeatController extends Controller
     private function updateNextDrums($drum, $line)
     {
         $nextDrums = Drum::where('id', '>', $drum->id)
+            ->where('oven', $drum->oven)
             ->where('link', $line)
             ->whereNotIn('status', [0, 2, 3])
             ->orderBy('id', 'asc')
@@ -464,6 +504,10 @@ class HeatController extends Controller
             $nextDrum->heated_start = $index == 0
                 ? Carbon::parse($drum->heated_start)->addMinutes(+$drum->time_to_dry)
                 : Carbon::parse($nextDrums[$index - 1]->heated_start)->addMinutes(+$nextDrums[$index - 1]->time_to_dry);
+
+            $nextDrum->heated_end = $index == 0
+                ? Carbon::parse($drum->heated_end)->addMinutes(+$drum->time_to_dry)
+                : Carbon::parse($nextDrums[$index - 1]->heated_end)->addMinutes(+$nextDrums[$index - 1]->time_to_dry);
 
             $nextDrum->save();
 
@@ -475,7 +519,8 @@ class HeatController extends Controller
     {
         if($line == 3) {
             $beforeDrums = Drum::where('link', $drum->link)
-                ->where('id', '<', $drum->id) 
+                ->where('id', '<', $drum->id)
+                ->where('oven', $drum->oven)
                 ->whereNotIn('status', [0, 2, 3])   
                 ->orderBy('id', 'desc')         
                 ->take(30) 
@@ -498,7 +543,8 @@ class HeatController extends Controller
         }
         else {
             $beforeDrums = Drum::where('link', $drum->link)
-                ->where('id', '<', $drum->id) 
+                ->where('id', '<', $drum->id)
+                ->where('oven', $drum->oven)
                 ->whereNotIn('status', [0, 2, 3])   
                 ->orderBy('id', 'desc')         
                 ->take(32) 
@@ -521,13 +567,6 @@ class HeatController extends Controller
         
     }
 
-
-    public function adjustDryTime(Request $request)
-    {  
-        
-        return redirect()->back()->with('success', 'Thời gian đã được điều chỉnh');
-    }
-
     public function giaoCa(Request $request)
     {
        
@@ -539,14 +578,23 @@ class HeatController extends Controller
             return redirect()->back()->with('error', 'Không có thùng nào được chọn.');
         }
 
+        // dd($drumIds);
+
         foreach ($drumIds as $drumId) {
             $drum = Drum::find($drumId);
-            if ($drum) {
-                $drum->status = $request->type == "giaoca" ? 2 : 3;
-                $drum->heated_end = null;
-                $drum->heated_date = null;
-                $drum->save();
+            if ($drum->oven == 1) {
+                $drum->giao_ca = 1;
             }
+            elseif($drum->oven == 2) {
+                $drum->giao_ca = 2;
+            }
+            else {
+                $drum->giao_ca =3;
+            }
+            $drum->heated_end = null;
+            $drum->status = 2;
+            $drum->heated_date = null;
+            $drum->save();
         }
 
         return redirect()->back()->with('success', 'Đã giao ca thành công.');
@@ -555,15 +603,14 @@ class HeatController extends Controller
 
     public function nhanCa(Request $request)
     {
+
         
         $drumIds = explode(',', $request->drum_ids);
-       
 
         foreach ($drumIds as $id) {
             $drum = Drum::find($id);
             if ($drum) {
-            
-                
+
                 if($drum->status == 2 || $drum->status == 3){
                     
                     $drum->status = 1;

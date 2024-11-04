@@ -91,3 +91,26 @@ $("#receivingPlaceSelect").on("change", function () {
 
     $("#location").val(null);
 });
+
+$("#canvatTable tbody").on("click", "tr", function () {
+    $(this).toggleClass("selected");
+    updateButtonsCanVat();
+});
+
+function updateButtonsCanVat() {
+    let allRows = tableCanvat.rows().nodes();
+
+    let selectedRows = Array.from(allRows).filter(
+        (row) => $(row).hasClass("selected") && !$(row).hasClass("no-select")
+    );
+
+    let values = selectedRows.map((row) => row.id);
+
+    $("#selected-drums").val(values.join(","));
+
+    if (values.length > 0) {
+        $(".form-delete-items").removeClass("d-none");
+    } else {
+        $(".form-delete-items").addClass("d-none");
+    }
+}

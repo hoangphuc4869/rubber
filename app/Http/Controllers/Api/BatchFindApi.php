@@ -11,6 +11,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+
 class BatchFindApi extends Controller
 {
     public function __construct()
@@ -69,10 +72,21 @@ class BatchFindApi extends Controller
                         $trucksArray = [];
                         $truckCounts = []; 
 
+                                              
+                        $columns = Schema::getColumnListing('plots');
+
+                       
+                        $nsColumns = collect($columns)->filter(function($column) {
+                            return Str::startsWith($column, 'ns');
+                        })->toArray();
+
                         foreach ($rubbers as $index => $rubber) {
-                            
-                            $plots = $rubber->plots->map(function ($plot) {
-                                return [
+
+                            $plots = $rubber->plots->map(function ($plot) use ($nsColumns) {
+
+                                $nsData = $plot->only($nsColumns);
+
+                                return array_merge([
                                     'lo_vung_trong' => $plot->tenlo,
                                     'id_lo' => $plot->id_lo,
                                     'du_an' => $plot->duAn,
@@ -85,14 +99,16 @@ class BatchFindApi extends Controller
                                     'tong_cay_cao' => $plot->tongcaycao, 
                                     'mat_do_cay_cao' => $plot->matdocaycao, 
                                     'tong_kmc' => $plot->tong_kmc, 
+                                    'dientich' => $plot->dientich, 
+                                    'ns' => $nsData, 
                                     'toa_do' => [
                                         'x' => $plot->x,
                                         'y' => $plot->y,
                                         'geojson' => json_decode($plot->geojson)
-                                    ],
-                                    
-                                ];
-                            })->toArray(); 
+                                    ]
+                                ]); 
+                            })->toArray();
+
 
                             
                             $truckName = $rubber->truck_name;

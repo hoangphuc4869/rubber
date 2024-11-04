@@ -35,7 +35,7 @@
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Số hợp đồng</label>
-                        <input type="text" name="contract_number" class="form-control" required value="123">
+                        <input type="text" name="contract_number" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">
@@ -43,7 +43,7 @@
                         <input type="date" name="contract_date" class="form-control" required>
                     </div>
 
-                    <div class="mb-3 col-lg-3">
+                    {{-- <div class="mb-3 col-lg-3">
                         <label class="form-label" >Tháng giao hàng</label>
                         <select name="thang_giao_hang[]" class="form-select w-100" >
 
@@ -68,7 +68,7 @@
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Năm giao hàng</label>
                         <input type="number" name="year_delivery" class="form-control" required >
-                    </div>
+                    </div> --}}
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Sản phẩm/ Lot</label>
@@ -97,7 +97,7 @@
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Số lượng hợp đồng (tấn)</label>
-                        <input type="number" name="count_contract" class="form-control" required value="123">
+                        <input type="number" name="count_contract" class="form-control" required>
                     </div>
                    
                     <button type="submit" class="btn btn-primary mt-2">Thực hiện</button>

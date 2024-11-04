@@ -11,6 +11,10 @@ use App\Exports\MissingRecordsExport;
 use Illuminate\Support\Facades\Log;
 use App\Models\Batch;
 use App\Imports\BatchesImport;  
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+
 class PlotControllers extends Controller
 {
     /**
@@ -20,6 +24,21 @@ class PlotControllers extends Controller
     {
 
         $plots = Plot::all();
+
+        // Lấy danh sách tên cột từ bảng plots
+        $columns = Schema::getColumnListing('plots');
+
+        // Lọc các cột có tiền tố 'ns'
+        $nsColumns = collect($columns)->filter(function($column) {
+            return Str::startsWith($column, 'ns');
+        });
+
+        // Lấy dữ liệu của các cột `ns` từ tất cả các bản ghi
+        $nsData = $plots->map(function($plot) use ($nsColumns) {
+            return $plot->only($nsColumns->toArray());
+        });
+
+        dd($nsData);
 
         return view('admin.plots.index', compact('plots'));
     }
@@ -89,10 +108,16 @@ class PlotControllers extends Controller
 
     public function queryPlots(Request $request)
     {
-     
-        $plots = Plot::where('to_nt', $request->to_nt)
-            ->where('farm_id', $request->farm)
-            ->where('lat_cao', 'like', '%' . $request->lat_cao . '%')
+
+        $latcao = $request->lat_cao;
+
+        $plots = Plot::where('farm_id', $request->farm)
+            ->where('to_nt', $request->to_nt)
+            ->where(function($query) use ($latcao) {
+                foreach (explode(',', $latcao) as $val) {
+                    $query->orWhere('lat_cao', 'like', '%' . trim($val) . '%');
+                }
+            })
             ->get();
 
         if ($plots->isEmpty()) {

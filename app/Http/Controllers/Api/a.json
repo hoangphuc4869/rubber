@@ -1,0 +1,59 @@
+{
+    "success": true,
+    "msg": "get detail contract success",
+    "results": {
+        "contract": {
+            "name": "asdasda",
+            "hd_goc_so": "HDSG-111-8/10/2021",
+            "thang_giao_hang": "10/2024",
+            "loai_pallet": "Pallet 1",
+            "so_ngay_hd": "111-8/10/2021",
+            "san_pham": "SẢN PHẨM MỦ KHỐI SVR L",
+            "don_vi_xuat_thuong_mai": "Binh Long Rubber Co.LCD",
+            "thi_truong": "EU",
+            "ban_cho_ben_thu_3": "Công ty Thứ 3",
+            "so_hop_dong": "2131",
+            "id": 1,
+            "lenh_xuat_hang": "LX1",
+            "customer_id": 1,
+            "delivery_dates": [
+                {
+                    "id": 1,
+                    "contract_id": 1,
+                    "amount": "",
+                    "shipping_order": "LXT1",
+                    "container_loading_date": "",
+                    "date": "2024-10-08 15:51:23", //Ngày giao hàng
+                    "created_at": "2024-10-08 15:51:23",
+                    "updated_at": "2024-10-08 15:51:23",
+                    "plots": [
+                        {
+                            "id": 1,
+                            "code": "dadasda",
+                            "factory": "dasdada",
+                            "supplier_code": "dsadadsa",
+                            "created_at": "2024-10-08 15:51:23",
+                            "updated_at": "2024-10-08 15:51:23",
+                            "pivot": [
+                                {
+                                    "contract_id": "dsadas",
+                                    "plots_id": "dsadasdasda"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "customer": {
+                "id": 1,
+                "name": "dsadsa",
+                "email": "adsadsa@gmail.com",
+                "phone": "12314567",
+                "type": "",
+                "description": "",
+                "created_at": "2024-10-08 15:51:23",
+                "updated_at": "2024-10-08 15:51:23"
+            }
+        }
+    }
+}

@@ -224,6 +224,10 @@ class WarehouseController extends Controller
             $batch->where('company_id', $request->company);
         }
 
+        if ($request->filled('exported')) {
+            $batch->where('exported', $request->exported);
+        }
+
         // Lọc theo ngày
         if ($request->filled('date')) {
             $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');

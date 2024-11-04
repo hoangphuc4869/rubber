@@ -6,8 +6,8 @@
     <h4 class="fw-bold mb-5 mt-4">Danh sách lô hàng</h4>
 
 
-   <div class="filter-date d-flex align-items-end justify-content-between gap-2">
-        <div class="d-flex justify-content-between align-items-center">
+   <div class="filter-date d-flex align-items-end justify-content-between  gap-2">
+      
             <div class="filter-section  d-flex align-items-end gap-2 my-2">
                 <div class="">
                     <label for="dateFilterList" class="" style="font-size: 14px">Ngày</label>
@@ -48,6 +48,20 @@
 
                 <button id="btnListFilter" class="btn btn-primary">Lọc</button>
             </div>
+
+            <div class="my-2 d-none" id="labelBtn">
+                <form action="/export-labels">
+                    <input type="hidden" name="ids" id="selectedBatch">
+                    <button type="submit" class="btn btn-warning">Xuất tem</button>
+                </form>
+            </div>
+       
+    </div>
+
+
+    <div class="button-group mt-3">
+        <div class="d-flex align-items-center gap-2">
+            <button id="selectAllBtnList" class="btn btn-dark">Tất Cả</button>
         </div>
     </div>
 

@@ -9,10 +9,10 @@
         <thead>
             <tr>
                 <th>Ngày</th>
-                <th>Mã lệnh</th>
+                <th>Lệnh xuất hàng</th>
                 <th>Loại hàng</th>
-                <th>Công ty</th>
-                <th>Số lượng</th>
+                <th>Khách hàng</th>
+                <th>Số tấn</th>
                 <th>Mã lô</th>
                 <th>Trạng thái</th>
                 <th>Tùy chỉnh</th>
@@ -27,11 +27,27 @@
                     <td>{{$ship->loai_hang}}</td>
                     <td>{{$ship->contract->customer->name}}</td>
                     <td>{{$ship->so_luong}}</td>
-                     <td>
-                        {{ implode(', ', $ship->batches->map(function ($batch) {
-                            return $batch->batch_code;
-                        })->toArray()) }}
-                        </td>
+                    <td>
+                        {{-- {{ $ship->lo_hang ? implode(', ', array_column(json_decode($ship->lo_hang, true), 'batch_id')) : ""  }} --}}
+                        @if($ship->lo_hang)
+                            @php
+                                $batches = json_decode($ship->lo_hang, true);
+                            @endphp
+
+                            <div>
+                                @foreach($batches as $index => $item)
+                                    {{ $item['batch_id'] }}
+                                    @if (($index + 1) % 3 == 0)
+                                        <br> 
+                                    @else
+                                        @if($index < count($batches) - 1) 
+                                            ,
+                                        @endif
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+                    </td>
                     <td>{!!$ship->status == 0 ? '<span class="text-danger">Chưa xuất hàng<span>' : '<span class="text-success">Đã xuất hàng<span>'!!}</td>
                     <td>
                         @if ($ship->status == 0)

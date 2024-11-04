@@ -351,20 +351,17 @@
               <ul class="menu-sub" style="list-style:none">
                 <li class="menu-item {{Route::is('customers.*') ? "active" : ""}}">
                   <a href="{{route('customers.index')}}" class="menu-link">
-                    
                     <div data-i18n="Basic">Khách hàng</div>
                   </a>
                 </li>
                 <li class="menu-item {{Route::is('contract-type.*') ? "active" : ""}}">
                   <a href="{{route('contract-type.index')}}" class="menu-link">
-                    
                     <div data-i18n="Basic">Loại hợp đồng</div>
                   </a>
                 </li>
                 @if (Gate::allows('contractBHCK') || Gate::allows('admin'))
                 <li class="menu-item {{Route::is('contract.*') ? "active" : ""}}">
                   <a href="{{route('contract.index')}}" class="menu-link">
-                    
                     <div data-i18n="Basic">Hợp đồng BHCK</div>
                   </a>
                 </li>
@@ -565,6 +562,7 @@
     <script src="/assets/js_modules/js/kho.js"></script>
     <script src="/assets/js_modules/js/donggoi.js"></script>
     <script src="/assets/js_modules/js/batch_list.js"></script>
+    <script src="/assets/js_modules/js/customer.js"></script>
 
 
     <script src="https://js.arcgis.com/4.30/"></script>

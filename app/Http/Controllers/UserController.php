@@ -39,8 +39,6 @@ class UserController extends Controller
     public function store(Request $request)
     {
 
-        // dd($request->all());
-        // dd(in_array(17, $request->roles));
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -135,6 +133,6 @@ class UserController extends Controller
 
         $user->delete();
 
-        return redirect()->route('users.index')->with('success', 'Xóa thành công');
+        return redirect()->back()->with('success', 'Xóa thành công');
     }
 }

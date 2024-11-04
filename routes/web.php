@@ -34,7 +34,7 @@ use App\Http\Controllers\Admin\ShipmentTNSRController;
 use App\Http\Controllers\Admin\ContractTNSRController;
 use App\Http\Controllers\Admin\SubContractController;
 use App\Http\Controllers\Admin\ExportExcelController;
-
+use App\Http\Controllers\LabelController;
 
 Route::middleware(['login'] )->group(function() {
 
@@ -67,12 +67,6 @@ Route::middleware(['login'] )->group(function() {
         'certificates' =>  CertificatesController::class,
     ]);
     
-
-    
-    
-
-    
-
 
     Route::get('/list', [BatchController::class, 'list'])->name('list');
 
@@ -145,9 +139,15 @@ Route::middleware(['login'] )->group(function() {
     Route::get('/update-lots', [BatchController::class, 'updateLots']);
 
     
+    Route::get('/get-contracts', [ContractController::class, 'getContracts']);
 
+    Route::get('/get-list-customer', [CustomerController::class, 'getCustomers'])->name('customers.list');
 
-    
+    Route::get('/export-labels', [LabelController::class, 'export']);
+
+    Route::post('/export-batches', [ShipmentController::class, 'exportBatches']);
+
+    Route::get('/d', [LabelController::class, 'exportDrums']);
 
 });
 

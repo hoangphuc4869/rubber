@@ -259,6 +259,19 @@
             <button id="btnCanvatFilter" class="btn btn-primary">Lọc</button>
         </div>
 
+        
+<div class="filter-date d-flex align-items-end justify-content-end gap-2">
+
+    <form action="{{ route('rolling-delete-items') }}" class="form-delete-items d-none" method="POST"
+        onsubmit="return confirmDelete();">
+        @csrf
+        @method('DELETE')
+        <input type="hidden" name="drums" id="selected-drums">
+        <button class="btn btn-danger" type="submit">Xóa</button>
+    </form>
+
+</div>
+
     </div>
 
 
@@ -288,49 +301,5 @@
             text-align: center;
         }
     </style>
-
-{{-- <table id="datatable" class="ui celled table" style="width:100%">
-    <thead>
-        <tr>
-            <th class="text-center"></th>
-            <th>Ngày cán vắt</th>
-            <th>Mã lệnh</th>
-            <th>Trạng thái</th>
-            <th>Thời gian</th>
-            
-            <th>Bãi nguyên liệu</th>
-            <th>Nhà ủ</th>
-            <th>Khối lượng quy khô (kg)</th>
-            <th>Ngày tiếp nhận</th>
-            <th>Số lần cán</th>
-
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($rollings as $index => $rolling)
-        <tr id="{{$rolling->id}}">
-            <td></td>
-            <td data-sort='{{ \Carbon\Carbon::parse($rolling->date)->format('Y-m-d')}}'>{{ \Carbon\Carbon::parse($rolling->date)->format('d/m/Y')}}</td>
-            <td>{{ $rolling->code }}</td>
-
-            <td>
-                {!! $rolling->status === 0
-                ? "<span class='text-danger'>Chờ gia công</span>"
-                : ($rolling->status === 1
-                ? "<span class='text-success'>Đã gia công</span>"
-                : "<span class='text-warning'>Gia công một phần</span>")
-                !!}
-            </td>
-
-            <td>{{ \Carbon\Carbon::parse($rolling->time)->format('H:i')}}</td>
-            <td>{{ $rolling->area ? $rolling->area->code : '' }}</td>
-            <td>{{ $rolling->house ? $rolling->house->code : '' }}</td>
-            <td>{{  number_format($rolling->weight_to_roll, 0, '.', ',') }}</td>
-            <td>{{ \Carbon\Carbon::parse($rolling->date_curing)->format('d/m/Y')}}</td>
-            <td>{{ $rolling->timeRoll}}</td>
-        </tr>
-        @endforeach
-    </tbody>
-</table> --}}
 
 @endsection

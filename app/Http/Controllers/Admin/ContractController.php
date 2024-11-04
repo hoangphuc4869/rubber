@@ -10,7 +10,7 @@ use App\Models\Customer;
 use App\Models\Shipment;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
-
+use Illuminate\Support\Facades\Auth;
 class ContractController extends Controller
 {
     /**
@@ -32,7 +32,8 @@ class ContractController extends Controller
     public function create()
     {
         $types = ContractType::all();
-        $customers = Customer::all();
+        
+        $customers = Customer::where('company', 'BHCK')->get();
 
         if (Gate::allows('admin') || Gate::allows('contractBHCK') ) {
             return view('admin.contract.BHCK.create', compact('types', 'customers'));
@@ -48,6 +49,9 @@ class ContractController extends Controller
      */
     public function store(Request $request)
     {
+
+        // dd();
+
         $data = $request->except('thang_giao_hang');
 
         $contract = new Contract;
@@ -55,9 +59,18 @@ class ContractController extends Controller
         
         $contract->supplier = 'BHCK';
 
+
        
         if ($request->has('thang_giao_hang')) {
-            $contract->thang_giao_hang = json_encode($request->input('thang_giao_hang'));  
+            $contract->thang_giao_hang = implode(',', $request->thang_giao_hang); 
+        }
+
+        if ($request->hasFile('file_scan_pdf')) {
+            $file = $request->file('file_scan_pdf');
+            $destinationPath = public_path('sub-contracts');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move($destinationPath, $filename);
+            $contract->file_scan_pdf = 'sub-contracts/' . $filename;
         }
 
         $contract->save();
@@ -79,12 +92,18 @@ class ContractController extends Controller
      */
     public function edit(string $id)
     {
+
+        $user = auth::user();
+
         $types = ContractType::all();
-        $customers = Customer::all();
+        $customers = Customer::where('company', 'BHCK')->get();
+
         
         $contract = Contract::findOrFail($id);
 
-        $subContracts = $contract->subContracts();
+        $subContracts = Contract::where('sub', 1)->where('hd_goc_so', $contract->contract_number)->get();
+        
+        // dd($subContracts);
 
         if (Gate::allows('admin') || Gate::allows('contractBHCK') ) {
             return view('admin.contract.BHCK.edit', compact('types', 'customers', 'contract', 'subContracts'));
@@ -102,6 +121,18 @@ class ContractController extends Controller
         
         $contract = Contract::findOrFail($id);
         $contract->fill($request->all());
+
+        if ($request->has('thang_giao_hang')) {
+            $contract->thang_giao_hang = implode(',', $request->thang_giao_hang); 
+        }
+
+        if ($request->hasFile('file_scan_pdf')) {
+            $file = $request->file('file_scan_pdf');
+            $destinationPath = public_path('sub-contracts');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move($destinationPath, $filename);
+            $contract->file_scan_pdf = 'sub-contracts/' . $filename;
+        }
         $contract->save();
 
        
@@ -111,7 +142,6 @@ class ContractController extends Controller
         
         if ($request->delivery_date) {
             foreach ($request->delivery_date as $delivery) {
-                
                 $newTotalAmount += $delivery['amount']; 
             }
 
@@ -120,7 +150,7 @@ class ContractController extends Controller
                 return redirect()->back()->with(['exceed_count' => 'Tổng số lượng giao hàng vượt quá số lượng hợp đồng.']);
             }
 
-            
+
             foreach ($request->delivery_date as $delivery) {
                 $shipment = new Shipment;
                 $shipment->ma_xuat = $delivery['shipping_order']; 
@@ -197,6 +227,38 @@ class ContractController extends Controller
             'subcontracts' => $subContracts,
         ]);
     }
+
+    public function getContracts(Request $request)
+    {
+
+        $contractCode = $request->query('code');
+
+        // dd($contractCode);
+
+
+        $contract = Contract::findOrFail($contractCode);
+
+
+        if (!$contract) {
+            return response()->json(['message' => 'Contract not found'], 404);
+        }
+
+        $contract_list = Contract::where('hd_goc_so', $contract->contract_number)
+                                ->get();   
+
+
+
+        return response()->json([
+            'contract' => $contract, 
+            'contract_list' => $contract_list
+        ]);
+    }
+
+    
+
+
+
+
 
 
 }
