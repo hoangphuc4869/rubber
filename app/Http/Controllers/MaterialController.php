@@ -100,7 +100,11 @@ class MaterialController extends Controller
 
                         if (in_array($existingRecord->farm_id, [1, 2, 3, 4, 5, 6, 7, 8]) && $existingRecord->lat_cao && $existingRecord->ten_lo) {
 
-                            $latCaoItems = array_filter(explode(";", $existingRecord->lat_cao));
+                            $latCaoItems = array_filter(array_map(function($item) {
+                                return trim(preg_replace('/\x{A0}/u', '', $item));
+                            }, explode(";", $existingRecord->lat_cao)));
+
+                            // dd($latCaoItems);
 
                             $tenLoItems = array_filter(explode("-", $existingRecord->ten_lo));
 
@@ -201,7 +205,9 @@ class MaterialController extends Controller
             foreach ($insertedRubberIds as $rubber) {
                 if (in_array($rubber->farm_id, [1, 2, 3, 4, 5, 6, 7, 8]) && $rubber->lat_cao && $rubber->ten_lo) {
 
-                    $latCaoItems = array_filter(explode(";", $rubber->lat_cao));
+                    $latCaoItems = array_filter(array_map(function($item) {
+                        return trim(preg_replace('/\x{A0}/u', '', $item));
+                    }, explode(";", $rubber->lat_cao)));
 
                     $tenLoItems = array_filter(explode(" - ", $rubber->ten_lo));
 

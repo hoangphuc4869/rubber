@@ -4,31 +4,46 @@
 
 
 @include('partials.errors')
-<form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
+{{-- <form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <input type="file" name="file">
     <button type="submit">Import</button>
-</form>
+</form> --}}
 
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Nông trường /</span> Vùng trồng</h4>
+
+<div class="d-flex justify-content-end align-items-center">
+    <a href="{{route('plots.create')}}">
+        <button class="btn btn-info">Thêm mới</button>
+    </a>
+</div>
 <div class="row">
-   
         <table id="datalist" class="ui celled table" style="width:100%">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Tên lô</th>
-                    <th>Nông trường</th>
-                    <th>Năm trồng</th>
+                    <th>Nông trường</th>                   
                     <th>Diện tích</th>
                     <th>Giống</th>
-                    <th>Nông trường</th>
-                    <th>Tổng số cây</th>
+                    <th>Hạng đất</th>
+                    <th>Năm trồng</th>
+                    <th>Năm cạo</th>
+                    <th>Tổng cây cạo</th>
                     <th>Mật độ cây cạo</th>
                     <th>Tổng KMC</th>
-                    <th>Lát cạo</th>
                     <th>Tổ cạo</th>
-                    <th>Tọa độ</th>
+                    <th>Lát cạo</th>
+                  
+                    <th>NS2017</th>
+                    <th>NS2018</th>
+                    <th>NS2019</th>
+                    <th>NS2020</th>
+                    <th>NS2021</th>
+                    <th>NS2022</th>
+                    <th>NS2023</th>
+                      <th>Tọa độ</th>
+                    <th>Geojson</th>
                     <th>Tùy chỉnh</th>
                 </tr>
             </thead>
@@ -38,16 +53,34 @@
                     <td>{{$index + 1}}</td>
                     <td>{{$plot->tenlo}}</td>
                     <td>{{$plot->farm->code}}</td>
-                    <td>{{$plot->namtrong}}</td>
                     <td>{{$plot->dientich}}</td>
                     <td>{{$plot->giong}}</td>
-                    <td>{{$plot->farm_id}}</td>
+                    <td>{{$plot->hangdat}}</td>
+
+                    <td>{{$plot->namtrong}}</td>
+                    <td>{{$plot->namcao}}</td>
+                    
                     <td>{{$plot->tongcaycao}}</td>
                     <td>{{$plot->matdocaycao}}</td>
                     <td>{{$plot->tong_kmc}}</td>
-                    <td>{{$plot->lat_cao}}</td>
                     <td>{{$plot->to_nt}}</td>
+                    <td>{{$plot->lat_cao}}</td>
+                    
+                    <td>{{$plot->ns2017}}</td>
+                    <td>{{$plot->ns2018}}</td>
+                    <td>{{$plot->ns2019}}</td>
+                    <td>{{$plot->ns2020}}</td>
+                    <td>{{$plot->ns2021}}</td>
+                    <td>{{$plot->ns2022}}</td>
+                    <td>{{$plot->ns2023}}</td>
+
                     <td>{{$plot->x . ", " . $plot->y}}</td>
+                    <td>
+                        <button onclick="copyGeojson()" title="Copy" style="background: none; border: none; cursor: pointer;">
+                            <i class="fa-solid fa-copy fs-3" style="color: #9c9ca7" ></i>
+                        </button>
+                    </td>
+
                     
                     <td>
                        <div class="custom d-flex gap-1">
@@ -124,6 +157,18 @@
                 @endforeach
             </tbody>
         </table>
+
     
+    <script>
+        function copyGeojson() {
+    const geojsonText = `{{$plot->geojson}}`;
+    navigator.clipboard.writeText(geojsonText).then(() => {
+        alert("Copied to clipboard!");
+    }).catch(err => {
+        console.error("Failed to copy: ", err);
+    });
+}
+    </script>
+
 </div>
 @endsection

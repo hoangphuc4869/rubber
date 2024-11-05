@@ -25,20 +25,20 @@ class PlotControllers extends Controller
 
         $plots = Plot::all();
 
-        // Lấy danh sách tên cột từ bảng plots
-        $columns = Schema::getColumnListing('plots');
+        // // Lấy danh sách tên cột từ bảng plots
+        // $columns = Schema::getColumnListing('plots');
 
-        // Lọc các cột có tiền tố 'ns'
-        $nsColumns = collect($columns)->filter(function($column) {
-            return Str::startsWith($column, 'ns');
-        });
+        // // Lọc các cột có tiền tố 'ns'
+        // $nsColumns = collect($columns)->filter(function($column) {
+        //     return Str::startsWith($column, 'ns');
+        // });
 
-        // Lấy dữ liệu của các cột `ns` từ tất cả các bản ghi
-        $nsData = $plots->map(function($plot) use ($nsColumns) {
-            return $plot->only($nsColumns->toArray());
-        });
+        // // Lấy dữ liệu của các cột `ns` từ tất cả các bản ghi
+        // $nsData = $plots->map(function($plot) use ($nsColumns) {
+        //     return $plot->only($nsColumns->toArray());
+        // });
 
-        dd($nsData);
+        // dd($nsData);
 
         return view('admin.plots.index', compact('plots'));
     }
@@ -48,7 +48,8 @@ class PlotControllers extends Controller
      */
     public function create()
     {
-        //
+
+        return view('admin.plots.create');
     }
 
     /**
@@ -56,8 +57,43 @@ class PlotControllers extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $data = $request->all();
+
+        // Tạo một đối tượng Plot mới
+        $plot = new Plot();
+
+        // Gán dữ liệu vào đối tượng
+        $plot->tenlo = $data['tenlo'];
+        $plot->farm_id = $data['farm_id'];
+        $plot->dientich = $data['dientich'];
+        $plot->giong = $data['giong'];
+        $plot->hangdat = $data['hangdat'];
+        $plot->namtrong = $data['namtrong'];
+        $plot->namcao = $data['namcao'];
+        $plot->tongcaycao = $data['tongcaycao'];
+        $plot->matdocaycao = $data['matdocaycao'];
+        $plot->tong_kmc = $data['tong_kmc'];
+        $plot->to_nt = $data['to_nt'];
+        $plot->lat_cao = $data['lat_cao'];
+        $toado = explode(',', $request->input('toado'));
+        $plot->x = isset($toado[0]) ? $toado[0] : "";
+        $plot->y = isset($toado[1]) ? $toado[1] : "";
+        
+
+        for ($year = 2017; $year <= 2023; $year++) {
+            $plot->{'ns' . $year} = $data['ns' . $year];
+        }
+
+
+        $plot->geojson = $data['geojson'];
+
+        
+        $plot->save();
+
+        return redirect()->back()->with('success', 'Thêm mới lô thành công!');
     }
+
 
     /**
      * Display the specified resource.
@@ -72,23 +108,73 @@ class PlotControllers extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $plot = Plot::findOrFail($id);
+
+        return view('admin.plots.edit', compact('plot'));
+
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+
+        $plot = Plot::find($id);
+
+        if ($plot) {
+
+            $plot->tenlo = $request->input('tenlo');
+            $plot->farm_id = $request->input('farm_id');
+            $plot->dientich = $request->input('dientich');
+            $plot->giong = $request->input('giong');
+            $plot->hangdat = $request->input('hangdat');
+            $plot->namtrong = $request->input('namtrong');
+            $plot->namcao = $request->input('namcao');
+            $plot->tongcaycao = $request->input('tongcaycao');
+            $plot->matdocaycao = $request->input('matdocaycao');
+            $plot->tong_kmc = $request->input('tong_kmc');
+            $plot->to_nt = $request->input('to_nt');
+            $plot->lat_cao = $request->input('lat_cao');
+            
+            $toado = explode(',', $request->input('toado'));
+            $plot->x = isset($toado[0]) ? $toado[0] : "";
+            $plot->y = isset($toado[1]) ? $toado[1] : "";
+
+            $plot->ns2017 = $request->input('ns2017');
+            $plot->ns2018 = $request->input('ns2018');
+            $plot->ns2019 = $request->input('ns2019');
+            $plot->ns2020 = $request->input('ns2020');
+            $plot->ns2021 = $request->input('ns2021');
+            $plot->ns2022 = $request->input('ns2022');
+            $plot->ns2023 = $request->input('ns2023');
+            
+            $plot->geojson = $request->input('geojson');
+
+            $plot->save();
+
+            
+            return redirect()->back()->with('success', 'Cập nhật thành công!');
+        } else {
+            
+            return redirect()->back()->with('error', 'Không tìm thấy lô để cập nhật!');
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        //
+        $plot = Plot::find($id);
+
+        if($plot) {
+            $plot->delete();
+        }
+
+        return redirect()->back()->with('success', 'Xóa thành công!');
+
     }
 
     public function import(Request $request)  
