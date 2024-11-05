@@ -164,7 +164,9 @@ class MachineController extends Controller
 
         // dd($gchat->rolling);
 
-        return DataTables::of($gchat)
+        $result = $gchat->get();
+
+        return DataTables::of($result)
             ->addColumn('rolling_date', function ($gchat) {
                 return $gchat->rolling ? \Carbon\Carbon::parse($gchat->rolling->date)->format('d-m-Y') : '';
             })

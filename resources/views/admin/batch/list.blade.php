@@ -83,27 +83,7 @@
             <th>Trạng thái</th>
         </tr>
     </thead>
-    {{-- <tbody>
 
-        @foreach ($batches as $index => $batch)
-
-        <tr id={{$batch->id}} class="{{$batch->exported == 1 ? 'no-select' : ''}}">
-            <td>{{ \Carbon\Carbon::parse($batch->date)->format('d/m/Y') }}</td>
-            <td>{{$batch->company->code}}</td>
-            <td>{{$batch->batch_code}}</td>
-            <td>{{$batch->bale_count}}</td>
-            <td>{{$batch->expected_grade}}</td>
-            <td>{{$batch->sample_cut_number}}</td>
-            <td></td>
-            <td>{{$batch->link}}</td>
-            <td></td>
-            <td>{!! $batch->checked == 0 ? "<span class='text-danger'>Chưa</span>" : "<span class='text-success'>Đã kiểm
-                    nghiệm</span>"!!}</td>
-            <td>{!! $batch->exported == 0 ? "<span class='text-danger'>Chưa xuất kho</span>" : "<span
-                    class='text-dark'>Đã xuất kho</span>"!!}</td>
-        </tr>
-        @endforeach
-    </tbody> --}}
 </table>
 
 <style>

@@ -86,7 +86,9 @@ class RollingController extends Controller
             $canvat->where('curing_area_id', $request->area);
         }
 
-        return DataTables::of($canvat)
+        $result = $canvat->get();
+
+        return DataTables::of($result)
             ->addColumn('house_code', function ($canvat) {
                 return $canvat->house ? $canvat->house->code . ($canvat->location ? '-'.$canvat->location : "") : '';
             })

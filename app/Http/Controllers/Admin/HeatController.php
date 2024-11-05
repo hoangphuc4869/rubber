@@ -123,7 +123,9 @@ class HeatController extends Controller
 
         // dd($gchat->rolling);
 
-        return DataTables::of($gchat)
+        $result = $gchat->get();
+
+        return DataTables::of($result)
             // ->addColumn('rolling_date', function ($gchat) {
             //     return $gchat->rolling ? \Carbon\Carbon::parse($gchat->rolling->date)->format('d-m-Y') : '';
             // })
@@ -188,7 +190,9 @@ class HeatController extends Controller
 
         // dd($gchat->rolling);
 
-        return DataTables::of($gchat)
+        $result = $gchat->get();
+
+        return DataTables::of($result)
             ->addColumn('house_code', function ($gchat) {
                 return $gchat->curing_house ? $gchat->curing_house->code : '';
             })

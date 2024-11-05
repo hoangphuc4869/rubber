@@ -123,6 +123,8 @@ class BatchController extends Controller
 
         // dd($donggoi->get());
 
+
+
         if ($request->has('date') && $request->date) {
             $date = \Carbon\Carbon::createFromFormat('d-m-Y', $request->date)->format('Y-m-d');
             $donggoi->whereDate('heated_date', $date);
@@ -146,8 +148,9 @@ class BatchController extends Controller
             });
         }
 
+        $result = $donggoi->get();
 
-        return DataTables::of($donggoi)
+        return DataTables::of($result)
             ->addColumn('status', function ($donggoi) {
                 return "Đã ép kiện";
             })
@@ -243,11 +246,9 @@ class BatchController extends Controller
             });
         }
 
-        
+        $result = $donggoi->get();
 
-        // dd($donggoi->rolling);
-
-        return DataTables::of($donggoi)
+        return DataTables::of($result)
             ->addColumn('status', function ($donggoi) {
                 return "Đã đóng lô";
             })
@@ -332,7 +333,7 @@ class BatchController extends Controller
             $list->where('from_farm', $request->nongtruong);
         }
 
-        // Lấy danh sách kết quả
+
         $result = $list->get();
 
         return DataTables::of($result)

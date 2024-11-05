@@ -255,7 +255,10 @@ class WarehouseController extends Controller
             $batch->where('warehouse_id', null);
         }
 
-        return DataTables::of($batch)
+
+        $result = $batch->get();
+
+        return DataTables::of($result)
             ->addColumn('house_code', function ($batch) {
                 return $batch->warehouse ? $batch->warehouse->code : 'Không có';
             })

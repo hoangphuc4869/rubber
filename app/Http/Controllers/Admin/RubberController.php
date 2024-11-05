@@ -121,7 +121,9 @@ class RubberController extends Controller
         $totalFreshWeight = $nguyenlieu->sum('fresh_weight');
         $totalDryWeight = $nguyenlieu->sum('dry_weight');
 
-        return DataTables::of($nguyenlieu)
+        $result = $nguyenlieu->get();
+        
+        return DataTables::of($result)
             ->addColumn('company_code', function ($nguyenlieu) {
                 return $nguyenlieu->farm && $nguyenlieu->farm->company
                     ? $nguyenlieu->farm->company->code
