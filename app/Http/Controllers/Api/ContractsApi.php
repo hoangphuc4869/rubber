@@ -21,7 +21,7 @@ class ContractsApi extends Controller
         $user = Auth::user();
         $customer = $user->customer;
 
-        if($user->customer){
+        if($customer){
             $customer_info = [
                 "id" => $customer->id,
                 "name" => $customer->name,

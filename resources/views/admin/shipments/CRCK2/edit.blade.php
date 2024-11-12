@@ -72,7 +72,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h5 class="mb-0 text-center text-white text-uppercase fw-bold">Danh sách lô hàng</h5> 
-                    <form action="/export-batches" id="exportForm" method="POST">
+                    <form action="/export-batches" id="exportFormB" method="POST">
                         @csrf
                         <input type="hidden" name="batch_and_bale" id="batch_and_bale">
                         <input type="hidden" name="shipment_id" value="{{$order->id}}">

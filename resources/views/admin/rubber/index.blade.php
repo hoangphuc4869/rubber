@@ -324,6 +324,8 @@
                 <label for="fromFilterNguyenLieu" style="font-size: 14px">Nguồn nguyên liệu</label>
                 <select name="" id="fromFilterNguyenLieu" class="form-select">
                    <option value="">Không</option>
+                       <option value="tm">THU MUA</option>
+
                    @foreach ($nguon_nguyen_lieu as $item)
                        <option value="{{$item->farm_name}}">{{$item->farm_name}}</option>
                    @endforeach

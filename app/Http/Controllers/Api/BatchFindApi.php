@@ -25,9 +25,12 @@ class BatchFindApi extends Controller
         $batchCode = $request->input('batch_code');
 
         $batch = Batch::with('drums.rolling.area.farm')->where('batch_code', $batchCode)->first();
+        
+        // dd($batch->user_id, Auth::user()->customer->id, $batch->drums);
+
 
         if($batch){
-            if ($batch?->user_id !== Auth::user()->id && Auth::user()->type != 0) {
+            if ($batch->user_id !== Auth::user()->customer->id) {
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Lô của người ta má ơi',
@@ -48,7 +51,7 @@ class BatchFindApi extends Controller
                 ];
 
 
-                if ($batch->drums) {
+                if (count($batch->drums) > 0) {
                 
                     $drum = $batch->drums->first();
                     $farm = optional($drum->rolling->area->farm);

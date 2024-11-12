@@ -224,15 +224,19 @@ class ShipmentController extends Controller
 
                 $warehouse = $batch->warehouse;
 
-                if($warehouse){
+                if($warehouse && $batch->banh_con_lai == 0){
                     $warehouse->batch_id = null;
                     $warehouse->save();
+                    
+                    $batch->warehouse_id = null;
+
+
                 }
-
-                $batch->warehouse_id = null;
-
+                
                 $batch->save();
 
+
+                
                 // dd($batch->warehouse, $batch);
             }
         }

@@ -81,34 +81,34 @@ class CompanyController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $data = $request->validate([
-            'code' => 'required|unique:companies,code,'. $id ,
-            'name' => 'required|unique:companies,name,'. $id,
-        ], [
-            'code.required' => 'Mã bãi ủ không được để trống.',
-            'code.unique' => 'Mã bãi ủ đã tồn tại.',
-            'name.required' => 'Tên bãi ủ không được để trống.',
-            'name.unique' => 'Tên bãi ủ đã tồn tại.',
-        ]);
+        // $data = $request->validate([
+        //     'code' => 'required|unique:companies,code,'. $id ,
+        //     'name' => 'required|unique:companies,name,'. $id,
+        // ], [
+        //     'code.required' => 'Mã bãi ủ không được để trống.',
+        //     'code.unique' => 'Mã bãi ủ đã tồn tại.',
+        //     'name.required' => 'Tên bãi ủ không được để trống.',
+        //     'name.unique' => 'Tên bãi ủ đã tồn tại.',
+        // ]);
 
-        $company = Company::findOrFail($id);
-        $company->fill($data);
-        $company->save();
+        // $company = Company::findOrFail($id);
+        // $company->fill($data);
+        // $company->save();
 
-        return redirect()->back()->with('success', 'Thành công');
+        // return redirect()->back()->with('success', 'Thành công');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        $item = Company::findOrFail($id);
+    // public function destroy(string $id)
+    // {
+    //     $item = Company::findOrFail($id);
 
-        if($item) {
-            $item->delete();
-        }
+    //     if($item) {
+    //         $item->delete();
+    //     }
 
-        return redirect()->route('companies.index')->with('delete_success', 'Xóa thành công' );
-    }
+    //     return redirect()->route('companies.index')->with('delete_success', 'Xóa thành công' );
+    // }
 }

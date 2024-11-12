@@ -202,7 +202,23 @@ class MaterialController extends Controller
         $insertedRubberIds = Rubber::whereIn('package_code', collect($rubberData)->pluck('package_code'))->get();
 
         if($insertedRubberIds){
+
+            
+
             foreach ($insertedRubberIds as $rubber) {
+                
+                if (isset($rubber->time_ve)) {
+
+                    $datePart = substr($rubber->time_ve, 0, 10);
+                    $timePart = substr($rubber->time_ve, 11); 
+
+                   
+                    $rubber->date = \Carbon\Carbon::createFromFormat('d-m-Y', $datePart)->format('Y-m-d');
+                    $rubber->time = $timePart;
+
+                    $rubber->save();
+                }
+
                 if (in_array($rubber->farm_id, [1, 2, 3, 4, 5, 6, 7, 8]) && $rubber->lat_cao && $rubber->ten_lo) {
 
                     $latCaoItems = array_filter(array_map(function($item) {

@@ -216,7 +216,8 @@ class WarehouseController extends Controller
                     'sample_cut_number',   // Số mẫu cắt (Sample Cut Number)
                     'packaging_type',      // Dạng đóng gói (Packaging Type)
                     'warehouse_id',        // Warehouse ID (to show Nơi lưu trữ)
-                    'company_id'           // Công ty (Company ID)
+                    'company_id',       // Công ty (Company ID)
+                    'banh_con_lai'           // Công ty (Company ID)
                 ]);
 
         // Lọc theo công ty
@@ -226,6 +227,10 @@ class WarehouseController extends Controller
 
         if ($request->filled('exported')) {
             $batch->where('exported', $request->exported);
+        }
+
+        if ($request->filled('farm')) {
+            $batch->where('from_farm', $request->farm);
         }
 
         // Lọc theo ngày
@@ -261,6 +266,9 @@ class WarehouseController extends Controller
         return DataTables::of($result)
             ->addColumn('house_code', function ($batch) {
                 return $batch->warehouse ? $batch->warehouse->code : 'Không có';
+            })
+            ->addColumn('so_banh', function ($batch) {
+                return $batch->banh_con_lai && $batch->banh_con_lai > 0 ? $batch->banh_con_lai : $batch->bale_count;
             })
             ->make(true);
     }

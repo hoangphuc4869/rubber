@@ -173,6 +173,7 @@ class BatchController extends Controller
                 return $donggoi->bale->evaluation;
             })
             ->addColumn('company', function ($donggoi) {
+                
                 return $donggoi->rolling 
                 ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->code : "") 
                 : ($donggoi->curing_area ? $donggoi->curing_area->code : "");
@@ -246,7 +247,16 @@ class BatchController extends Controller
             });
         }
 
+        
+
+        // dd($donggoi->rolling);
+
         $result = $donggoi->get();
+
+
+        // dd($result);
+
+
 
         return DataTables::of($result)
             ->addColumn('status', function ($donggoi) {
@@ -257,6 +267,8 @@ class BatchController extends Controller
                 return $donggoi->rolling 
                 ? ($donggoi->curing_house ? $donggoi->curing_house->curing_area->code : "") 
                 : ($donggoi->curing_area ? $donggoi->curing_area->code : "");
+                // return "";
+
             })
             
             ->addColumn('heated_end_time', function ($donggoi) {
@@ -269,11 +281,14 @@ class BatchController extends Controller
             ->addColumn('batch_codes', function ($donggoi) {
                 // dd($donggoi->batches->pluck('batch_code')->toArray());
                 return implode(', ', $donggoi->batches->pluck('batch_code')->toArray());
+                // return "";
             })
             ->addColumn('bale_counts', function ($donggoi) {
                 return implode(', ', $donggoi->batches->map(function ($batch) {
                     return $batch->pivot->bale_count;
                 })->toArray());
+
+                // return "";
             })
             ->addColumn('type', function ($donggoi) {
                 return $donggoi->curing_house ? 'MDC' : 'MD';
@@ -426,14 +441,19 @@ class BatchController extends Controller
             $current_time = \Carbon\Carbon::parse($drum->heated_date)->month;
             $nongtruong = $drum->curing_house ? $drum->curing_house->curing_area->code : $drum->curing_area->code;
 
+
             $farm_code = $farm_codes[$nongtruong] ?? null;
+            // dd($nongtruong, $farm_code);
+
             $type = $types[$nongtruong] ?? null;
             $company_id = $companies[$nongtruong] ?? null;
 
             if ($farm_code) {
-                $currentBatch = Batch::where('from_farm', $nongtruong)->where('link', $drum->link)
+                $currentBatch = Batch::where('from_farm', $nongtruong)->where('link', $drum->link)->where('batch_month', $current_time)
                                     ->orderBy('id', 'desc')
                                     ->first();
+
+                // dd($currentBatch);
                 $batch_number = 1;
                 $remaining_bales = $drum->bale->number_of_bales;
 

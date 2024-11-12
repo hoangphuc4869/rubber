@@ -29,11 +29,9 @@ let columns = [
               searchable: false,
               render: function (data, type, row) {
                   return `
-                    <button type="button" class="editBtn editWare" data-bs-toggle="modal" data-bs-target="#modalCenter"
+                    <button type="button" class="editWare" data-bs-toggle="modal" data-bs-target="#modalCenter"
                         data-id="${data.id}" data-warehouseId='${data.warehouse_id}'>
-                        <svg height="1em" viewBox="0 0 512 512">
-                            <path d="..."></path>
-                        </svg>
+                        Sắp xếp
                     </button>
                   `;
               },
@@ -50,8 +48,8 @@ let columns = [
         name: "batch_code",
     },
     {
-        data: "bale_count",
-        name: "bale_count",
+        data: "so_banh",
+        name: "so_banh",
         render: function (data, type, row) {
             return data == 144
                 ? `<span class="text-dark">${data}</span>`
@@ -102,9 +100,10 @@ let tableKho = new DataTable("#tableKho", {
             d.grade = $("#gradeFilterKho").val();
             d.kho = $("#FilterKho").val();
             d.company = $("#company_id").val();
+            d.farm = $("#nongtruongFilterList").val();
             if (onShipmentPage) {
                 d.checked = 1;
-                d.exported = 0;
+                // d.exported = 0;
             }
         },
     },
@@ -136,6 +135,8 @@ let tableKho = new DataTable("#tableKho", {
     order: [[0, "desc"]],
     columns: columns,
     scrollX: true,
+    scrollCollapse: true,
+    scrollY: "100vh",
     autoWidth: false,
 });
 

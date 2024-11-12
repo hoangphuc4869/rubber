@@ -43,7 +43,7 @@ let tableNguyenLieu = new DataTable("#nguyenlieu", {
     serverSide: true,
     order: [[0, "desc"]],
     columns: [
-        { data: "time_ve_date", name: "time_ve" },
+        { data: "time_ve_date", name: "time_ve", className: "text-nowrap" },
         { data: "time_ve_time", name: "time_ve" },
         {
             data: "input_status",

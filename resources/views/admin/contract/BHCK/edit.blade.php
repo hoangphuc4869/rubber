@@ -474,16 +474,29 @@
                                             @endif
                                         </li>
                                     </ul>
+
+                                     <div>
+                                        <div class="fw-bold">Trạng thái:</div>
+                                        <select class="form-select w-100" data-id="{{$item->id}}" onchange="saveNote(this)">
+                                            <option value="0" {{$item->customer_status == 0 ? 'selected' : ''}}>Chưa xuất kho</option>
+                                            <option value="1" {{$item->customer_status == 1 ? 'selected' : ''}}>Đã xuất kho</option>
+                                            <option value="2" {{$item->customer_status == 2 ? 'selected' : ''}}>Đã thông quan</option>
+                                            <option value="3" {{$item->customer_status == 3 ? 'selected' : ''}}>Đến kho khách hàng</option>
+                                            <option value="4" {{$item->customer_status == 4 ? 'selected' : ''}}>Hoàn thành</option>
+                                        </select>
+                                    </div>
+                                <div class="fw-bold mt-2">Ghi chú:</div>
+                                <textarea class="note form-control" rows="4" data-id="{{$item->id}}" onblur="saveNote(this)" placeholder="Thêm ghi chú">{{$item->note}}</textarea>
                                 </div>
                             </div>
 
-                            <div class="col-lg-6 mb-3">
+                            <div class="col-lg-9 mb-3">
                                 <div class="">
                                     <div class="mb-2 fw-bold text-dark fs-5">Lô hàng</div>
                                     <div class="batches">
                                         @if($item->lo_hang)
                                             @foreach (array_column(json_decode($item->lo_hang, true), 'batch_id') as $batch)
-                                                <button class="btn btn-dark mb-2">{{ $batch }}</button>
+                                                <button class="btn btn-dark mb-2" style="font-size:13px">{{ $batch }}</button>
                                                
                                             @endforeach
                                         @endif
@@ -492,18 +505,7 @@
                             </div>
 
                             <div class="col-lg-3 mb-3">
-                                <div>
-                                    <div class="fw-bold">Trạng thái:</div>
-                                    <select class="form-select w-100" data-id="{{$item->id}}" onchange="saveNote(this)">
-                                        <option value="0" {{$item->customer_status == 0 ? 'selected' : ''}}>Chưa xuất kho</option>
-                                        <option value="1" {{$item->customer_status == 1 ? 'selected' : ''}}>Đã xuất kho</option>
-                                        <option value="2" {{$item->customer_status == 2 ? 'selected' : ''}}>Đã thông quan</option>
-                                        <option value="3" {{$item->customer_status == 3 ? 'selected' : ''}}>Đến kho khách hàng</option>
-                                        <option value="4" {{$item->customer_status == 4 ? 'selected' : ''}}>Hoàn thành</option>
-                                    </select>
-                                </div>
-                                <div class="fw-bold mt-2">Ghi chú:</div>
-                                <textarea class="note form-control" rows="4" data-id="{{$item->id}}" onblur="saveNote(this)" placeholder="Thêm ghi chú">{{$item->note}}</textarea>
+                               
                             </div>
 
                             @if ($item->status == 0)

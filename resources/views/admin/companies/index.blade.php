@@ -70,7 +70,7 @@
                             </button>
                         </a>
 
-                        <form action="{{route('companies.destroy', [$item->id])}}" method="POST" onsubmit="return confirmDelete();">
+                        {{-- <form action="{{route('companies.destroy', [$item->id])}}" method="POST" onsubmit="return confirmDelete();">
                             @csrf
                             @method('DELETE')
                              <button class="bin-button">
@@ -121,7 +121,7 @@
                                 ></path>
                             </svg>
                             </button>
-                        </form>
+                        </form> --}}
 
                         
                            

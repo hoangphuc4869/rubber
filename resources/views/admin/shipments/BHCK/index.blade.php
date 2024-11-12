@@ -36,16 +36,28 @@
 
                             <div>
                                 @foreach($batches as $index => $item)
-                                    {{ $item['batch_id'] }}
-                                    @if (($index + 1) % 3 == 0)
-                                        <br> 
-                                    @else
-                                        @if($index < count($batches) - 1) 
+                                    @if ($index < 3)
+                                        {{ $item['batch_id'] }}
+                                        @if ($index == 2 && count($batches) > 3)
+                                            ...
+                                        @elseif ($index < 2)
                                             ,
                                         @endif
+                                    @else
+                                        @break
                                     @endif
                                 @endforeach
+                                <i class="fa fa-copy cursor-pointer" onclick="copyToClipboard('{{ implode(', ', array_column($batches, 'batch_id')) }}')"></i>
                             </div>
+                            <script>
+                                function copyToClipboard(text) {
+                                    navigator.clipboard.writeText(text).then(() => {
+                                        alert("Đã sao chép!");
+                                    }).catch(err => {
+                                        console.error("Không thể sao chép:", err);
+                                    });
+                                }
+                            </script>
                         @endif
                     </td>
                     <td>{!!$ship->status == 0 ? '<span class="text-danger">Chưa xuất hàng<span>' : '<span class="text-success">Đã xuất hàng<span>'!!}</td>
@@ -61,6 +73,8 @@
             @endforeach
         </tbody>
     </table>
+            
+
             
 
 @endsection

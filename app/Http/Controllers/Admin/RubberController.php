@@ -65,8 +65,7 @@ class RubberController extends Controller
         $nguyenlieu = Rubber::with(['truck', 'farm.company', 'curing_area', 'plots'])
             ->select([
                 'id',
-                DB::raw("DATE_FORMAT(STR_TO_DATE(time_ve, '%d-%m-%Y %H:%i:%s'), '%d/%m/%Y') as time_ve_date"),
-                DB::raw("DATE_FORMAT(STR_TO_DATE(time_ve, '%d-%m-%Y %H:%i:%s'), '%H:%i') as time_ve_time"),
+                'time_ve',
                 'input_status',
                 'status',
                 'fresh_weight',
@@ -103,7 +102,12 @@ class RubberController extends Controller
 
         if ($request->has('from') && $request->from !== null) {
 
-            $nguyenlieu->where('farm_name', $request->from);
+            if($request->from == 'tm'){
+                $nguyenlieu->where('farm_id', 9);
+            }
+            else {
+                $nguyenlieu->where('farm_name', $request->from);
+            }
         }
 
         if ($request->has('type') && $request->type !== null) {
@@ -129,6 +133,13 @@ class RubberController extends Controller
                     ? $nguyenlieu->farm->company->code
                     : '';
             })
+            ->addColumn('time_ve_date', function ($nguyenlieu) {
+                return \Carbon\Carbon::parse($nguyenlieu->time_ve)->format('d-m-Y') ;
+            })
+            ->addColumn('time_ve_time', function ($nguyenlieu) {
+                return \Carbon\Carbon::parse($nguyenlieu->time_ve)->format('H:i') ;
+            })
+            
              ->addColumn('sum_fresh', function ($nguyenlieu) use ($totalFreshWeight) {
                     return $totalFreshWeight;
                 })

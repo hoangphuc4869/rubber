@@ -4,7 +4,7 @@
 
 {{-- <h4 class="fw-bold py-3 mb-2 mt-2">Tạo kho hàng</h4> --}}
 @include('partials.errors')
-<form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
+{{-- <form action="{{ route('warehouse.store') }}" method="POST" class="ware-form">
     @csrf
 
     <label for="warename">Tên kho:</label>
@@ -13,7 +13,7 @@
     <label for="rows">Số hàng:</label>
     <input type="number" id="rows" name="rows" min="1" required class="cus-input">
     <button type="submit" class="btn btn-dark">Tạo kho</button>
-</form> 
+</form>  --}}
 
 
 <h4 class="fw-bold my-4">Danh sách lô hàng - {{$companyName}}</h4>
@@ -78,10 +78,36 @@
         <div class="">
             <label for="FilterKho" style="font-size: 14px">Kho</label>
             <select name="" id="FilterKho" class="form-select">
+                <option value="">Tất cả</option>
                 <option value="0">Trống</option>
                     @foreach ($wares as $name => $items) 
                     <option value="{{$name}}">{{$name}}</option>
                     @endforeach
+            </select>
+        </div>
+
+        <div class="">
+            <label for="nongtruongFilterList" style="font-size: 14px">Nguồn</label>
+            <select name="" id="nongtruongFilterList" class="form-select">
+
+                @if ($companyName == "BHCK")
+                    <option value="NLNT4">NT4</option>
+                    <option value="NLNT5">NT5</option>
+                    <option value="NLNT7">NT7</option>
+                    <option value="NLNT8">NT8</option>
+                @endif
+
+                @if ($companyName == "CRCK2")
+                    <option value="NLNT1">NT1</option>
+                    <option value="NLNT2">NT2</option>
+                    <option value="NLNT3">NT3</option>
+                    <option value="NLNT6">NT6</option>
+                    <option value="NLTM">TM</option>
+                @endif
+
+                @if ($companyName == "TNSR")
+                    <option value="NLTNSR">TNSR</option>
+                @endif
             </select>
         </div>
 

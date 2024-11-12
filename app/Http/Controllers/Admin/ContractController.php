@@ -168,7 +168,8 @@ class ContractController extends Controller
                     $shipment->pdf = $fileName;
                 }
 
-                $shipment->ngay_xuat = $delivery['closing_date'];
+                $shipment->ngay_xuat = $delivery['shipment_date'];
+                $shipment->ngay_dong_cont = $delivery['closing_date'];
                 $shipment->ngay_nhan_hang = $delivery['receiving_date'];
                 $shipment->save();
             }

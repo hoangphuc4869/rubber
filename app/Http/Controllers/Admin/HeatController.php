@@ -535,13 +535,13 @@ class HeatController extends Controller
                 
                 $beforeDrums->first()->heated_end = $drum->heated_start;
             
-                $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
+                // $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
 
-                if ($date->isYesterday()) {
-                    $date = Carbon::parse($drum->heated_end)->copy()->subDay();
-                }
+                // if ($date->isYesterday()) {
+                //     $date = Carbon::parse($drum->heated_end)->copy()->subDay();
+                // }
 
-                $beforeDrums->first()->heated_date = $date;
+                // $beforeDrums->first()->heated_date = $date;
                 $beforeDrums->first()->save();
             }
         }
@@ -557,13 +557,13 @@ class HeatController extends Controller
 
             if ($beforeDrums->first() != null && $beforeDrums->count() == 32) {
                 $beforeDrums->first()->heated_end = $drum->heated_start;
-                $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
+                // $date = Carbon::parse($drum->heated_end)->copy()->subMinutes(390);
 
-                if ($date->isYesterday()) {
-                     $date = Carbon::parse($drum->heated_end)->copy()->subDay();
-                }
+                // if ($date->isYesterday()) {
+                //      $date = Carbon::parse($drum->heated_end)->copy()->subDay();
+                // }
 
-                $beforeDrums->first()->heated_date = $date;
+                // $beforeDrums->first()->heated_date = $date;
                 $beforeDrums->first()->save();
             }
         }
