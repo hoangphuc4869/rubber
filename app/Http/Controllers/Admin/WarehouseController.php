@@ -48,7 +48,7 @@ class WarehouseController extends Controller
             
         $customers = Customer::all();
 
-        $companyName = 'BHCK'; 
+        $companyName = 'B.H.C.K'; 
         $company = Company::where('code', $companyName)->first();
 
         
@@ -110,7 +110,7 @@ class WarehouseController extends Controller
 
         $customers = Customer::all();
 
-        $companyName = 'CRCK2'; 
+        $companyName = 'C.R.C.K.2'; 
         $company = Company::where('code', $companyName)->first();
 
         
@@ -166,7 +166,7 @@ class WarehouseController extends Controller
         
         $customers = Customer::all();
 
-        $companyName = 'TNSR'; 
+        $companyName = 'TNSI'; 
         $company = Company::where('code', $companyName)->first();
 
         
@@ -217,7 +217,9 @@ class WarehouseController extends Controller
                     'packaging_type',      // Dạng đóng gói (Packaging Type)
                     'warehouse_id',        // Warehouse ID (to show Nơi lưu trữ)
                     'company_id',       // Công ty (Company ID)
-                    'banh_con_lai'           // Công ty (Company ID)
+                    'banh_con_lai',           // Công ty (Company ID)
+                    'from_farm',           
+                    'batch_month',           
                 ]);
 
         // Lọc theo công ty
@@ -258,6 +260,10 @@ class WarehouseController extends Controller
             });
         } elseif ($request->kho == 0) {
             $batch->where('warehouse_id', null);
+        }
+
+        if ($request->has('nongtruong') && $request->nongtruong) {
+            $batch->where('from_farm', $request->nongtruong);
         }
 
 

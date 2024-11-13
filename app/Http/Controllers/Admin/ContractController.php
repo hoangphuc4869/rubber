@@ -193,6 +193,18 @@ class ContractController extends Controller
         return redirect()->route('contract.index')->with('delete_success', 'Xóa thành công' );
     }
 
+
+    public function getContractInfo($id)
+    {
+        $contract = Contract::find($id);
+        if ($contract) {
+            return response()->json($contract);
+        } else {
+            return response()->json(['error' => 'Contract not found'], 404);
+        }
+    }
+
+
     public function shipment_destroy(string $id)
     {
         $item = Shipment::findOrFail($id);

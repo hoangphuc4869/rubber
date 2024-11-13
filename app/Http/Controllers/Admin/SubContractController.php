@@ -73,9 +73,37 @@ class SubContractController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+
+        $subContract = Contract::find($id);
+
+        if (!$subContract) {
+            return redirect()->back()->with('error', 'Không tìm thấy phụ lục');
+        }
+
+
+        $subContract->fill($request->all());
+
+        if ($request->hasFile('file_scan_pdf')) {
+
+            if ($subContract->file_scan_pdf && file_exists(public_path($subContract->file_scan_pdf))) {
+                unlink(public_path($subContract->file_scan_pdf));
+            }
+
+
+            $file = $request->file('file_scan_pdf');
+            $destinationPath = public_path('sub-contracts');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move($destinationPath, $filename);
+
+            $subContract->file_scan_pdf = 'sub-contracts/' . $filename;
+        }
+
+
+        $subContract->save();
+
+        return redirect()->back()->with('success', 'Cập nhật hợp đồng thành công!');
     }
 
     /**

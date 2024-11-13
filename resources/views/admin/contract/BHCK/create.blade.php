@@ -78,27 +78,27 @@
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Sản phẩm/ Lot</label>
-                        <input type="text" name="san_pham" class="form-control" required value="CSR10">
+                        <input type="text" name="san_pham" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Loại Pallet</label>
-                        <input type="text" name="loai_pallet" class="form-control" required value="Hàng rời, không pallet">
+                        <input type="text" name="loai_pallet" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Thị trường</label>
-                        <input type="text" name="thi_truong" class="form-control" required value="Việt Nam">
+                        <input type="text" name="thi_truong" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Đơn vị Sản xuất/ Thương mại</label>
-                        <input type="text" name="don_vi_xuat_thuong_mai" class="form-control" required value="C.R.C.R.2 APHIVATHCAOUTCHOUC Co., Ltd">
+                        <input type="text" name="don_vi_xuat_thuong_mai" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">
                         <label class="form-label" >Bán cho bên thứ 3</label>
-                        <input type="text" name="ban_cho_ben_thu_3" class="form-control" required value="Không">
+                        <input type="text" name="ban_cho_ben_thu_3" class="form-control" required>
                     </div>
 
                     <div class="mb-3 col-lg-3">

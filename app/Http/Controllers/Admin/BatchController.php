@@ -487,7 +487,7 @@ class BatchController extends Controller
                     $batch_number = $currentBatch && $currentBatch->batch_month == $current_time ? $currentBatch->batch_number + 1 : 1;
                     
                     $newBatch = new Batch();
-                    $newBatch->batch_code = date('y') . $farm_code . $drum->link . \Carbon\Carbon::parse($drum->heated_date)->format('m') . $batch_number;
+                    $newBatch->batch_code = date('y') . $farm_code . $drum->link . \Carbon\Carbon::parse($drum->heated_date)->format('m') . str_pad($batch_number, 2, '0', STR_PAD_LEFT);
                     $newBatch->expected_grade = $request->expected_grade;
                     $newBatch->sample_cut_number = $request->sample_cut_number;
                     $newBatch->packaging_type = $request->packaging_type;
@@ -766,6 +766,13 @@ class BatchController extends Controller
     {
         ini_set('max_execution_time', 1200); 
         $token = "30dd7d4f-bbd4-4c23-b7df-13e5a9e1055f"; 
+
+        $response = Http::withHeaders([
+                'Authorization' => "Bearer {$token}",
+                'Content-Type' => 'application/json',
+            ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode=2426091")->json();
+
+        dd($response);
 
         $batches_notChecked = Batch::where('checked', 0)->get();
         $responses = []; 

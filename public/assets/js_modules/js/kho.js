@@ -99,6 +99,7 @@ let tableKho = new DataTable("#tableKho", {
             d.checked = $("#checkedFilterKho").val();
             d.grade = $("#gradeFilterKho").val();
             d.kho = $("#FilterKho").val();
+            d.nongtruong = $("#nongtruongFilterList").val();
             d.company = $("#company_id").val();
             d.farm = $("#nongtruongFilterList").val();
             if (onShipmentPage) {
@@ -132,7 +133,7 @@ let tableKho = new DataTable("#tableKho", {
     paging: false,
     processing: true,
     serverSide: true,
-    order: [[0, "desc"]],
+    order: [],
     columns: columns,
     scrollX: true,
     scrollCollapse: true,

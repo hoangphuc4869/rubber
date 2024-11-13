@@ -149,6 +149,10 @@ Route::middleware(['login'] )->group(function() {
 
     Route::get('/d', [LabelController::class, 'exportDrums']);
 
+
+    Route::get('/get-contract-info/{id}', [ContractController::class, 'getContractInfo'])->name('get.contract');
+
+
 });
 
 Route::get('/login', [LoginController::class, 'loginForm'])->name('login');

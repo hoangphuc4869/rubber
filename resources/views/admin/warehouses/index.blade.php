@@ -78,11 +78,12 @@
         <div class="">
             <label for="FilterKho" style="font-size: 14px">Kho</label>
             <select name="" id="FilterKho" class="form-select">
-                <option value="">Tất cả</option>
                 <option value="0">Trống</option>
                     @foreach ($wares as $name => $items) 
                     <option value="{{$name}}">{{$name}}</option>
                     @endforeach
+                <option value="">Tất cả</option>
+
             </select>
         </div>
 
@@ -90,22 +91,25 @@
             <label for="nongtruongFilterList" style="font-size: 14px">Nguồn</label>
             <select name="" id="nongtruongFilterList" class="form-select">
 
-                @if ($companyName == "BHCK")
+                @if ($companyName == "B.H.C.K")
                     <option value="NLNT4">NT4</option>
                     <option value="NLNT5">NT5</option>
                     <option value="NLNT7">NT7</option>
                     <option value="NLNT8">NT8</option>
+                    <option value="MDBH">MDBH</option>
                 @endif
 
-                @if ($companyName == "CRCK2")
+                @if ($companyName == "C.R.C.K.2")
                     <option value="NLNT1">NT1</option>
                     <option value="NLNT2">NT2</option>
                     <option value="NLNT3">NT3</option>
                     <option value="NLNT6">NT6</option>
                     <option value="NLTM">TM</option>
+                    <option value="MDCR">MDCR</option>
+                    <option value="NLTMMD">NLTMMD</option>
                 @endif
 
-                @if ($companyName == "TNSR")
+                @if ($companyName == "TNSI")
                     <option value="NLTNSR">TNSR</option>
                 @endif
             </select>
