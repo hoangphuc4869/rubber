@@ -71,6 +71,8 @@ class HomeController extends Controller
             ];
         });
 
+
+
         $currentTime = Carbon::now();
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
@@ -94,13 +96,13 @@ class HomeController extends Controller
         $total_bhck = 0;
         $total_crck2 = 0;
 
-        Company::where('code', 'BHCK')->first()->farms->map(function($farm) use (&$total_bhck) {
+        Company::where('code', 'B.H.C.K')->first()->farms->map(function($farm) use (&$total_bhck) {
             $farm->curing_areas->map(function($area) use (&$total_bhck) {
                 $total_bhck += $area->containing;
             });
         });
 
-        Company::where('code', 'CRCK2')->first()->farms->map(function($farm) use (&$total_crck2) {
+        Company::where('code', 'C.R.C.K.2')->first()->farms->map(function($farm) use (&$total_crck2) {
             $farm->curing_areas->map(function($area) use (&$total_crck2) {
                 $total_crck2 += $area->containing;
             });

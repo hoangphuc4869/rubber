@@ -434,7 +434,7 @@ class HeatController extends Controller
     }
 
 
-    public function adjustTime(Request $request)
+        public function adjustTime(Request $request)
     {
 
         if ($request->has('multi')) {
@@ -448,12 +448,12 @@ class HeatController extends Controller
                 $heatedStart = Carbon::parse($drum->heated_start);
                 $differenceInMinutes = $heatedStart->diffInMinutes($adjustDateTime);
 
+                // dd($differenceInMinutes);
+
 
                 $drum->heated_start = $adjustDateTime;
                 $drum->heated_end = Carbon::parse($drum->heated_end)->addMinutes($differenceInMinutes);
-                if($request->reason != ""){
-                    $drum->note = $request->reason;
-                }
+                $drum->note = $request->reason;
 
                 $drum->save();
 
