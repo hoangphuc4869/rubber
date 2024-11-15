@@ -79,10 +79,10 @@
             <label for="FilterKho" style="font-size: 14px">Kho</label>
             <select name="" id="FilterKho" class="form-select">
                 <option value="0">Trống</option>
-                    @foreach ($wares as $name => $items) 
-                    <option value="{{$name}}">{{$name}}</option>
-                    @endforeach
                 <option value="">Tất cả</option>
+                @foreach ($wares as $name => $items) 
+                <option value="{{$name}}">{{$name}}</option>
+                @endforeach
 
             </select>
         </div>
@@ -118,6 +118,7 @@
         <div class="">
             <label for="checkedFilterKho" style="font-size: 14px">Kiểm nghiệm</label>
             <select name="checked" id="checkedFilterKho" class="form-select">
+                <option value="">Tất cả</option>
                 <option value="0">Chưa kiểm nghiệm</option>
                 <option value="1">Đã kiểm nghiệm</option>
             </select>

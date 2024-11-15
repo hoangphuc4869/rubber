@@ -767,12 +767,12 @@ class BatchController extends Controller
         ini_set('max_execution_time', 1200); 
         $token = "30dd7d4f-bbd4-4c23-b7df-13e5a9e1055f"; 
 
-        $response = Http::withHeaders([
-                'Authorization' => "Bearer {$token}",
-                'Content-Type' => 'application/json',
-            ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode=2426091")->json();
+        // $response = Http::withHeaders([
+        //         'Authorization' => "Bearer {$token}",
+        //         'Content-Type' => 'application/json',
+        //     ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode=2426091")->json();
 
-        dd($response);
+        // dd($response);
 
         $batches_notChecked = Batch::where('checked', 0)->get();
         $responses = []; 
@@ -785,6 +785,8 @@ class BatchController extends Controller
             if ($response->successful()) {
 
                 $data = $response->json();
+
+                // dd($response->json());
 
                 if (isset($data['results']['status']) && $data['results']['status'] == 1) {
                     $item->checked = 1; 

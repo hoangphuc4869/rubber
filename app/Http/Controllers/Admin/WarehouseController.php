@@ -258,9 +258,9 @@ class WarehouseController extends Controller
             $batch->whereHas('warehouse', function($query) use ($request) {
                 $query->where('name', $request->kho);
             });
-        } elseif ($request->kho == 0) {
+        } elseif ($request->kho === 0) {
             $batch->where('warehouse_id', null);
-        }
+        } 
 
         if ($request->has('nongtruong') && $request->nongtruong) {
             $batch->where('from_farm', $request->nongtruong);
@@ -271,7 +271,7 @@ class WarehouseController extends Controller
 
         return DataTables::of($result)
             ->addColumn('house_code', function ($batch) {
-                return $batch->warehouse ? $batch->warehouse->code : 'Không có';
+                return $batch->warehouse ? $batch->warehouse->code : 'Trống';
             })
             ->addColumn('so_banh', function ($batch) {
                 return $batch->banh_con_lai && $batch->banh_con_lai > 0 ? $batch->banh_con_lai : $batch->bale_count;

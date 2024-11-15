@@ -14,8 +14,8 @@ let columns = [
         },
     },
     {
-        data: "warehouse.code",
-        name: "warehouse.code",
+        data: "house_code",
+        name: "house_code",
         render: function (data, type, row) {
             return data
                 ? `<span class="fw-bold" style="color: #000a8d">${data}</span>`

@@ -20,7 +20,7 @@ class ShipmentController extends Controller
      */
     public function index()
     {
-        $companyName = 'BHCK'; 
+        $companyName = 'B.H.C.K'; 
         
         $company = Company::where('code', $companyName)->first();
 
@@ -95,7 +95,7 @@ class ShipmentController extends Controller
     {
         $order = Shipment::findOrFail($id); 
 
-        $companyName = 'BHCK'; 
+        $companyName = 'B.H.C.K'; 
         
         $company = Company::where('code', $companyName)->first();
 
