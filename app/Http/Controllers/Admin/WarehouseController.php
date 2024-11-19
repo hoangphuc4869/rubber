@@ -254,13 +254,16 @@ class WarehouseController extends Controller
         }
 
         // Lọc theo kho
-        if ($request->filled('kho') && $request->kho != 0) {
-            $batch->whereHas('warehouse', function($query) use ($request) {
-                $query->where('name', $request->kho);
-            });
-        } elseif ($request->kho === 0) {
-            $batch->where('warehouse_id', null);
-        } 
+        if ($request->has('kho')) {
+            if ($request->kho == 0) {
+                $batch->where('warehouse_id', null); 
+            } elseif ($request->kho !== '') {
+                $batch->whereHas('warehouse', function($query) use ($request) {
+                    $query->where('name', $request->kho);
+                });
+            }
+        }
+ 
 
         if ($request->has('nongtruong') && $request->nongtruong) {
             $batch->where('from_farm', $request->nongtruong);

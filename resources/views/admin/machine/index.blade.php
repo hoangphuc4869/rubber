@@ -137,6 +137,69 @@
 
 @include('partials.errors')
 
+<!-- Modal xác nhận -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalLabel">Xác nhận thông tin</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Nhà ủ:</strong> <span id="confirmCuringHouse"></span></p>
+                <p><strong>Vị trí:</strong> <span id="confirmLocation"></span></p>
+                <p><strong>Ngày cán vắt:</strong> <span id="confirmRollingDate"></span></p>
+                <p><strong>Dây chuyền:</strong> <span id="confirmLink"></span></p>
+                <p><strong>Số thùng:</strong> <span id="confirmDrums"></span></p>
+                <p><strong>Khối lượng cán:</strong> <span id="confirmWeight"></span></p>
+                <p><strong>Ngày thực hiện:</strong> <span id="confirmDate"></span></p>
+                <p><strong>Tạp chất loại bỏ:</strong> <span id="confirmImpurity"></span></p>
+                <p><strong>Bề dày tờ mủ:</strong> <span id="confirmThickness"></span></p>
+                <p><strong>Trạng thái cốm:</strong> <span id="confirmTrangThai"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" id="submitFormButton" class="btn btn-primary">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("form");
+    const confirmModal = new bootstrap.Modal(document.getElementById("confirmModal"));
+    const submitFormButton = document.getElementById("submitFormButton");
+
+    // Lắng nghe sự kiện submit form
+    form.addEventListener("submit", function (event) {
+        event.preventDefault(); // Chặn submit ban đầu
+
+        // Lấy dữ liệu từ form
+        document.getElementById("confirmCuringHouse").innerText = form.curing_house.options[form.curing_house.selectedIndex].text;
+        document.getElementById("confirmLocation").innerText = form.location.options[form.location.selectedIndex].text;
+        document.getElementById("confirmRollingDate").innerText = form.rolling_code.options[form.rolling_code.selectedIndex].text;
+        document.getElementById("confirmLink").innerText = form.link.options[form.link.selectedIndex].text;
+        document.getElementById("confirmDrums").innerText = form.drums.value;
+        document.getElementById("confirmWeight").innerText = form.weight.value;
+        document.getElementById("confirmDate").innerText = form.date.value;
+        document.getElementById("confirmImpurity").innerText = form.impurity_removing.value;
+        document.getElementById("confirmThickness").innerText = form.thickness.value;
+        document.getElementById("confirmTrangThai").innerText = form.trang_thai_com.value;
+
+        // Hiển thị modal xác nhận
+        confirmModal.show();
+    });
+
+    // Khi nhấn xác nhận trong modal
+    submitFormButton.addEventListener("click", function () {
+        form.submit(); // Thực hiện submit form
+    });
+});
+
+</script>
+
 
 <div class="card mb-4 form-machine">
     <div class="card-header d-flex justify-content-between align-items-center">

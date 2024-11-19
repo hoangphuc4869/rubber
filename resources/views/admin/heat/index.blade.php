@@ -15,17 +15,17 @@
                 @csrf
                 <div class="row">
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Nhiệt độ T1 (độ C)</label>
                         <input type="number" name="temp" min="0" class="form-control" value="103">
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Nhiệt độ T2 (độ C)</label>
                         <input type="number" name="temp2" min="0" class="form-control" value="105">
                     </div>
 
-                     <div class="mb-3 col-lg-6">
+                     <div class="mb-3 col-lg-4">
                         <label class="form-label">Lò sấy</label> <br>
                         <select name="oven" class="form-select w-100" required>
                             <option value="" selected disabled>Chọn lò</option>
@@ -42,29 +42,34 @@
                         </select>
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Thời gian sấy (phút)</label>
                         <input type="number" name="time_to_dry" min="0" step="0.1" class="form-control" required>
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Giờ bắt đầu</label>
                         <input type="time" name="time_start" id="timeInput" class="form-control">
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Vệ sinh thùng</label>
                         <input type="text" name="state" class="form-control" value="Tốt">
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Đánh giá</label>
                         <input type="text" name="validation" class="form-control" value="Nhiệt ổn định">
                     </div>
 
-                    <div class="mb-3 col-lg-6">
+                    <div class="mb-3 col-lg-4">
                         <label class="form-label" >Ngày thực hiện</label>
                         <input type="date" name="date" id="dateInput" class="form-control">
+                    </div>
+
+                    <div class="mb-3 col-lg-4">
+                        <label class="form-label" >Số thùng rỗng (nếu có)</label>
+                        <input type="number" min="1" name="padding_drum"  class="form-control">
                     </div>
 
                     <input type="hidden" name="drums" id="selected-drums">

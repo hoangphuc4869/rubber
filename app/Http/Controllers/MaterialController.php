@@ -73,7 +73,7 @@ class MaterialController extends Controller
             
                 if ($existingRecord) {  
                     
-                    if ($existingRecord->input_status === 0) {  
+                    if ($existingRecord->input_status === 0 || $existingRecord->input_status === 2 || $existingRecord->input_status === 3) {  
                         
                         $farm = $this->getFarmByNguonGoc($item['nguon_goc']);  
                         $curingArea = null; 

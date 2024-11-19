@@ -216,7 +216,7 @@ class ShipmentController extends Controller
         foreach ($batchAndBaleArray as $item) {
             $batch = Batch::where('batch_code', $item['batch_id'])->first();
             if($batch){
-                $batch->banh_con_lai = $batch->bale_count - $item['bale_count'];
+                $batch->banh_con_lai = $batch->banh_con_lai > 0 ? $batch->banh_con_lai - $item['bale_count'] : $batch->bale_count - $item['bale_count'];
                 $batch->user_id = $request->customer_id;
 
                 $batch->exported = $batch->banh_con_lai == 0 ? 1 : 0;

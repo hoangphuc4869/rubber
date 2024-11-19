@@ -84,6 +84,54 @@ class BatchController extends Controller
                         ->whereYear('date', $year)
                         ->get();
 
+
+        // $batches_check = [
+        //     [
+        //         'batch_code' => '24F61001',
+        //         'checked' => '0',
+        //     ],
+        //     [
+        //         'batch_code' => '24F61002',
+        //         'checked' => '1',
+        //     ],
+        //     [
+        //         'batch_code' => '24F61003',
+        //         'checked' => '0',
+        //     ],
+        //     [
+        //         'batch_code' => '24F61004',
+        //         'checked' => '1',
+        //     ],
+        //     [
+        //         'batch_code' => '24F61005',
+        //         'checked' => '0',
+        //     ],
+        // ];
+
+        // $batches_check_object = json_decode(json_encode($batches_check), false);
+
+
+
+        // foreach ($batches_check_object as $index => $item) {
+            
+        //     if ($item->checked == 1) {
+        //         continue;
+        //     }
+
+            
+        //     $previous = $batches_check_object[$index - 1] ?? null; 
+        //     $next = $batches_check_object[$index + 1] ?? null; 
+
+        //     if ($previous && $previous->checked == 1 && $next && $next->checked == 1) {
+        //         $item->checked = 1;
+        //     }
+        // }
+
+        // dd($batches_check_object);
+
+
+
+
         // dd($batches);
         
         return view('admin.batch.list', compact('batches'));
@@ -767,12 +815,6 @@ class BatchController extends Controller
         ini_set('max_execution_time', 1200); 
         $token = "30dd7d4f-bbd4-4c23-b7df-13e5a9e1055f"; 
 
-        // $response = Http::withHeaders([
-        //         'Authorization' => "Bearer {$token}",
-        //         'Content-Type' => 'application/json',
-        //     ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode=2426091")->json();
-
-        // dd($response);
 
         $batches_notChecked = Batch::where('checked', 0)->get();
         $responses = []; 
@@ -798,15 +840,50 @@ class BatchController extends Controller
                 }
                 $responses[] = $data; 
             } else {
-
+                
                 $responses[] = [
                     'error' => $response->status(),
                     'message' => 'Failed to fetch data for batch: ' . $item->batch_code,
                 ];
+
+                
             }
         }
 
-        // dd($responses);
+        $batches_notChecked = Batch::where('checked', 0)->get()->groupBy('from_farm'); 
+
+        // dd($batches_notChecked);
+
+
+        foreach ($batches_notChecked as $from_farm => $batches) {
+            
+            $batches = $batches->sortBy('id')->values();
+
+            
+            foreach ($batches as $index => $item) {
+              
+                if ($item->checked == 1) {
+                    continue;
+                }
+
+                $previous = Batch::where('from_farm', $item->from_farm)
+                                ->where('id', '<', $item->id)
+                                ->orderBy('id', 'desc') 
+                                ->first();
+
+                $next = Batch::where('from_farm', $item->from_farm)
+                            ->where('id', '>', $item->id)
+                            ->orderBy('id', 'asc') 
+                            ->first();
+
+                // dd($previous, $next);
+
+                if ($previous && $next && $previous->checked == 1 && $next->checked == 1) {
+                    $item->checked = 1; 
+                    $item->save(); 
+                }
+            }
+        }
         
         return redirect()->back()->with('delete_success', 'Cập nhật thành công');
     }

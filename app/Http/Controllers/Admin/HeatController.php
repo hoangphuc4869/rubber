@@ -231,18 +231,23 @@ class HeatController extends Controller
         $data = $request->all();
         $ids = explode(',', $data['drums']);
 
+
         $drums_giao_6tan_oven1 = Drum::where('giao_ca', 1)->where('status', 2)->orderBy('id', 'asc')->get();
         $drums_giao_6tan_oven2 = Drum::where('giao_ca', 2)->where('status', 2)->orderBy('id', 'asc')->get();
         $drums_giao_3tan_oven3 = Drum::where('giao_ca', 3)->where('status', 2)->orderBy('id', 'asc')->get();
 
-        // dd($drums_giao_3tan_oven3);
-        
+        // dd($drums_giao_3tan_oven3->count());
+
+        // $skip = 0;
+
         $lastHeatedStart = Carbon::createFromFormat('H:i Y-m-d', $request->time_start . ' ' . $request->date);
 
-        foreach ($ids as $id) {
+
+        foreach ($ids as $index => $id) {
             $drum = Drum::findOrFail($id);
 
             if ($drum->status == 0) {
+
                 $drum->status = 1;
                 $drum->temp = $data['temp'];
                 $drum->temp2 = $data['temp2'];
@@ -250,18 +255,53 @@ class HeatController extends Controller
                 $drum->state = $data['state'];
                 $drum->validation = $data['validation'];
                 $drum->time_to_dry = $data['time_to_dry'];
-
-                // Đặt heated_start
                 $drum->heated_start = $lastHeatedStart;
 
-                // Chọn thùng drum_out theo oven và chuyển `giao_ca` về null
+
                 if ($drum->oven == 1 && $drums_giao_6tan_oven1->isNotEmpty()) {
-                    $drum_out = $drums_giao_6tan_oven1->shift();
+
+                    if ($drums_giao_6tan_oven1->count() < 32) {
+
+                        $skip = 32 - $drums_giao_6tan_oven1->count();
+                        
+                        if ($index >= $skip) {
+                            $drum_out = $drums_giao_6tan_oven1->shift();
+                        }                     
+                    }
+                    else {
+                        $drum_out = $drums_giao_6tan_oven1->shift();
+                    }
+                    
                 } elseif ($drum->oven == 2 && $drums_giao_6tan_oven2->isNotEmpty()) {
-                    $drum_out = $drums_giao_6tan_oven2->shift();
+
+                    if ($drums_giao_6tan_oven2->count() < 32) {
+
+                        $skip = 32 - $drums_giao_6tan_oven2->count();
+                        
+                        if ($index >= $skip) {
+                            $drum_out = $drums_giao_6tan_oven2->shift();
+                        }                     
+                    }
+                    else {
+                        $drum_out = $drums_giao_6tan_oven2->shift();
+                    }
+
                 } elseif ($drum->oven == 3 && $drums_giao_3tan_oven3->isNotEmpty()) {
-                    $drum_out = $drums_giao_3tan_oven3->shift();
+
+                    if ($drums_giao_3tan_oven3->count() < 30) {
+
+                        $skip = 30 - $drums_giao_3tan_oven3->count();
+                        
+                        if ($index >= $skip) {
+                            $drum_out = $drums_giao_3tan_oven3->shift();
+                        }                     
+                    }
+                    else {
+                        $drum_out = $drums_giao_3tan_oven3->shift();
+                    }
+
                 }
+
 
                 if (isset($drum_out)) {
                     $drum_out->heated_end = $lastHeatedStart;
@@ -272,55 +312,68 @@ class HeatController extends Controller
                     $drum_out->save();
                 }
 
-                // Xác định heated_end dựa trên link
-                if($drum->link == 3) {
-                    $heatedEnd = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 30);
-                } else {
-                    $heatedEnd = $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 32);
-                }
+
+                $heatedEnd = $drum->link == 3 
+                    ? $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 30)
+                    : $lastHeatedStart->copy()->addMinutes(+$data['time_to_dry'] * 32);
 
                 $drum->heated_end = $heatedEnd;
                 $drum->heated_date = $heatedEnd->copy();
 
-                // Lưu thùng
                 $drum->save();
 
-                // Cập nhật lastHeatedStart cho thùng tiếp theo
                 $lastHeatedStart->addMinutes(+$data['time_to_dry']);
             }
         }
 
-        
-            foreach ($ids as $id) {
-                
-                $drum = Drum::findOrFail($id);
 
-                $heatedEnd = Carbon::parse($drum->heated_end)->copy();
-
-                $time = $heatedEnd->copy()->subMinutes(390);
+        if ($request->padding_drum) {
+            $paddingDrums = [];
             
-                $originalDate = $heatedEnd->copy()->startOfDay();
 
-                if ($time->startOfDay()->lt($originalDate)) {
-
-                    $drum->heated_date = $heatedEnd->copy()->subDay()->format('Y-m-d H:i:s');
-                    
-                } 
-
-        
-                $drum->save();
-
+            if ($drum->oven == 1 && $drums_giao_6tan_oven1->count() >= $request->padding_drum) {
+                $paddingDrums = $drums_giao_6tan_oven1->splice(0, $request->padding_drum);
+            } elseif ($drum->oven == 2 && $drums_giao_6tan_oven2->count() >= $request->padding_drum) {
+                $paddingDrums = $drums_giao_6tan_oven2->splice(0, $request->padding_drum);
+            } elseif ($drum->oven == 3 && $drums_giao_3tan_oven3->count() >= $request->padding_drum) {
+                $paddingDrums = $drums_giao_3tan_oven3->splice(0, $request->padding_drum);
+            } else {
+                return redirect()->back()->with('roll_fail', 'Không đủ thùng!');
             }
-           
-            // dd($drum->heated_end, $drum->heated_date);
 
 
-        
+            foreach ($paddingDrums as $paddingDrum) {
+                $paddingDrum->heated_end = $lastHeatedStart;
+                $paddingDrum->heated_date = $lastHeatedStart;
+                $paddingDrum->status = 1;
+                $paddingDrum->giao_ca = null;
+                $paddingDrum->note = 'nhận ca (thùng rỗng)';
+                $paddingDrum->save();
 
+
+                $lastHeatedStart->addMinutes(+$data['time_to_dry']);
+            }
+        }
+
+
+        foreach ($ids as $id) {
+            $drum = Drum::findOrFail($id);
+            $heatedEnd = Carbon::parse($drum->heated_end)->copy();
+            $time = $heatedEnd->copy()->subMinutes(390);
+            $originalDate = $heatedEnd->copy()->startOfDay();
+
+
+            if ($time->startOfDay()->lt($originalDate)) {
+                $drum->heated_date = $heatedEnd->copy()->subDay()->format('Y-m-d H:i:s');
+            }
+
+            $drum->save();
+        }
 
         return redirect()->back()->with('success', 'Thành công');
     }
 
+    
 
 
 
