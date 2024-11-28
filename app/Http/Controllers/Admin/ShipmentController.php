@@ -234,9 +234,6 @@ class ShipmentController extends Controller
                 }
                 
                 $batch->save();
-
-
-                
                 // dd($batch->warehouse, $batch);
             }
         }
@@ -250,6 +247,10 @@ class ShipmentController extends Controller
 
         if($request->com == 'BHCK'){
             return redirect()->route('shipments.index')->with('success', 'Xuất hàng thành công');
+        }
+
+        if($request->com == 'TNSR'){
+            return redirect()->route('shipmentsTNSR.index')->with('success', 'Xuất hàng thành công');
         }
 
         return redirect()->route('shipmentsCRCK2.index')->with('success', 'Xuất hàng thành công');

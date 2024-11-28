@@ -29,7 +29,7 @@ class ShipmentCRCK2Controller extends Controller
 
         $shipments = Shipment::whereHas('contract', function($query) {
             $query->where('supplier', 'CRCK2');
-        })->orderBy('id', 'desc')->get();
+        })->get();
 
         // $shipments = Shipment::all();
 
@@ -147,5 +147,29 @@ class ShipmentCRCK2Controller extends Controller
             return response()->json(['message' => 'Cập nhật thành công!']);
         }
         return response()->json(['message' => 'Không tìm thấy đơn hàng!'], 404);
+    }
+
+    public function shipTnsr(Request $request)
+    {
+        
+        $shipment = new Shipment();
+        $shipment->ma_xuat = $request->input('ma_xuat');
+        $shipment->loai_hang = $request->input('loai_hang');
+        $shipment->so_luong = $request->input('so_luong');
+        $shipment->ngay_xuat = $request->input('ngay_xuat');
+        $shipment->ngay_nhan_hang = $request->input('ngay_nhan_hang');
+        $shipment->ngay_dong_cont = $request->input('ngay_xuat');
+        $shipment->tnsr = 1;
+
+        if ($request->hasFile('pdf') && $request->file('pdf')->isValid()) {
+            $file = $request->file('pdf');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('contract_orders'), $fileName);
+            $shipment->pdf = $fileName;
+        }
+
+        $shipment->save();
+
+        return redirect()->back()->with('success', 'Lệnh xuất hàng đã được thêm!');
     }
 }

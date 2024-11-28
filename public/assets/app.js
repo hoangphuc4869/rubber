@@ -904,6 +904,7 @@ let order = new DataTable("#dataOrder", {
         start: 1,
         end: 1,
     },
+    order: [[0, "asc"]],
     scrollX: true,
     autoWidth: false,
 });

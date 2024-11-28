@@ -109,7 +109,7 @@ Route::middleware(['login'] )->group(function() {
     
     Route::get('/find', [BatchController::class, 'viewFindBatch'])->name('tracibility');
     
-    Route::get('/find-batch', [BatchController::class, 'findBatch']);
+    // Route::get('/find-batch', [BatchController::class, 'findBatch']);
 
     Route::get('/proxy/test', [BatchController::class, 'proxyApiTest']);
 
@@ -151,6 +151,13 @@ Route::middleware(['login'] )->group(function() {
 
 
     Route::get('/get-contract-info/{id}', [ContractController::class, 'getContractInfo'])->name('get.contract');
+
+    Route::get('/download-warehouses', [WarehouseController::class, 'exportWarehouses'])->name('warehouses.export');
+    
+    Route::post('/manually-check', [WarehouseController::class, 'manuallyCheck'])->name('warehouses.export.manually');
+
+    Route::post('/shipments-tnsr', [ShipmentCRCK2Controller::class, 'shipTnsr'])->name('shipments.tnsr');
+
 
 
 });

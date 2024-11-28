@@ -15,6 +15,7 @@ use App\Models\ResetTime;
 use App\Models\Shipment;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Company;
+use App\Models\Rubber;
 
 use App\Models\CuringArea;
 
@@ -41,10 +42,7 @@ class HomeController extends Controller
         $houses = CuringHouse::all();
         $reset = ResetTime::first();
         
-
-        
-        
-        
+   
         $drums_per_day_3tan = Drum::select('date')
         ->selectRaw('COUNT(*) as total_number')
         ->where('link', 3)->where('date', now()->format('Y/m/d'))
@@ -120,6 +118,63 @@ class HomeController extends Controller
             return $value/1000;
         });
 
+       
+        $allFarmIds = Rubber::distinct()->pluck('farm_id');
+
+        $freshweights_cup = Rubber::select('farm_id', DB::raw('SUM(fresh_weight) as total_freshweight'))
+            ->where('date', today())
+            ->whereIn('latex_type', ['Rubber cup lump', 'THU MUA MĐC']) 
+            ->groupBy('farm_id')
+            ->pluck('total_freshweight', 'farm_id');
+
+        $freshweights_string = Rubber::select('farm_id', DB::raw('SUM(fresh_weight) as total_freshweight'))
+            ->where('date', today())
+             ->whereIn('latex_type', ['Rubber in string shape', 'THU MUA MD']) 
+            ->groupBy('farm_id')
+            ->pluck('total_freshweight', 'farm_id');
+
+
+        $result_cup = $allFarmIds->mapWithKeys(function ($farmId) use ($freshweights_cup) {
+            return [$farmId => $freshweights_cup[$farmId] ?? 0];
+        });
+
+        $result_string = $allFarmIds->mapWithKeys(function ($farmId) use ($freshweights_string) {
+            return [$farmId => $freshweights_string[$farmId] ?? 0];
+        });
+
+        $result_cup = $result_cup->toArray();
+        $result_string = $result_string->toArray();
+
+        $mapping = [
+            1 => "Farm 1",
+            2 => "Farm 2",
+            3 => "Farm 3",
+            4 => "Farm 4",
+            5 => "Farm 5",
+            6 => "Farm 6",
+            7 => "Farm 7",
+            8 => "Farm 8",
+            9 => "OTHER",
+            10 => "TNSR",
+        ];
+
+       
+        $result_cup_mapped = [];
+        $result_string_mapped = [];
+
+
+        foreach ($mapping as $farmId => $farmName) {
+
+            $result_cup_mapped[$farmName] = $result_cup[$farmId] ?? 0;
+            
+
+            $result_string_mapped[$farmName] = $result_string[$farmId] ?? 0;
+        }
+
+        $data_cup = array_values($result_cup_mapped); 
+        $data_string = array_values($result_string_mapped);
+
+
         $drums_per_day_3tan = Drum::select('date')
         ->selectRaw('COUNT(*) as total_number')
         ->where('link', 3)->where('date', now()->format('Y/m/d'))
@@ -147,9 +202,6 @@ class HomeController extends Controller
         });
         
         
-
-
-
         $pie = [
             isset($drums_per_day_3tan[0]['total_number']) && $drums_per_day_3tan[0]['total_number'] > 0 ? $drums_per_day_3tan[0]['total_number'] : 0,
             isset($drums_per_day_6tan[0]['total_number']) && $drums_per_day_6tan[0]['total_number'] > 0 ? $drums_per_day_6tan[0]['total_number'] : 0
@@ -158,7 +210,9 @@ class HomeController extends Controller
         return response()->json([
             'nha_u' => $ten_nha_u,
             'khoi_luong' => $khoi_luong,
-            'thung' => $pie
+            'thung' => $pie,
+            'fresh_weight_cup' => $result_cup_mapped,
+            'fresh_weight_string' => $result_string_mapped,
         ]);
     }
 }

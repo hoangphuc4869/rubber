@@ -18,6 +18,37 @@
 
 <h4 class="fw-bold my-4">Danh sách lô hàng - {{$companyName}}</h4>
 
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+    <form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="file" class="form-control mb-2">
+        <button class="btn btn-dark" type="submit">Cập nhật vị trí kho</button>
+    </form>
+    <form action="{{ route('warehouses.export') }}">
+        @csrf
+        <input type="hidden" name="kho" value="{{$companyName}}">
+        <button type="submit" class="btn btn-info">Tải file vị trí kho</button>
+
+    </form>
+    
+    
+</div>
+
+<div id="manualBtn" class="d-none" onclick="confirmAction()">
+    <form action="{{ route('warehouses.export.manually') }}" method="POST">
+        @csrf
+        <input type="hidden" name="batch_ids" id="batch_ids" value="">
+        <button type="submit" class="btn btn-info">Kiểm nghiệm thủ công</button>
+
+    </form>
+</div>
+
+<script>
+    function confirmAction() {
+        return confirm("Xác nhận các lô hàng này đạt kiểm nghiệm?");
+    }
+</script>
+
 {{-- <div class="my-2">
     
     <div class="fw-bold">Tổng Khôi lượng: <span class="text-success fs-4">{{$total_bales * 35}} kg</span>

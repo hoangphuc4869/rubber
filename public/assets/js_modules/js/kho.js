@@ -165,6 +165,30 @@ $(document).ready(function () {
         $batch.val(batchId);
     });
 
+    $("#tableKho tbody").on("click", "tr", function () {
+        $(this).toggleClass("selected");
+        updateButtonsKhoo();
+    });
+
+    function updateButtonsKhoo() {
+        let allRows = tableKho.rows().nodes();
+
+        let selectedRows = Array.from(allRows).filter(
+            (row) =>
+                $(row).hasClass("selected") && !$(row).hasClass("no-select")
+        );
+
+        let values = selectedRows.map((row) => row.id);
+
+        $("#batch_ids").val(values.join(","));
+
+        if (values.length > 0) {
+            $("#manualBtn").removeClass("d-none");
+        } else {
+            $("#manualBtn").addClass("d-none");
+        }
+    }
+
     if ($update.length) {
         $update.on("click", function () {
             const slotValue = $slot ? $slot.val() : null;

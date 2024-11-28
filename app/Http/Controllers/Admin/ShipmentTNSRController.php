@@ -10,6 +10,7 @@ use App\Models\Contract;
 use App\Models\Shipment;
 use App\Models\Batch;
 use Illuminate\Support\Facades\Gate;
+use App\Models\Warehouse;
 
 class ShipmentTNSRController extends Controller
 {
@@ -26,9 +27,7 @@ class ShipmentTNSRController extends Controller
             $batches = collect(); 
         }
 
-        $shipments = Shipment::whereHas('contract', function($query) {
-            $query->where('supplier', 'TNSR');
-        })->orderBy('id', 'desc')->get();
+        $shipments = Shipment::where('tnsr', 1)->get();
 
         // $shipments = Shipment::all();
 
@@ -105,8 +104,13 @@ class ShipmentTNSRController extends Controller
             $batches = collect(); 
         }
 
+        $wares = Warehouse::whereIn('name', ['TNSR'])
+        ->orderBy('id', 'asc')
+        ->get()
+        ->groupBy('name');
+
         if (Gate::allows('khoTNSR') || Gate::allows('admin') ) {
-            return view('admin.shipments.TNSR.edit' , compact('order', 'batches'));
+            return view('admin.shipments.TNSR.edit' , compact('order', 'batches', 'wares'));
         } else {
             abort(403, 'Bạn không có quyền truy cập.');
         }

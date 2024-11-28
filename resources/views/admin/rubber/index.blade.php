@@ -4,7 +4,7 @@
     <h4 class="fw-bold py-3 mb-4"> Nguyên liệu</h4>
     <h5 class="fw-bold">Sơ đồ bãi ủ</h5>
     
-    <div class="row">
+    <div class="row mb-5">
         <div class="col-lg-6">
             <div class="text-center mb-2 fw-bold">Nguyên liệu mủ đông chén</div>
             <div class="grid-areas">
@@ -219,7 +219,7 @@
         </div>
     </div> --}}
 
-    <div class="d-flex justify-content-between">
+    {{-- <div class="d-flex justify-content-between">
         <div class="my-3">
             <div class="mb-1"> - Tổng MDC BHCK: <span class="fw-bold fs-4 text-danger">{{$mu_dong_chen_bhck/1000}} tấn</span>  </div>
             <div class="mb-1"> - Tổng MDC CRCK2: <span class="fw-bold fs-4 text-success">{{$mu_dong_chen_crck/1000}} tấn</span>  </div>
@@ -232,7 +232,7 @@
             <div class="mb-1"> - Tổng MD CRCK2: <span class="fw-bold fs-4 text-success">{{$mu_day_crck/1000}} tấn</span>  </div>
             <div class="mb-1"> - Tổng MD Thu mua: <span class="fw-bold fs-4 text-warning">{{$mu_day_tm/1000}} tấn</span>  </div>
         </div>
-    </div>
+    </div> --}}
 
 
 
@@ -292,8 +292,8 @@
 
     @include('partials.errors')
 
-    <div class="d-flex justify-content-between align-items-end">
-        <div class="filter-section  d-flex align-items-end gap-2">
+    <div class="d-flex justify-content-between gap-xs-2 align-items-end flex-wrap">
+        <div class="filter-section flex-wrap  d-flex align-items-end gap-2">
             <div class="">
                 <label for="dateFilterNguyenLieu" class="" style="font-size: 14px">Ngày tiếp nhận</label>
                 <input type="text" id="dateFilterNguyenLieu" class="form-control" placeholder="Chọn ngày" style="width: 120px" />
@@ -337,7 +337,7 @@
 
 
         <div class="function-btns d-flex align-items-end justify-content-end gap-2">
-            <div class=" d-flex gap-1 align-items-center">
+            <div class=" d-flex  gap-1 align-items-center">
 
                 <div class="editDRC d-none">
                     <div class="d-flex align-items-center gap-1">

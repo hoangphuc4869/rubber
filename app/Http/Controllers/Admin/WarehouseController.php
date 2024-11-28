@@ -15,6 +15,10 @@ use App\Models\Contract;
 use App\Models\Shipment;
 use Yajra\DataTables\Facades\DataTables; 
 
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\WarehouseExport;
+
+
 
 class WarehouseController extends Controller
 {
@@ -458,6 +462,56 @@ class WarehouseController extends Controller
                 'message' => 'Không có batch_id để gán'  
             ], 400);  
         }  
+    }
+
+
+    public function exportWarehouses(Request $request)
+    {
+        if($request->kho == "B.H.C.K"){
+            $warehouses = Warehouse::with('batches')
+                        ->whereIn('name', ['A1-BHCK', 'A2-BHCK', 'A3-BHCK', 'B1-BHCK', 'B2-BHCK','B3-BHCK', 'X3T-BHCK', 'X6T-BHCK' ])
+                        ->get(['code', 'batch_id', 'name']);
+        }
+        elseif ($request->kho == "C.R.C.K.2")  {
+            $warehouses = Warehouse::with('batches')
+                        ->whereIn('name', ['A1', 'A2', 'A3', 'B1', 'B2','B3', 'X3T', 'X6T', 'BU6T' ])
+                        ->get(['code', 'batch_id', 'name']);
+        }
+
+        else  {
+            $warehouses = Warehouse::with('batches')
+                        ->whereIn('name', ['TNSR'])
+                        ->get(['code', 'batch_id', 'name']);
+        }
+        
+        
+        $data = $warehouses->map(function ($item) {
+
+            $batch = Batch::find($item->batch_id);
+            return [
+                'Tên kho' => $item->name,
+                'Vị trí' => $item->code,
+                'Mã lô' => $batch ? $batch->batch_code : '', 
+            ];
+        })->toArray();
+
+        return Excel::download(new WarehouseExport($data), 'Warehouses.xlsx');
+    }
+
+    public function manuallyCheck(Request $request)
+    {
+         $items = explode(',', $request->batch_ids);
+         foreach ($items as $item) {
+            $batch = Batch::findOrFail($item);
+
+            if($batch->checked == 0) {
+                $batch->checked = 1;
+                $batch->save();
+            }
+         }
+         
+        return redirect()->back()->with('delete_success', 'Cập nhật thành công');
+
     }
 
 }

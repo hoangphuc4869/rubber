@@ -179,12 +179,12 @@ class PlotControllers extends Controller
 
     public function import(Request $request)  
     {  
-        // Xác thực tệp được tải lên  
+
         $request->validate([  
             'file' => 'required|mimes:xlsx,csv,xls',  
         ]);  
 
-        // Nhập dữ liệu từ tệp  
+
         Excel::import(new BatchesImport, $request->file('file'));  
 
         return redirect()->back()->with('success', 'Dữ liệu đã được nhập thành công!');  

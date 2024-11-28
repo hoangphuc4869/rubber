@@ -18,6 +18,9 @@ use App\Models\Plot;
 use Yajra\DataTables\Facades\DataTables; 
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+
 
 use Illuminate\Support\Facades\Http;
 
@@ -641,9 +644,9 @@ class BatchController extends Controller
     public function viewFindBatch()
     {
         $user= auth::user();
-        dd($user->customer->contracts);
+        // dd($user->customer->contracts);
 
-        return view('admin.batch.find');
+        return view('admin.batch.find', compact('user'));
     }
 
 
@@ -653,95 +656,135 @@ class BatchController extends Controller
 
         $batch = Batch::where('batch_code', $batchCode)->first();
 
-        $response = [
-            'Nhà máy sản xuất' => 'NHÀ MÁY CHẾ BIẾN MỦ STOUNG',
-            'Công ty sản xuất' => 'Đang cập nhật',
-            'Ngày sản xuất' => 'Đang cập nhật',
-            'Khối lượng bành' => 35,
-            'Khối lượng lô hàng' => 'Đang cập nhật',
-            'Ngày cán vắt' => 'Đang cập nhật',
-            'Nông trường' => 'Đang cập nhật',
-            'Ngày tiếp nhận mủ' => 'Đang cập nhật',
-            'Loại mủ' => 'Đang cập nhật',
-            'Số xe' => '',
-            'Số chuyến' => 'Đang cập nhật',
-            'Tọa độ' => '',
-            'plots' => [],
-            'plotsArray' => [],
-            'trucksArray' => [],
-        ];
-
-        if ($batch && isset($batch->drums[0])) {
-            
-            $farm = optional($batch->drums[0]?->rolling?->area->farm);
-            $area = optional($batch->drums[0]?->rolling?->area);
-
-            $type = ($area && !in_array($area->code, ['MDCR', 'MDBH', 'NLTMMD'])) ? "Mủ đông chén" : "Mủ dây";
-
-            if ($farm) {
-                $response['Công ty sản xuất'] = optional($batch->company)->name ?? 'Đang cập nhật';
-                $response['Ngày sản xuất'] = Carbon::parse($batch->date)->format('d-m-Y');
-                $response['Khối lượng lô hàng'] = $batch->bale_count * 35;
-                $response['Nông trường'] = $farm->name ?? 'Đang cập nhật';
-                $response['Ngày tiếp nhận mủ'] = $batch->drums[0]?->rolling ? Carbon::parse(optional($batch->drums[0]?->rolling)->date_curing)->format('d-m-Y') : "Đang cập nhật";
-                $response['Loại mủ'] = $type;
-                $response['Ngày cán vắt'] = $batch->drums[0]?->rolling ? Carbon::parse(optional($batch->drums[0]?->rolling)->date)->format('d-m-Y') : "Đang cập nhật";
+        if ($batch ) {
+            if ($batch->user_id !== Auth::user()->customer?->id && Auth::user()->id !== 1 ) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bạn không có quyền xem lô này.',
+                ], 403);
+            } else {
+                $response = [
+                    'nhamay' => 'NHÀ MÁY CHẾ BIẾN MỦ STOUNG',
+                    'congty' => 'Đang cập nhật',
+                    'ma_lo' => $batch->batch_code,
+                    'khoiluongbanh' => "35kg",
+                    'khoiluonglohang' => 'Đang cập nhật',
+                    'ngaycanvat' => 'Đang cập nhật',
+                    'nongtruong' => 'Đang cập nhật',
+                    'ngaytiepnhanmu' => 'Đang cập nhật',
+                    'loaimu' => 'Đang cập nhật',
+                    'tong_so_chuyen' => 'Đang cập nhật',
+                ];
 
 
-                $rubbers = $batch->drums[0]?->rolling?->rubbers()->get();
+                if (count($batch->drums) > 0 ) {
 
-                $plotsArray = [];
-                $trucksArray = [];
+                    $drum = $batch->drums->first();
+                    $farm = optional($drum->rolling->area->farm);
+                    $area = optional($drum->rolling->area);
 
-                
-                foreach ($rubbers as $rubber) {
-                    
-                    $plots = $rubber->plots; 
+                    $type = ($area && !in_array($area->code, ['MDCR', 'MDBH', 'NLTMMD'])) ? "Rubber cup lump" : "Rubber in string shape";
 
-                    $trucksArray[] = [
-                        'rubber_id' => $rubber->id,
-                        'truck_name' => $rubber->truck_name,
-                        'time_di' => $rubber->time_di,
-                        'time_ve' => $rubber->time_ve,
-                        'plots' => $rubber->plots->pluck('tenlo')->unique()->toArray(),
-                    ];
-                    
-                    
-                    foreach ($plots as $plot) {
-                        $plotsArray[] = [
-                            'rubber_id' => $rubber->id,  
-                            'plot_id'   => $plot->id,    
-                            'id_lo'   => $plot->id_lo,    
-                            'farm_id'   => $plot->farm_id,    
-                            'tenlo'   => $plot->tenlo,    
-                            'namtrong'   => $plot->namtrong,    
-                            'giong'   => $plot->giong,    
-                            'dientich'   => $plot->dientich,    
-                            'namcao' => $plot->namcao,  
-                            'to_nt' => $plot->to_nt,  
-                            'tuoicao' => $plot->tuoicao,  
-                            'lat_cao' => $plot->lat_cao,  
-                            'duAn' => $plot->duAn,  
-                            'x' => $plot->x,  
-                            'y' => $plot->y,  
-                            'y' => $plot->y,  
-                            'geojson' => $plot->geojson,
-                            'tongcaycao' => $plot->tongcaycao,  
-                            'matdocaycao' => $plot->matdocaycao,  
-                            'tong_kmc' => $plot->tong_kmc,  
-                        ];
+                    if ($farm) {
+
+                        $response['ngaysansxuat'] = Carbon::parse($batch->date)->format('Y-m-d') ?? 'Đang cập nhật';
+                        $response['khoiluonglohang'] = $batch->bale_count * 35 / 1000 . "(tons/tấn)";
+                        $response['nongtruong'] = $farm->name ?? 'Đang cập nhật';
+                        $response['congty'] = optional($batch->company)->name ?? 'Đang cập nhật';
+                        $response['ngaytiepnhanmu'] = $drum->rolling ? Carbon::parse(optional($drum->rolling)->date_curing)->format('Y-m-d') : "Đang cập nhật";
+                        $response['loaimu'] = $type;
+                        $response['ngaycanvat'] = $drum->rolling ? Carbon::parse(optional($drum->rolling)->date)->format('Y-m-d') : "Đang cập nhật";
+
+
+                        $rubbers = $batch->drums[0]?->rolling?->rubbers()->orderBy('package_code', 'asc')->get();
+
+                        $trucksArray = [];
+                        $truckCounts = [];
+
+
+                        $columns = Schema::getColumnListing('plots');
+
+
+                        $nsColumns = collect($columns)->filter(function ($column) {
+                            return Str::startsWith($column, 'ns');
+                        })->toArray();
+
+                        foreach ($rubbers as $index => $rubber) {
+
+                            $plots = $rubber->plots->map(function ($plot) use ($nsColumns) {
+
+                                $nsData = $plot->only($nsColumns);
+
+                                return array_merge([
+                                    'lo_vung_trong' => $plot->tenlo,
+                                    'id_lo' => $plot->id_lo,
+                                    'du_an' => $plot->duAn,
+                                    'to' => $plot->to_nt,
+                                    'lat_cao' => $plot->lat_cao,
+                                    'nam_trong' => $plot->namtrong,
+                                    'nam_cao' => $plot->namcao,
+                                    'tuoi_cao' => $plot->tuoicao,
+                                    'giong_cay' => $plot->giong,
+                                    'tong_cay_cao' => $plot->tongcaycao,
+                                    'mat_do_cay_cao' => $plot->matdocaycao,
+                                    'tong_kmc' => $plot->tong_kmc,
+                                    'hangdat' => $plot->hangdat,
+                                    'dientich' => $plot->dientich,
+                                    'ns' => $nsData,
+                                    'web_map' => '',
+                                    'toa_do' => [
+                                        'x' => $plot->x,
+                                        'y' => $plot->y,
+                                        'geojson' => json_decode($plot->geojson)
+                                    ]
+                                ]);
+                            })->toArray();
+
+                            $truckName = $rubber->truck_name;
+
+                            if (!isset($truckCounts[$truckName])) {
+                                $truckCounts[$truckName] = 0;
+                            }
+                            $truckCounts[$truckName]++;
+
+                            $trucksArray[] = [
+                                'truck_name' => $truckName,
+                                'thoi_gian_vao' => $rubber->time_di ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_di)->format('Y-m-d H:i') : null,
+                                'thoi_gian_ra' => $rubber->time_ve ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_ve)->format('Y-m-d H:i') : null,
+                                'so_chuyen' => $truckCounts[$truckName],
+                                'latex_receive_date' => $rubber->time_ve ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_ve)->format('Y-m-d') : null,
+                                'ngay_cao' => null,
+                                'vung_trong' => $plots,
+                            ];
+                        }
+
+                        $trucksCollection = collect($trucksArray);
+                        $response['trucksArray'] = $trucksArray;
+                        $response['tong_so_chuyen'] = $trucksCollection->count();
                     }
                 }
+                $token = "30dd7d4f-bbd4-4c23-b7df-13e5a9e1055f";
 
-                // thùng->rolling->rubbers -> truck_name
+                $response_test = Http::withHeaders([
+                    'Authorization' => "Bearer {$token}",
+                    'Content-Type' => 'application/json',
+                ])->get("https://kcs.chusekptrubber.vn/api/show-factory-code?factoryCode={$batchCode}");
 
-                $response['plotsArray'] = $plotsArray;
-                $response['trucksArray'] = $trucksArray;
-                
-                $response['Số xe'] = $rubbers->where('farm_id', $farm->id)->pluck('truck_name')->isNotEmpty() ? $rubbers->where('farm_id', $farm->id)->pluck('truck_name') : '';
-                $response['Số chuyến'] = $rubbers->where('farm_id', $farm->id)->count() > 0 ? $rubbers->where('farm_id', $farm->id)->count() : 'Đang cập nhật';
+                if ($response_test->successful()) {
 
+                    $data = $response_test->json();
+                    $response['results_test'] = $data['results'];
+                } else {
+
+                    $response['results_test'] = null;
+                    // $response['message'] = 'Không thể lấy thông tin từ hệ thống bên ngoài. Vui lòng thử lại sau.';
+                }
             }
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Không tìm thấy lô với mã cung cấp.',
+            ], 404);
         }
 
         return response()->json([

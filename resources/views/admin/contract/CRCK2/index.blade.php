@@ -22,7 +22,7 @@
                 <th>Tên khách hàng</th>
 
                 <th>Số tấn</th>
-                <th>Lệnh xuất hàng</th>
+                {{-- <th>Lệnh xuất hàng</th> --}}
                 <th>Tùy chỉnh</th>
             </tr>
         </thead>
@@ -37,15 +37,13 @@
                 <td>{{ $item->customer ? $item->customer->name : '' }}</td>
                
                 <td>
-                   {{ implode(', ', $item->shipments->map(function ($shipment) {
-                            return $shipment->so_luong;
-                        })->toArray()) }}
+                   {{ $item->count_contract }}
                 </td>
-                <td>
+                {{-- <td>
                      {{ implode(', ', $item->shipments->map(function ($shipment) {
                             return $shipment->ma_xuat;
                         })->toArray()) }}
-                </td>
+                </td> --}}
                 <td>
                     <div class="custom d-flex gap-1">
                         <a href="{{route('contractCRCK2.edit', [$item->id])}}">

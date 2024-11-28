@@ -89,25 +89,67 @@
 
             const backgroundColors = data.khoi_luong.map(() => getRandomPastelColor());
 
-            const myChart = new Chart(ctx, {
-                type: 'bar', 
-                data: {
-                    labels: data.nha_u,
-                    datasets: [{
-                        label: 'Khối lượng cao su (tấn)',
-                        data: data.khoi_luong,
-                        backgroundColor: backgroundColors,
-                        borderWidth: 1
-                    }]
+            console.log(data);
+
+            // const myChart = new Chart(ctx, {
+                
+    
+            //     type: 'bar', 
+            //     data: {
+            //         labels: data.nha_u,
+            //         datasets: [{
+            //             label: 'Khối lượng cao su (tấn)',
+            //             data: data.khoi_luong,
+            //             backgroundColor: backgroundColors,
+            //             borderWidth: 1
+            //         }]
+            //     },
+            //     options: {
+            //         scales: {
+            //             y: {
+            //                 beginAtZero: true
+            //             }
+            //         }
+            //     }
+            // });
+
+            const myBarChart = new Chart(ctx, {  
+                type: 'bar',  
+                data: {  
+                    datasets: [
+                        {  
+                            label: 'Mủ đông chén',  
+                            data: data.fresh_weight_cup, 
+                            backgroundColor: 'rgba(0, 106, 103, 0.8)', // Màu #006A67 với opacity 0.5
+                        },  
+                        {  
+                            label: 'Mủ dây',  
+                            data: data.fresh_weight_string, 
+                            backgroundColor: 'rgba(250, 188, 63, 0.8)',  // Màu #FABC3F với opacity 0.5
+                        }  
+                    ]  
                 },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
+                options: {  
+                    scales: {  
+                        y: {  
+                            beginAtZero: true,  
+                            stacked: true 
+                        },  
+                        x: {  
+                            stacked: true 
+                        }  
+                    },  
+                    plugins: {  
+                        legend: {  
+                            display: true,
+                        },  
+                        title: {  
+                            display: true,  
+                            text: 'Nguyên liệu xe vào trong ngày (kg)'  
+                        }  
+                    }  
+                }  
+            });  
 
 
             const myPieChart = new Chart(ctx2, {

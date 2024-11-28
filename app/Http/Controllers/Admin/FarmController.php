@@ -51,9 +51,6 @@ class FarmController extends Controller
             'name.unique' => 'Tên nông trường đã tồn tại.',
         ]);
 
-        
-
-
         $farm = new Farm;
         $farm->fill($data);
         $farm->save();

@@ -24,19 +24,26 @@ class BatchFindApi extends Controller
     {
         $batchCode = $request->input('batch_code');
 
-        $batch = Batch::with('drums.rolling.area.farm')->where('batch_code', $batchCode)->first();
-        
-        // dd($batch->user_id, Auth::user()->customer->id, $batch->drums);
+        $batch = Batch::where('batch_code', $batchCode)->first();
 
+        $web_maps = [
+            1 => "https://experience.arcgis.com/experience/c7fd133ed2e040c7a1a4da2d87ff97cc",
+            2 => "https://experience.arcgis.com/experience/eb50e5662a3f48cfa87f084d46cd4c58",
+            3 => "https://experience.arcgis.com/experience/d9f79e22f99f4c6b8cb6fec7517ca266",
+            4 => "https://experience.arcgis.com/experience/38db7edf94864a1492c462a77cdaf2cd",
+            5 => "https://experience.arcgis.com/experience/288fad0b651641a8a4700c4a10d5673b",
+            6 => "https://experience.arcgis.com/experience/cd1da90d93594777b4047f06f0378f91",
+            7 => "https://experience.arcgis.com/experience/5091e52aaf154025afa43ec994c465f2",
+            8 => "https://experience.arcgis.com/experience/3600c167fe8f429caf6b7d625f57abbf",
+        ];
 
-        if($batch){
-            if ($batch->user_id !== Auth::user()->customer->id) {
+        if ($batch ) {
+            if ($batch->user_id !== Auth::user()->customer?->id && Auth::user()->id  > 22) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Lô của người ta má ơi',
+                    'message' => 'Bạn không có quyền xem lô này.',
                 ], 403);
-            }
-            else {
+            } else {
                 $response = [
                     'nhamay' => 'NHÀ MÁY CHẾ BIẾN MỦ STOUNG',
                     'congty' => 'Đang cập nhật',
@@ -45,25 +52,28 @@ class BatchFindApi extends Controller
                     'khoiluonglohang' => 'Đang cập nhật',
                     'ngaycanvat' => 'Đang cập nhật',
                     'nongtruong' => 'Đang cập nhật',
+                    'web_map' => "",
                     'ngaytiepnhanmu' => 'Đang cập nhật',
                     'loaimu' => 'Đang cập nhật',
                     'tong_so_chuyen' => 'Đang cập nhật',
                 ];
 
 
-                if (count($batch->drums) > 0) {
-                
+                if (count($batch->drums) > 0 ) {
+
                     $drum = $batch->drums->first();
                     $farm = optional($drum->rolling->area->farm);
                     $area = optional($drum->rolling->area);
 
-                    $type = ($area && !in_array($area->code, ['MDCR', 'MDBH', 'NLTMMD'])) ? "Mủ đông chén" : "Mủ dây";
+                    $type = ($area && !in_array($area->code, ['MDCR', 'MDBH', 'NLTMMD'])) ? "Rubber cup lump" : "Rubber in string shape";
+
 
                     if ($farm) {
 
                         $response['ngaysansxuat'] = Carbon::parse($batch->date)->format('Y-m-d') ?? 'Đang cập nhật';
-                        $response['khoiluonglohang'] = $batch->bale_count * 35 /1000 . "(tons/tấn)";
+                        $response['khoiluonglohang'] = $batch->bale_count * 35 / 1000 . "(tons/tấn)";
                         $response['nongtruong'] = $farm->name ?? 'Đang cập nhật';
+                        $response['web_map'] = $web_maps[$farm->id] ?? '';
                         $response['congty'] = optional($batch->company)->name ?? 'Đang cập nhật';
                         $response['ngaytiepnhanmu'] = $drum->rolling ? Carbon::parse(optional($drum->rolling)->date_curing)->format('Y-m-d') : "Đang cập nhật";
                         $response['loaimu'] = $type;
@@ -73,13 +83,13 @@ class BatchFindApi extends Controller
                         $rubbers = $batch->drums[0]?->rolling?->rubbers()->orderBy('package_code', 'asc')->get();
 
                         $trucksArray = [];
-                        $truckCounts = []; 
+                        $truckCounts = [];
 
-                                              
+
                         $columns = Schema::getColumnListing('plots');
 
-                       
-                        $nsColumns = collect($columns)->filter(function($column) {
+
+                        $nsColumns = collect($columns)->filter(function ($column) {
                             return Str::startsWith($column, 'ns');
                         })->toArray();
 
@@ -94,39 +104,45 @@ class BatchFindApi extends Controller
                                     'id_lo' => $plot->id_lo,
                                     'du_an' => $plot->duAn,
                                     'to' => $plot->to_nt,
+                                    'pivot' => [
+                                        'to_nt' => $plot->pivot->to_nt ?? null,
+                                        'lat_cao' => $plot->pivot->lat_cao ?? null,
+                                    ],
                                     'lat_cao' => $plot->lat_cao,
                                     'nam_trong' => $plot->namtrong,
                                     'nam_cao' => $plot->namcao,
                                     'tuoi_cao' => $plot->tuoicao,
                                     'giong_cay' => $plot->giong,
-                                    'tong_cay_cao' => $plot->tongcaycao, 
-                                    'mat_do_cay_cao' => $plot->matdocaycao, 
-                                    'tong_kmc' => $plot->tong_kmc, 
-                                    'dientich' => $plot->dientich, 
-                                    'ns' => $nsData, 
+                                    'tong_cay_cao' => $plot->tongcaycao,
+                                    'mat_do_cay_cao' => $plot->matdocaycao,
+                                    'tong_kmc' => $plot->tong_kmc,
+                                    'hangdat' => $plot->hangdat,
+                                    'dientich' => $plot->dientich,
+                                    'ns' => $nsData,
+                                    
                                     'toa_do' => [
                                         'x' => $plot->x,
                                         'y' => $plot->y,
                                         'geojson' => json_decode($plot->geojson)
                                     ]
-                                ]); 
+                                ]);
                             })->toArray();
 
-
-                            
                             $truckName = $rubber->truck_name;
 
                             if (!isset($truckCounts[$truckName])) {
-                                $truckCounts[$truckName] = 0; 
+                                $truckCounts[$truckName] = 0;
                             }
-                            $truckCounts[$truckName]++; 
+                            $truckCounts[$truckName]++;
 
                             $trucksArray[] = [
                                 'truck_name' => $truckName,
                                 'thoi_gian_vao' => $rubber->time_di ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_di)->format('Y-m-d H:i') : null,
                                 'thoi_gian_ra' => $rubber->time_ve ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_ve)->format('Y-m-d H:i') : null,
                                 'so_chuyen' => $truckCounts[$truckName],
+                                'vi_tri_bai_u' => $rubber->location ?? "",
                                 'latex_receive_date' => $rubber->time_ve ? Carbon::createFromFormat('d-m-Y H:i', $rubber->time_ve)->format('Y-m-d') : null,
+                                'ngay_cao' => null,
                                 'vung_trong' => $plots,
                             ];
                         }
@@ -149,20 +165,15 @@ class BatchFindApi extends Controller
                     $response['results_test'] = $data['results'];
                 } else {
 
-                    $response['results_test'] = [
-                        'status' => 0,
-                        'message' => 'hông biết nữa',
-                    ];
+                    $response['results_test'] = null;
+                    // $response['message'] = 'Không thể lấy thông tin từ hệ thống bên ngoài. Vui lòng thử lại sau.';
                 }
-
             }
-        }
-        else {
+        } else {
             return response()->json([
-                'status' => 'failed',
-                'message' => 'không có thấy lô này nha má, kiểm tra lại dùm'
-            ]);
-            
+                'status' => 'error',
+                'message' => 'Không tìm thấy lô với mã cung cấp.',
+            ], 404);
         }
 
         return response()->json([

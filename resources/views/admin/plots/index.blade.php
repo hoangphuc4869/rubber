@@ -4,11 +4,7 @@
 
 
 @include('partials.errors')
-<form action="{{ route('import') }}" method="POST" enctype="multipart/form-data">
-    @csrf
-    <input type="file" name="file">
-    <button type="submit">Import</button>
-</form>
+
 
 <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Nông trường /</span> Vùng trồng</h4>
 

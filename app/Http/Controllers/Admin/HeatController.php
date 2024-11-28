@@ -460,16 +460,16 @@ class HeatController extends Controller
                 } elseif ($action === 'done') {
 
                     // dd($request->all());
-                    $drums_giao_6tan_oven1 = Drum::where('giao_ca', 1)->where('status', 2)->orderBy('id', 'asc')->get();
-                    $drums_giao_6tan_oven2 = Drum::where('giao_ca', 2)->where('status', 2)->orderBy('id', 'asc')->get();
-                    $drums_giao_3tan_oven3 = Drum::where('giao_ca', 3)->where('status', 2)->orderBy('id', 'asc')->get();
+                    // $drums_giao_6tan_oven1 = Drum::where('giao_ca', 1)->where('status', 2)->orderBy('id', 'asc')->get();
+                    // $drums_giao_6tan_oven2 = Drum::where('giao_ca', 2)->where('status', 2)->orderBy('id', 'asc')->get();
+                    // $drums_giao_3tan_oven3 = Drum::where('giao_ca', 3)->where('status', 2)->orderBy('id', 'asc')->get();
 
-                    if($request->link == 3 && $drums_giao_3tan_oven3->isEmpty() ){
-                        return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
-                    }
-                    elseif($request->link == 6 && ($drums_giao_6tan_oven1->isEmpty() || $drums_giao_6tan_oven2->isEmpty())){
-                        return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
-                    }
+                    // if($request->link == 3 && $drums_giao_3tan_oven3->isEmpty() ){
+                    //     return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
+                    // }
+                    // elseif($request->link == 6 && ($drums_giao_6tan_oven1->isEmpty() || $drums_giao_6tan_oven2->isEmpty())){
+                    //     return redirect()->back()->with('roll_fail', 'Vui lòng giao ca trước khi hoàn tất xử lý');
+                    // }
 
                     
                     $drum->status = 5; 
